@@ -234,7 +234,13 @@ textarea.form-control.tall{min-height:120px;}
     <div class="dash-card dc-kansatsu" onclick="showSection('kansatsu')"><div class="dc-icon">🔍</div><div class="dc-title">観察記録（幼児）</div><div class="dc-sub">幼児の月別観察記録</div></div>
   </div>
   <div class="card" style="margin-top:16px;">
-    <div class="card-header"><div class="icon" style="background:#e8f0fe;">📋</div>今月のノルマ状況 <span id="myTaskMonth" style="font-size:12px;color:var(--text-mid);margin-left:8px;"></span></div>
+    <div class="card-header"><div class="icon" style="background:#e8f0fe;">📋</div>タスク状況
+  <span style="margin-left:8px;display:flex;align-items:center;gap:6px;">
+    <select id="myTaskMonthSel" style="font-size:12px;padding:2px 6px;border:1px solid var(--border);border-radius:6px;" onchange="loadMyTasks()">
+    </select>
+    <span id="myTaskMonth" style="font-size:11px;color:var(--text-mid);"></span>
+  </span>
+</div>
     <div class="card-body" id="myTaskArea">
       <div style="color:var(--text-light);font-size:13px;text-align:center;padding:20px;">ログイン後に読み込みます…</div>
     </div>
@@ -265,7 +271,7 @@ textarea.form-control.tall{min-height:120px;}
     <div class="card-body">
       <div class="form-group"><label class="form-label">年間振り返り</label><textarea class="form-control tall" id="ns_furikaeri" placeholder="年間を通じた振り返り…" maxlength="690" oninput="updateCount(this,690)"></textarea><div style="text-align:right;font-size:10px;color:var(--text-light);margin-top:2px;"><span id="cnt_ns_furikaeri">0</span>/690文字</div></div>
       <div class="approval-row">
-        <div class="form-group"><label class="form-label">主任承認</label><select class="form-control" id="ns_syunin"><option value="">-- 選択 --</option></select></div>
+        <div class="form-group"><label class="form-label"><span id="ns_syunin_label">主任承認</span></label><select class="form-control" id="ns_syunin"><option value="">-- 選択 --</option></select></div>
         <div class="form-group"><label class="form-label">園長承認</label><select class="form-control" id="ns_encho"><option value="">-- 選択 --</option></select></div>
       </div>
       <div class="btn-row">
@@ -358,7 +364,7 @@ textarea.form-control.tall{min-height:120px;}
         <div class="form-group"><label class="form-label">月間振り返り</label><textarea class="form-control" id="gu_furikaeri" placeholder="月間振り返り…" maxlength="380" oninput="updateCount(this,380)"></textarea><div style="text-align:right;font-size:10px;color:var(--text-light);margin-top:2px;"><span id="cnt_gu_furikaeri">0</span>/380文字</div></div>
       </div>
       <div class="approval-row">
-        <div class="form-group"><label class="form-label">主任承認</label><select class="form-control" id="gu_syunin"><option value="">-- 選択 --</option></select></div>
+        <div class="form-group"><label class="form-label"><span id="gu_syunin_label">主任承認</span></label><select class="form-control" id="gu_syunin"><option value="">-- 選択 --</option></select></div>
         <div class="form-group"><label class="form-label">園長承認</label><select class="form-control" id="gu_encho"><option value="">-- 選択 --</option></select></div>
       </div>
       <div class="btn-row">
@@ -448,7 +454,7 @@ textarea.form-control.tall{min-height:120px;}
     <div class="card-body">
       <div class="form-group"><label class="form-label">週の評価・反省</label><textarea class="form-control" id="su_furikaeri" placeholder="週の評価・反省…" maxlength="55" oninput="updateCount(this,55)"></textarea><div style="text-align:right;font-size:10px;color:var(--text-light);margin-top:2px;"><span id="cnt_su_furikaeri">0</span>/55文字</div></div>
       <div class="approval-row">
-        <div class="form-group"><label class="form-label">主任承認</label><select class="form-control" id="su_syunin"><option value="">-- 選択 --</option></select></div>
+        <div class="form-group"><label class="form-label"><span id="su_syunin_label">主任承認</span></label><select class="form-control" id="su_syunin"><option value="">-- 選択 --</option></select></div>
         <div class="form-group"><label class="form-label">園長承認</label><select class="form-control" id="su_encho"><option value="">-- 選択 --</option></select></div>
       </div>
       <div class="btn-row">
@@ -548,7 +554,7 @@ textarea.form-control.tall{min-height:120px;}
         <div class="form-group"><label class="form-label">評価・反省<span class="required">*</span></label><textarea class="form-control" id="ko_hyouka" placeholder="評価・反省…" maxlength="200" oninput="updateCount(this,200)"></textarea><div style="text-align:right;font-size:10px;color:var(--text-light);margin-top:2px;"><span id="cnt_ko_hyouka">0</span>/200文字</div></div>
       </div>
       <div class="approval-row">
-        <div class="form-group"><label class="form-label">主任承認</label><select class="form-control" id="ko_syunin"><option value="">-- 選択 --</option></select></div>
+        <div class="form-group"><label class="form-label"><span id="ko_syunin_label">主任承認</span></label><select class="form-control" id="ko_syunin"><option value="">-- 選択 --</option></select></div>
         <div class="form-group"><label class="form-label">園長承認</label><select class="form-control" id="ko_encho"><option value="">-- 選択 --</option></select></div>
       </div>
       <div class="btn-row">
@@ -590,7 +596,7 @@ textarea.form-control.tall{min-height:120px;}
     <div class="card-body">
       <div class="form-group"><label class="form-label">保育記録<span class="required">*</span></label><textarea class="form-control tall" id="ka_kiroku" placeholder="今月の保育記録を入力…" maxlength="200" oninput="updateCount(this,200)"></textarea><div style="text-align:right;font-size:10px;color:var(--text-light);margin-top:2px;"><span id="cnt_ka_kiroku">0</span>/200文字</div></div>
       <div class="approval-row">
-        <div class="form-group"><label class="form-label">主任承認</label><select class="form-control" id="ka_syunin"><option value="">-- 選択 --</option></select></div>
+        <div class="form-group"><label class="form-label"><span id="ka_syunin_label">主任承認</span></label><select class="form-control" id="ka_syunin"><option value="">-- 選択 --</option></select></div>
         <div class="form-group"><label class="form-label">園長承認</label><select class="form-control" id="ka_encho"><option value="">-- 選択 --</option></select></div>
       </div>
       <div class="btn-row">
@@ -776,28 +782,63 @@ textarea.form-control.tall{min-height:120px;}
   </div>
 </section>
 <section id="master" class="section">
+
+  <!-- 園児名簿CSVインポート -->
   <div class="card">
     <div class="card-header"><div class="icon" style="background:#e8f0fe;">👶</div>園児名簿 CSVインポート</div>
     <div class="card-body">
-      <p style="font-size:13px;color:var(--text-mid);margin-bottom:12px;">
-        CSVファイルの列順：<code>name, sei, mei, hira, hiraSei, hiraMei, birth, sex, class</code><br>
-        1行目はヘッダー行として読み飛ばします。文字コードはUTF-8またはShift-JIS対応。
-      </p>
+
+      <!-- 説明ボックス -->
+      <div style="background:#f0f7ff;border:1px solid #b3d4f5;border-radius:10px;padding:14px 16px;margin-bottom:14px;">
+        <div style="font-weight:700;font-size:13px;color:#1a5276;margin-bottom:8px;">📋 CSVファイルの形式について</div>
+        <table style="width:100%;border-collapse:collapse;font-size:12px;">
+          <thead>
+            <tr style="background:#d6eaf8;">
+              <th style="padding:5px 10px;border:1px solid #aed6f1;text-align:center;">列名</th>
+              <th style="padding:5px 10px;border:1px solid #aed6f1;text-align:left;">内容</th>
+              <th style="padding:5px 10px;border:1px solid #aed6f1;text-align:center;">必須</th>
+              <th style="padding:5px 10px;border:1px solid #aed6f1;text-align:left;">例</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td style="padding:4px 10px;border:1px solid #aed6f1;text-align:center;font-family:monospace;">name</td><td style="padding:4px 10px;border:1px solid #aed6f1;">氏名（フルネーム）</td><td style="padding:4px 10px;border:1px solid #aed6f1;text-align:center;color:#e74c3c;">必須</td><td style="padding:4px 10px;border:1px solid #aed6f1;color:#555;">山田 太郎</td></tr>
+            <tr style="background:#f8f9fa;"><td style="padding:4px 10px;border:1px solid #aed6f1;text-align:center;font-family:monospace;">sei</td><td style="padding:4px 10px;border:1px solid #aed6f1;">姓</td><td style="padding:4px 10px;border:1px solid #aed6f1;text-align:center;color:#888;">任意</td><td style="padding:4px 10px;border:1px solid #aed6f1;color:#555;">山田</td></tr>
+            <tr><td style="padding:4px 10px;border:1px solid #aed6f1;text-align:center;font-family:monospace;">mei</td><td style="padding:4px 10px;border:1px solid #aed6f1;">名</td><td style="padding:4px 10px;border:1px solid #aed6f1;text-align:center;color:#888;">任意</td><td style="padding:4px 10px;border:1px solid #aed6f1;color:#555;">太郎</td></tr>
+            <tr style="background:#f8f9fa;"><td style="padding:4px 10px;border:1px solid #aed6f1;text-align:center;font-family:monospace;">hira</td><td style="padding:4px 10px;border:1px solid #aed6f1;">ひらがな（フルネーム）</td><td style="padding:4px 10px;border:1px solid #aed6f1;text-align:center;color:#888;">任意</td><td style="padding:4px 10px;border:1px solid #aed6f1;color:#555;">やまだ たろう</td></tr>
+            <tr><td style="padding:4px 10px;border:1px solid #aed6f1;text-align:center;font-family:monospace;">hiraSei</td><td style="padding:4px 10px;border:1px solid #aed6f1;">ひらがな（姓）</td><td style="padding:4px 10px;border:1px solid #aed6f1;text-align:center;color:#888;">任意</td><td style="padding:4px 10px;border:1px solid #aed6f1;color:#555;">やまだ</td></tr>
+            <tr style="background:#f8f9fa;"><td style="padding:4px 10px;border:1px solid #aed6f1;text-align:center;font-family:monospace;">hiraMei</td><td style="padding:4px 10px;border:1px solid #aed6f1;">ひらがな（名）</td><td style="padding:4px 10px;border:1px solid #aed6f1;text-align:center;color:#888;">任意</td><td style="padding:4px 10px;border:1px solid #aed6f1;color:#555;">たろう</td></tr>
+            <tr><td style="padding:4px 10px;border:1px solid #aed6f1;text-align:center;font-family:monospace;">birth</td><td style="padding:4px 10px;border:1px solid #aed6f1;">生年月日</td><td style="padding:4px 10px;border:1px solid #aed6f1;text-align:center;color:#e67e22;">推奨</td><td style="padding:4px 10px;border:1px solid #aed6f1;color:#555;">2022-04-01</td></tr>
+            <tr style="background:#f8f9fa;"><td style="padding:4px 10px;border:1px solid #aed6f1;text-align:center;font-family:monospace;">sex</td><td style="padding:4px 10px;border:1px solid #aed6f1;">性別</td><td style="padding:4px 10px;border:1px solid #aed6f1;text-align:center;color:#888;">任意</td><td style="padding:4px 10px;border:1px solid #aed6f1;color:#555;">男 または 女</td></tr>
+            <tr><td style="padding:4px 10px;border:1px solid #aed6f1;text-align:center;font-family:monospace;">class</td><td style="padding:4px 10px;border:1px solid #aed6f1;">クラス名（クラス・担任マスタの名前と一致させること）</td><td style="padding:4px 10px;border:1px solid #aed6f1;text-align:center;color:#e74c3c;">必須</td><td style="padding:4px 10px;border:1px solid #aed6f1;color:#555;">とら</td></tr>
+          </tbody>
+        </table>
+        <div style="margin-top:8px;font-size:11px;color:#555;">
+          ⚠️ 1行目はヘッダー行として読み飛ばします　／　文字コード：UTF-8またはShift-JIS対応
+        </div>
+      </div>
+
       <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:12px;">
+        <label style="font-size:13px;font-weight:600;color:var(--text-mid);">CSVファイルを選択：</label>
         <input type="file" id="csvFileInput" accept=".csv" style="font-size:13px;">
         <button class="btn btn-primary" onclick="importChildrenCsv()">📥 CSVを取り込む</button>
-        <button class="btn btn-check" onclick="downloadChildrenCsv()">📤 現在のデータをCSVで出力</button>
+        <button class="btn btn-check" onclick="downloadChildrenCsv()">📤 現在のデータをCSV出力</button>
       </div>
       <div id="csvImportResult" style="font-size:13px;margin-top:8px;"></div>
     </div>
   </div>
 
+  <!-- クラス・担任マスタ -->
   <div class="card" style="margin-top:16px;">
     <div class="card-header"><div class="icon" style="background:#fff9e0;">🏷️</div>クラス・担任マスタ</div>
     <div class="card-body">
+      <div style="background:#fffde7;border:1px solid #f9e076;border-radius:8px;padding:10px 14px;margin-bottom:12px;font-size:12px;color:#7d6608;">
+        ℹ️ このマスタはGoogleスプレッドシートの <strong>マスタ_クラス</strong> シートで管理されています。<br>
+        クラス名・年齢・担任を変更する場合はスプレッドシートを直接編集してください。<br>
+        変更後はアプリを再読み込みすると反映されます。
+      </div>
       <table style="width:100%;border-collapse:collapse;font-size:13px;">
         <thead><tr style="background:var(--cream);">
-          <th style="padding:8px 12px;text-align:left;border-bottom:2px solid var(--border);">クラス</th>
+          <th style="padding:8px 12px;text-align:left;border-bottom:2px solid var(--border);">クラス名</th>
           <th style="padding:8px 12px;text-align:center;border-bottom:2px solid var(--border);">年齢</th>
           <th style="padding:8px 12px;text-align:left;border-bottom:2px solid var(--border);">担任</th>
           <th style="padding:8px 12px;text-align:center;border-bottom:2px solid var(--border);">園児数</th>
@@ -807,16 +848,51 @@ textarea.form-control.tall{min-height:120px;}
     </div>
   </div>
 
+  <!-- 職員・承認者マスタ -->
   <div class="card" style="margin-top:16px;">
     <div class="card-header"><div class="icon" style="background:#fce4ec;">👤</div>職員・承認者マスタ</div>
     <div class="card-body">
+      <div style="background:#fce4ec;border:1px solid #f8bbd9;border-radius:8px;padding:10px 14px;margin-bottom:12px;font-size:12px;color:#880e4f;">
+        ℹ️ このマスタはGoogleスプレッドシートの <strong>認証DB</strong> シートで管理されています。<br>
+        <strong>権限の入力例：</strong>
+        <span style="display:inline-flex;gap:6px;flex-wrap:wrap;margin-top:4px;">
+          <code style="background:#fff;padding:1px 6px;border-radius:4px;border:1px solid #f8bbd9;">staff</code>または<code style="background:#fff;padding:1px 6px;border-radius:4px;border:1px solid #f8bbd9;">職員</code>（一般）　
+          <code style="background:#fff;padding:1px 6px;border-radius:4px;border:1px solid #f8bbd9;">syunin</code>または<code style="background:#fff;padding:1px 6px;border-radius:4px;border:1px solid #f8bbd9;">主任</code>　
+          <code style="background:#fff;padding:1px 6px;border-radius:4px;border:1px solid #f8bbd9;">tokkatsu</code>または<code style="background:#fff;padding:1px 6px;border-radius:4px;border:1px solid #f8bbd9;">統括</code>　
+          <code style="background:#fff;padding:1px 6px;border-radius:4px;border:1px solid #f8bbd9;">encho</code>または<code style="background:#fff;padding:1px 6px;border-radius:4px;border:1px solid #f8bbd9;">園長</code>　
+          <code style="background:#fff;padding:1px 6px;border-radius:4px;border:1px solid #f8bbd9;">admin</code>または<code style="background:#fff;padding:1px 6px;border-radius:4px;border:1px solid #f8bbd9;">管理者</code>
+        </span><br>
+        <strong>有効欄：</strong>在職中は <code style="background:#fff;padding:1px 4px;border-radius:4px;border:1px solid #f8bbd9;">○</code>、退職者は <code style="background:#fff;padding:1px 4px;border-radius:4px;border:1px solid #f8bbd9;">×</code> に変更してください。
+      </div>
       <table style="width:100%;border-collapse:collapse;font-size:13px;">
         <thead><tr style="background:var(--cream);">
           <th style="padding:8px 12px;text-align:left;border-bottom:2px solid var(--border);">氏名</th>
           <th style="padding:8px 12px;text-align:left;border-bottom:2px solid var(--border);">役割</th>
+          <th style="padding:8px 12px;text-align:center;border-bottom:2px solid var(--border);">権限コード</th>
         </tr></thead>
         <tbody id="masterApproverTable"></tbody>
       </table>
+    </div>
+  </div>
+
+  <!-- 様式承認設定カード -->
+  <div class="card" style="margin-top:16px;">
+    <div class="card-header"><div class="icon" style="background:#e8f5e9;">✅</div>様式ごとの承認者設定</div>
+    <div class="card-body">
+      <div style="background:#e8f5e9;border:1px solid #a5d6a7;border-radius:8px;padding:10px 14px;margin-bottom:12px;font-size:12px;color:#1b5e20;">
+        ℹ️ 各様式の第1承認者（主任 または 統括リーダー）を設定します。<br>
+        最終承認は常に <strong>園長</strong> です。設定後は必ず「保存する」ボタンを押してください。
+      </div>
+      <table style="width:100%;border-collapse:collapse;font-size:13px;">
+        <thead><tr style="background:var(--cream);">
+          <th style="padding:8px 12px;text-align:left;border-bottom:2px solid var(--border);">様式</th>
+          <th style="padding:8px 12px;text-align:center;border-bottom:2px solid var(--border);">第1承認者</th>
+        </tr></thead>
+        <tbody id="approvalSettingTable"></tbody>
+      </table>
+      <div style="margin-top:12px;text-align:right;">
+        <button class="btn btn-primary" onclick="saveApprovalSettings()">💾 保存する</button>
+      </div>
     </div>
   </div>
 </section>
@@ -1018,8 +1094,32 @@ async function loadMyTasks() {
     if (targetClasses.length === 0) targetClasses = MASTER.classes; // フォールバック
   }
 
+  // 月セレクト初期化（初回のみ）
+  const monthSel = document.getElementById('myTaskMonthSel');
+  if (monthSel && monthSel.options.length === 0) {
+    for (let i = -2; i <= 3; i++) {
+      const d = new Date(now.getFullYear(), now.getMonth() + i, 1);
+      const y = d.getFullYear(), m2 = d.getMonth() + 1;
+      const nd2 = y > 2018 ? y : y; // 年度は年と同じ扱い
+      const opt = document.createElement('option');
+      opt.value = y + '-' + m2;
+      opt.textContent = y + '年' + m2 + '月';
+      if (i === 0) opt.selected = true;
+      monthSel.appendChild(opt);
+    }
+  }
+  // 選択中の月を取得
+  const selVal = monthSel ? monthSel.value : '';
+  let dispYear = now.getFullYear(), dispMonth = month;
+  if (selVal) {
+    const [sy, sm] = selVal.split('-').map(Number);
+    dispYear = sy; dispMonth = sm;
+  }
+  // 年度を計算（4月始まり）
+  const dispNendo = dispMonth >= 4 ? dispYear : dispYear - 1;
+
   const monthEl = document.getElementById('myTaskMonth');
-  if (monthEl) monthEl.textContent = nendo + '年度 ' + month + '月';
+  if (monthEl) monthEl.textContent = '';
 
   const area = document.getElementById('myTaskArea');
   if (!area) return;
@@ -1074,14 +1174,14 @@ async function loadMyTasks() {
         const recData = isNyuji ? kobData : kanData;
         const recIcon = isNyuji ? '👶' : '🔍';
         const recLabel = isNyuji ? '個別記録' : '観察記録';
-        const recDl = getDeadline(recType, nendo, month);
+        const recDl = getDeadline(recType, dispNendo, dispMonth);
 
         let done = 0;
         let detailHtml = '<div style="display:flex;flex-wrap:wrap;gap:6px;">';
         children.forEach(c => {
           const row = recData.find(r =>
             String(r['対象クラス']) === cls.name &&
-            String(r['対象月']) === String(month) &&
+            String(r['対象月']) === String(dispMonth) &&
             (r['園児名'] === c.name || r['氏名'] === c.name)
           );
           const st = row ? (row['承認状態'] || '未申請') : '未作成';
@@ -1178,13 +1278,16 @@ async function loadMasterFromDB(){
       });
     });
 
-    // 承認者
-    MASTER.approvers={encho:[],syunin:[]};
+    // 承認者・スタッフ
+    MASTER.approvers={encho:[],syunin:[],tokkatsu:[],admin:[]};
+    MASTER.staff = res.staff||[];
     (res.approvers||[]).forEach(a=>{
       const role=a['役割']||'';
       const name=a['氏名']||'';
-      if(role==='園長')MASTER.approvers.encho.push(name);
-      if(role==='主任')MASTER.approvers.syunin.push(name);
+      if(role==='園長'||role==='encho')     MASTER.approvers.encho.push(name);
+      if(role==='主任'||role==='syunin')    MASTER.approvers.syunin.push(name);
+      if(role==='統括'||role==='tokkatsu')  MASTER.approvers.tokkatsu.push(name);
+      if(role==='管理者'||role==='admin')   MASTER.approvers.admin.push(name);
     });
 
     // 画面に反映
@@ -1270,6 +1373,9 @@ function applyMasterToUI(){
     });
   });
 
+  // 承認者欄ラベルを様式設定に応じて更新
+  updateApprovalLabels();
+
   // 様式承認設定テーブル描画
   const approvalTb = document.getElementById('approvalSettingTable');
   if(approvalTb){
@@ -1301,6 +1407,38 @@ function applyMasterToUI(){
       approvalTb.appendChild(tr);
     });
   }
+}
+
+// 様式の第1承認ロールラベルを返す
+function getFirstApprovalLabel(type){
+  const settingStr = MASTER.kihon ? (MASTER.kihon['様式承認設定'] || '') : '';
+  const map = {};
+  settingStr.split(',').forEach(s=>{
+    const [k,v]=s.trim().split(':');
+    if(k&&v) map[k.trim()]=v.trim();
+  });
+  const role = map[type] || 'syunin';
+  return role === 'tokkatsu' ? '統括リーダー' : '主任';
+}
+
+// 承認者欄のラベルを様式設定に応じて更新
+function updateApprovalLabels(){
+  const settingStr = MASTER.kihon ? (MASTER.kihon['様式承認設定'] || '') : '';
+  const map = {};
+  settingStr.split(',').forEach(s=>{
+    const [k,v]=s.trim().split(':');
+    if(k&&v) map[k.trim()]=v.trim();
+  });
+  // 各様式のprefixとtypeのマッピング
+  const typeMap = {ns:'nensyuu',gu:'getsuan',su:'shuuan',ni:'nisshi',ko:'kobetsu',ka:'kansatsu'};
+  Object.entries(typeMap).forEach(([prefix, type])=>{
+    const role = map[type] || 'syunin';
+    const label = role === 'tokkatsu' ? '統括承認' : '主任承認';
+    // フォーム内の承認者ラベルを更新
+    const labelEl = document.getElementById(prefix+'_syunin_label');
+    if(labelEl) labelEl.textContent = label;
+    // セレクトのoption値も更新（統括名をMASTERから取得する想定）
+  });
 }
 
 async function saveApprovalSettings(){
@@ -1467,16 +1605,42 @@ function renderMasterApproverTable(){
   const tbody = document.getElementById('masterApproverTable');
   if(!tbody) return;
   tbody.innerHTML = '';
-  (MASTER.approvers.encho||[]).forEach(n=>{
+  const roleInfo = [
+    {key:'encho',   label:'園長',         code:'encho / 園長',     bg:'#e8f5e9', color:'#1b5e20'},
+    {key:'syunin',  label:'主任',         code:'syunin / 主任',    bg:'#e3f2fd', color:'#0d47a1'},
+    {key:'tokkatsu',label:'統括リーダー', code:'tokkatsu / 統括',  bg:'#f3e5f5', color:'#4a148c'},
+    {key:'admin',   label:'管理者',       code:'admin / 管理者',   bg:'#fff3e0', color:'#e65100'},
+  ];
+  let hasAny = false;
+  roleInfo.forEach(r=>{
+    const names = MASTER.approvers[r.key]||[];
+    names.forEach(n=>{
+      if(!n) return;
+      hasAny = true;
+      const tr=document.createElement('tr');
+      tr.innerHTML='<td style="padding:8px 12px;border-bottom:1px solid var(--border);">'+n+'</td>'
+        +'<td style="padding:8px 12px;border-bottom:1px solid var(--border);">'
+        +'<span style="padding:3px 10px;border-radius:12px;font-size:11px;font-weight:700;background:'+r.bg+';color:'+r.color+';">'+r.label+'</span></td>'
+        +'<td style="padding:8px 12px;border-bottom:1px solid var(--border);text-align:center;"><code style="font-size:11px;background:#f5f5f5;padding:2px 6px;border-radius:4px;border:1px solid #e0e0e0;">'+r.code+'</code></td>';
+      tbody.appendChild(tr);
+    });
+  });
+  // staff/一般職員はMASTER.staffから取得
+  (MASTER.staff||[]).forEach(s=>{
+    if(['encho','syunin','tokkatsu','admin'].includes(s.role)) return;
+    hasAny = true;
     const tr=document.createElement('tr');
-    tr.innerHTML='<td style="padding:8px 12px;border-bottom:1px solid var(--border);">'+n+'</td><td style="padding:8px 12px;border-bottom:1px solid var(--border);">園長</td>';
+    tr.innerHTML='<td style="padding:8px 12px;border-bottom:1px solid var(--border);">'+s.name+'</td>'
+      +'<td style="padding:8px 12px;border-bottom:1px solid var(--border);">'
+      +'<span style="padding:3px 10px;border-radius:12px;font-size:11px;font-weight:700;background:#f5f5f5;color:#555;">一般職員</span></td>'
+      +'<td style="padding:8px 12px;border-bottom:1px solid var(--border);text-align:center;"><code style="font-size:11px;background:#f5f5f5;padding:2px 6px;border-radius:4px;border:1px solid #e0e0e0;">staff / 職員</code></td>';
     tbody.appendChild(tr);
   });
-  (MASTER.approvers.syunin||[]).forEach(n=>{
+  if(!hasAny){
     const tr=document.createElement('tr');
-    tr.innerHTML='<td style="padding:8px 12px;border-bottom:1px solid var(--border);">'+n+'</td><td style="padding:8px 12px;border-bottom:1px solid var(--border);">主任</td>';
+    tr.innerHTML='<td colspan="3" style="padding:12px;text-align:center;color:var(--text-light);font-size:13px;">データがありません</td>';
     tbody.appendChild(tr);
-  });
+  }
 }
 
 // CSVインポート（Shift-JIS/UTF-8対応）
@@ -1695,7 +1859,12 @@ async function applyApproval(type,prefix,label){
   showLoading('申請中…');
   const res=await gasPost({action:'apply',type,key,docTitle});
   hideLoading();
-  if(res&&res.ok){updateApprovalBadge(prefix,'申請中');showToast('📤 申請しました。主任に通知を送りました。');setTimeout(loadNotifications,1000);}
+  if(res&&res.ok){
+    updateApprovalBadge(prefix,'申請中');
+    const firstLabel = getFirstApprovalLabel(type);
+    showToast('📤 申請しました。'+firstLabel+'に通知を送りました。');
+    setTimeout(loadNotifications,1000);
+  }
   else if(res)showToast('❌ 申請失敗: '+(res.error||'不明'),'error');
 }
 
