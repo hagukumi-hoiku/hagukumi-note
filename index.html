@@ -1269,6 +1269,58 @@ function applyMasterToUI(){
       el.appendChild(o);
     });
   });
+
+  // 様式承認設定テーブル描画
+  const approvalTb = document.getElementById('approvalSettingTable');
+  if(approvalTb){
+    const TYPE_LIST = [
+      {key:'nensyuu',label:'年間指導計画'},
+      {key:'getsuan', label:'月案'},
+      {key:'shuuan',  label:'週案'},
+      {key:'nisshi',  label:'日誌'},
+      {key:'kobetsu', label:'個別記録'},
+      {key:'kansatsu',label:'観察記録'},
+    ];
+    // マスタから現在の設定を取得
+    const settingStr = MASTER.kihon['様式承認設定'] || '';
+    const settingMap = {};
+    settingStr.split(',').forEach(s=>{
+      const [k,v]=s.trim().split(':');
+      if(k&&v) settingMap[k.trim()]=v.trim();
+    });
+    approvalTb.innerHTML='';
+    TYPE_LIST.forEach(t=>{
+      const current = settingMap[t.key] || 'syunin';
+      const tr = document.createElement('tr');
+      tr.innerHTML=`<td style="padding:8px 12px;border-bottom:1px solid var(--border);">${t.label}</td>`
+        +`<td style="padding:8px 12px;text-align:center;border-bottom:1px solid var(--border);">`
+        +`<select id="apvSetting_${t.key}" style="font-size:13px;padding:4px 8px;border:1px solid var(--border);border-radius:6px;">`
+        +`<option value="syunin"${current==='syunin'?' selected':''}>主任</option>`
+        +`<option value="tokkatsu"${current==='tokkatsu'?' selected':''}>統括リーダー</option>`
+        +`</select></td>`;
+      approvalTb.appendChild(tr);
+    });
+  }
+}
+
+async function saveApprovalSettings(){
+  const TYPE_LIST = ['nensyuu','getsuan','shuuan','nisshi','kobetsu','kansatsu'];
+  const parts = TYPE_LIST.map(k=>{
+    const el = document.getElementById('apvSetting_'+k);
+    return k + ':' + (el ? el.value : 'syunin');
+  });
+  const settingStr = parts.join(',');
+  showLoading('保存中…');
+  try{
+    const res = await gasGet({action:'saveMasterSetting', key:'様式承認設定', value:settingStr});
+    hideLoading();
+    if(res&&res.ok){
+      MASTER.kihon['様式承認設定'] = settingStr;
+      showToast('✅ 承認設定を保存しました');
+    } else {
+      showToast('❌ 保存失敗: '+(res?res.error:''),'error');
+    }
+  }catch(e){hideLoading();showToast('❌ エラー: '+e.message,'error');}
 }
 
 const PERIODS=[{num:1,label:'第1期',months:'4月-5月',emoji:'🌸',bg:'#e8f5e9'},{num:2,label:'第2期',months:'6月-8月',emoji:'☀️',bg:'#fdeee6'},{num:3,label:'第3期',months:'9月-12月',emoji:'🍂',bg:'#dceefb'},{num:4,label:'第4期',months:'1月-3月',emoji:'❄️',bg:'#fff9e0'}];
@@ -1291,7 +1343,7 @@ const FMAPS={
   ka:{'対象年度':'ka_nendo','対象クラス':'ka_class','対象月':'ka_month','園児名':'ka_child','ひらがな':'ka_hira','性別':'ka_seibetsu','生年月日':'ka_birth','担任':'ka_tanin','保育記録':'ka_kiroku','主任承認':'ka_syunin','園長承認':'ka_encho'},
 };
 const PRINT_LABELS={nensyuu:'年間指導計画',getsuan:'月案',shuuan:'週案日誌',nisshi:'週案日誌',kobetsu:'個別記録',kansatsu:'観察記録'};
-const APPROVAL_STATUS={'未申請':{cls:'ab-draft',label:'未申請'},'申請中':{cls:'ab-applied',label:'📤 申請中'},'主任承認済':{cls:'ab-syunin',label:'✅ 主任承認済'},'承認完了':{cls:'ab-done',label:'🎉 承認完了'},'差し戻し':{cls:'ab-reject',label:'⚠️ 差し戻し'}};
+const APPROVAL_STATUS={'未申請':{cls:'ab-draft',label:'未申請'},'申請中':{cls:'ab-applied',label:'📤 申請中'},'第1承認済':{cls:'ab-syunin',label:'✅ 第1承認済'},'主任承認済':{cls:'ab-syunin',label:'✅ 主任承認済'},'承認完了':{cls:'ab-done',label:'🎉 承認完了'},'差し戻し':{cls:'ab-reject',label:'⚠️ 差し戻し'}};
 let _rejectFlowId='';
 
 document.addEventListener('DOMContentLoaded',()=>{
