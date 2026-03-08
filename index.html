@@ -210,7 +210,7 @@ textarea.form-control.tall{min-height:120px;}
     <div class="nav-tab" onclick="showSection('kansatsu')">🔍 観察記録（幼児）</div>
     <div class="nav-tab" onclick="showSection('print')">🖨️ 様式出力</div>
     <div class="nav-tab" onclick="showSection('approval')">✅ 承認</div>
-    <div class="nav-tab" onclick="showSection('master')">⚙️ マスタ管理</div>
+    <div class="nav-tab" id="masterNavTab" style="display:none;" onclick="showSection('master')">⚙️ マスタ管理</div>
   </nav>
 </header>
 
@@ -1632,6 +1632,11 @@ function applySession(){
   if(!SESSION)return;
   const gardenName=SESSION.gardenName||'';
   document.getElementById('loginUserLabel').textContent=(gardenName?'🏫 '+gardenName+' ':'')+'👤 '+SESSION.username;
+  // admin/管理者のみマスタ管理タブを表示
+  const masterTab = document.getElementById('masterNavTab');
+  if (masterTab) {
+    masterTab.style.display = (SESSION.role==='admin') ? 'flex' : 'none';
+  }
   updateConnUI(true);
 }
 
@@ -1904,15 +1909,15 @@ function renderMasterApproverTable() {
 }
 
 // showMasterSection でスタッフリストも読み込む
-function showMasterSection() {
+async function showMasterSection() {
+  // 職員リストを先に読み込んでからクラステーブルを描画
+  await loadStaffList();
+  renderMasterClassTable();
   // admin/enchoのみ職員追加ボタンを表示
   const addBtn = document.getElementById('staffAddBtn');
   if (addBtn) {
-    addBtn.style.display = (SESSION && (SESSION.role==='admin' || SESSION.role==='encho')) ? 'inline-flex' : 'none';
+    addBtn.style.display = (SESSION && SESSION.role==='admin') ? 'inline-flex' : 'none';
   }
-  // admin/enchoのみ職員編集ボタンを有効化
-  renderMasterClassTable();
-  loadStaffList();
 }
 
 // CSVドラッグ&ドロップ
@@ -2225,9 +2230,10 @@ async function gasGet(params){
 }
 async function gasPost(body){
   if(!GAS_URL){showToast('⚠️ GAS URLが未設定です','error');return null;}
-  const r=await fetch(GAS_URL,{method:'POST',body:JSON.stringify({...body,token:tok()})});
+  const gardenId=SESSION&&SESSION.gardenId?SESSION.gardenId:'hagukumi1';
+  const r=await fetch(GAS_URL,{method:'POST',body:JSON.stringify({...body,token:tok(),gardenId})});
   const d=await r.json();
-  if(!d.ok&&d.error&&d.error.includes('認証エラー')){handleAuthError();return null;}
+  if(!d.ok&&d.error&&(d.error.includes('認証エラー')||d.error.includes('再ログイン'))){handleAuthError();return null;}
   return d;
 }
 function handleAuthError(){SESSION=null;localStorage.removeItem(SESSION_KEY);showToast('⚠️ セッション切れ。再ログインしてください','error');setTimeout(showLoginOverlay,1200);}
