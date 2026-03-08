@@ -1689,25 +1689,46 @@ function openClassEditModal(idx) {
   const modal = document.getElementById('classEditModal');
   const modeEl = document.getElementById('classModalMode');
   const delBtn = document.getElementById('classModalDelBtn');
+
+  // 担任selectのoptionを職員リストから生成
+  const staffList = (MASTER.staffList || []).filter(function(s){ return s['有効'] !== '×'; });
+  ['classModalT1','classModalT2','classModalT3','classModalT4'].forEach(function(fid) {
+    const sel = document.getElementById(fid);
+    if (!sel) return;
+    const cur = sel.value;
+    sel.innerHTML = '<option value="">（なし）</option>';
+    staffList.forEach(function(s) {
+      const name = s['氏名'] || s['ユーザー名'] || '';
+      if (!name) return;
+      const opt = document.createElement('option');
+      opt.value = name;
+      opt.textContent = name;
+      sel.appendChild(opt);
+    });
+    sel.value = cur;
+  });
+
   if (idx === undefined || idx < 0) {
-    // 新規追加
     modeEl.textContent = '追加';
     document.getElementById('classModalIdx').value = '-1';
     document.getElementById('classModalName').value = '';
     document.getElementById('classModalAge').value = '0';
-    document.getElementById('classModalT1').value = '';
-    document.getElementById('classModalT2').value = '';
+    ['classModalT1','classModalT2','classModalT3','classModalT4'].forEach(function(fid){
+      const el = document.getElementById(fid); if(el) el.value = '';
+    });
     delBtn.style.display = 'none';
   } else {
-    // 編集
     const cls = MASTER.classes[idx];
     if (!cls) return;
     modeEl.textContent = '編集';
     document.getElementById('classModalIdx').value = String(idx);
     document.getElementById('classModalName').value = cls.name;
     document.getElementById('classModalAge').value = String(cls.age);
-    document.getElementById('classModalT1').value = cls.tanin[0] || '';
-    document.getElementById('classModalT2').value = cls.tanin[1] || '';
+    const tanin = cls.tanin || [];
+    ['classModalT1','classModalT2','classModalT3','classModalT4'].forEach(function(fid, i){
+      const el = document.getElementById(fid);
+      if (el) el.value = tanin[i] || '';
+    });
     delBtn.style.display = 'inline-block';
   }
   modal.style.display = 'flex';
@@ -2144,7 +2165,7 @@ async function saveStaffEdit() {
     if (res && res.ok) {
       showToast('✅ ' + (isNew ? '職員を追加しました' : '職員情報を更新しました'));
       closeStaffEditModal();
-      await loadStaffList();
+      await showMasterSection();
     } else {
       showToast('❌ 保存失敗: ' + (res ? res.error : 'null'), 'error');
     }
