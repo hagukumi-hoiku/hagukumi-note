@@ -2032,9 +2032,11 @@ async function importChildrenCsvFile(file) {
     resultEl.innerHTML = '<span style="color:#e74c3c;">有効なデータがありません（退園済みを除外した結果0名）</span>'; return;
   }
 
+  console.log('[CSV] 送信行数='+rows.length+' gardenId='+(SESSION&&SESSION.gardenId)+' token='+tok().substring(0,8)+'...');
   showLoading('園児データを保存中…(' + rows.length + '名)');
   try {
     const res = await gasPost({ action: 'saveMaster', masterType: 'children', data: rows });
+    console.log('[CSV] GAS応答:', JSON.stringify(res));
     hideLoading();
     if (res && res.ok) {
       const savedGid = res.gId || SESSION.gardenId || '?';
@@ -2127,23 +2129,30 @@ async function saveStaffEdit() {
   const name     = document.getElementById('staffModalName').value.trim();
   const role     = document.getElementById('staffModalRole').value;
   const active   = document.getElementById('staffModalActive').value;
+  console.log('[saveStaffEdit] 開始 username='+username+' role='+role);
   if (!username) { showToast('⚠️ ユーザー名を入力してください', 'error'); return; }
   const isNew = !document.getElementById('staffModalUsername').value;
   if (isNew && !pass) { showToast('⚠️ 新規追加時はパスワードが必要です', 'error'); return; }
   const rowData = { 'ユーザー名': username, '氏名': name || username, '権限': role, '有効': active };
   if (pass) rowData['パスワード'] = pass;
+  console.log('[saveStaffEdit] gasPost送信:', JSON.stringify({action:'saveMaster',masterType:'staff',gardenId:SESSION&&SESSION.gardenId,token:tok()&&tok().substring(0,8)+'...'}));
   showLoading('職員情報を保存中…');
   try {
     const res = await gasPost({ action: 'saveMaster', masterType: 'staff', data: [rowData] });
+    console.log('[saveStaffEdit] GAS応答:', JSON.stringify(res));
     hideLoading();
     if (res && res.ok) {
       showToast('✅ ' + (isNew ? '職員を追加しました' : '職員情報を更新しました'));
       closeStaffEditModal();
       await loadStaffList();
     } else {
-      showToast('❌ 保存失敗: ' + (res ? res.error : ''), 'error');
+      showToast('❌ 保存失敗: ' + (res ? res.error : 'null'), 'error');
     }
-  } catch(e) { hideLoading(); showToast('❌ エラー: ' + e.message, 'error'); }
+  } catch(e) {
+    hideLoading();
+    console.error('[saveStaffEdit] エラー:', e);
+    showToast('❌ エラー: ' + e.message, 'error');
+  }
 }
 
 
