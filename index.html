@@ -1,0 +1,2636 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>はぐくみノート｜はぐくみ保育園</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=Noto+Serif+JP:wght@400;700&display=swap');
+:root{--cream:#faf7f2;--warm-white:#fff9f0;--sage:#7a9e7e;--sage-light:#a8c5ac;--sage-dark:#4d7252;--terracotta:#c17f5a;--terracotta-light:#e8b89a;--sky:#6a9eb5;--sky-light:#b8d4e0;--gold:#c9a84c;--text-dark:#2d2a26;--text-mid:#5c5650;--text-light:#9a9088;--border:#e0d8d0;--shadow:rgba(45,42,38,.08);--radius:12px;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Noto Sans JP',sans-serif;background:var(--cream);color:var(--text-dark);min-height:100vh;}
+.setup-banner{background:linear-gradient(135deg,#b45309,#d97706);color:white;padding:12px 20px;font-size:13px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+.setup-banner.hidden{display:none;}
+.setup-input{flex:1;min-width:260px;padding:8px 12px;border:2px solid rgba(255,255,255,.5);border-radius:8px;background:rgba(255,255,255,.15);color:white;font-size:13px;font-family:'Noto Sans JP',sans-serif;}
+.setup-input::placeholder{color:rgba(255,255,255,.7);}
+.setup-input:focus{outline:none;border-color:white;}
+.btn-setup{padding:8px 16px;background:white;color:#b45309;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;}
+.app-header{background:var(--sage-dark);color:white;position:sticky;top:0;z-index:100;box-shadow:0 2px 12px rgba(0,0,0,.2);}
+.header-inner{display:flex;align-items:center;padding:10px 20px;gap:16px;}
+.header-logo{font-family:'Noto Serif JP',serif;font-size:18px;font-weight:700;letter-spacing:.05em;white-space:nowrap;}
+.header-logo span{font-size:11px;font-weight:300;opacity:.8;display:block;letter-spacing:.1em;}
+.header-divider{width:1px;height:32px;background:rgba(255,255,255,.3);}
+.header-info{display:flex;gap:16px;flex:1;font-size:12px;opacity:.9;flex-wrap:wrap;}
+.sync-status{display:flex;align-items:center;gap:6px;font-size:12px;padding:4px 10px;border-radius:20px;background:rgba(255,255,255,.15);}
+.sync-dot{width:8px;height:8px;border-radius:50%;}
+.sync-dot.green{background:#4ade80;}.sync-dot.orange{background:#fb923c;animation:blink 1.5s infinite;}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:.3;}}
+.nav-tabs{display:flex;background:var(--sage-dark);border-top:1px solid rgba(255,255,255,.15);overflow-x:auto;}
+.nav-tab{padding:10px 20px;font-size:13px;color:rgba(255,255,255,.7);cursor:pointer;border-bottom:3px solid transparent;white-space:nowrap;transition:all .2s;font-family:'Noto Sans JP',sans-serif;}
+.nav-tab:hover{color:white;background:rgba(255,255,255,.08);}
+.nav-tab.active{color:white;border-bottom-color:var(--terracotta-light);font-weight:500;}
+.app-main{max-width:1100px;margin:0 auto;padding:24px 16px;}
+.section{display:none;}.section.active{display:block;}
+.card{background:white;border-radius:var(--radius);box-shadow:0 2px 16px var(--shadow);margin-bottom:20px;overflow:hidden;}
+.card-header{display:flex;align-items:center;gap:10px;padding:14px 20px;font-weight:700;font-size:14px;border-bottom:1px solid var(--border);}
+.card-header .icon{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;}
+.card-body{padding:20px;}
+.db-panel{background:linear-gradient(135deg,#f0f7f1,#e8f0f8);border:1px solid rgba(122,158,126,.25);border-radius:10px;padding:14px 16px;margin-bottom:16px;}
+.db-panel-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--sage-dark);margin-bottom:10px;}
+.db-list{display:flex;flex-wrap:wrap;gap:6px;max-height:150px;overflow-y:auto;}
+.db-item{padding:5px 12px;background:white;border:1.5px solid var(--border);border-radius:20px;font-size:12px;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:5px;}
+.db-item:hover{border-color:var(--sage);background:var(--cream);}
+.db-item .db-date{font-size:10px;color:var(--text-light);}
+.db-empty{font-size:12px;color:var(--text-light);font-style:italic;}
+.form-grid{display:grid;gap:14px;}
+.form-grid-2{grid-template-columns:1fr 1fr;}.form-grid-3{grid-template-columns:1fr 1fr 1fr;}.form-grid-4{grid-template-columns:1fr 1fr 1fr 1fr;}
+.form-group{display:flex;flex-direction:column;gap:5px;}
+.form-label{font-size:12px;font-weight:500;color:var(--text-mid);}
+.form-label .required{color:var(--terracotta);margin-left:3px;}
+.form-control{padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:'Noto Sans JP',sans-serif;color:var(--text-dark);background:white;transition:border-color .2s,box-shadow .2s;width:100%;}
+.form-control:focus{outline:none;border-color:var(--sage);box-shadow:0 0 0 3px rgba(122,158,126,.15);}
+.form-control[readonly]{background:var(--cream);color:var(--text-mid);cursor:default;}
+textarea.form-control{resize:vertical;min-height:80px;line-height:1.7;}
+textarea.form-control.tall{min-height:120px;}
+.form-sep{height:1px;background:var(--border);margin:6px 0 14px;}
+.cat-label{font-size:11px;font-weight:600;padding:2px 8px;border-radius:4px;margin-bottom:4px;display:inline-block;}
+.cat-label.yogo{background:#e8f5e9;color:#2e7d32;}.cat-label.kyoiku{background:#e3f2fd;color:#1565c0;}
+.event-table{width:100%;border-collapse:collapse;font-size:13px;}
+.event-table th{background:var(--cream);padding:8px 12px;text-align:left;font-size:11px;color:var(--text-mid);border-bottom:2px solid var(--border);}
+.event-table td{padding:6px 8px;border-bottom:1px solid var(--border);}
+.event-table td input{width:100%;padding:6px 10px;border:1.5px solid transparent;border-radius:6px;font-size:13px;font-family:'Noto Sans JP',sans-serif;background:var(--cream);}
+.event-table td input:focus{outline:none;border-color:var(--sage);background:white;}
+.event-num{width:30px;text-align:center;font-weight:700;color:var(--sage);font-size:11px;}
+.btn-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px;padding-top:16px;border-top:1px solid var(--border);align-items:center;}
+.btn{padding:10px 22px;border:none;border-radius:8px;font-size:13px;font-family:'Noto Sans JP',sans-serif;font-weight:500;cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;gap:6px;}
+.btn-primary{background:var(--sage-dark);color:white;}
+.btn-primary:hover{background:var(--sage);transform:translateY(-1px);box-shadow:0 4px 12px rgba(77,114,82,.3);}
+.btn-secondary{background:var(--cream);color:var(--text-mid);border:1.5px solid var(--border);}
+.btn-secondary:hover{background:white;border-color:var(--sage-light);}
+.btn-check{background:white;color:var(--sky);border:1.5px solid var(--sky-light);}
+.status-badge{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:500;}
+.status-ok{background:#e8f5e9;color:#2e7d32;}.status-warn{background:#fff3e0;color:#e65100;}
+.approval-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px;}
+.dash-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;margin-bottom:24px;}
+.dash-card{background:white;border-radius:var(--radius);padding:18px 20px;box-shadow:0 2px 12px var(--shadow);cursor:pointer;transition:all .2s;border-left:4px solid transparent;}
+.dash-card:hover{transform:translateY(-2px);box-shadow:0 6px 20px var(--shadow);}
+.dash-card .dc-icon{font-size:28px;margin-bottom:10px;}.dash-card .dc-title{font-size:14px;font-weight:700;margin-bottom:4px;}.dash-card .dc-sub{font-size:11px;color:var(--text-light);}
+.dc-nensyuu{border-left-color:var(--gold);}.dc-getsuan{border-left-color:var(--terracotta);}.dc-shuuan{border-left-color:var(--sage);}.dc-nisshi{border-left-color:var(--sky);}.dc-kobetsu{border-left-color:#9b7ec8;}.dc-kansatsu{border-left-color:#e07b7b;}
+.today-info{background:linear-gradient(135deg,var(--sage-dark),#3a5e3f);color:white;border-radius:var(--radius);padding:20px 24px;margin-bottom:24px;display:flex;justify-content:space-between;align-items:center;}
+.today-info .ti-date{font-size:28px;font-weight:700;font-family:'Noto Serif JP',serif;}.today-info .ti-sub{font-size:12px;opacity:.8;margin-top:4px;}.today-info .ti-right{text-align:right;font-size:12px;opacity:.9;line-height:2;}
+.day-label{font-size:11px;font-weight:700;text-align:center;padding:6px 4px;white-space:nowrap;}
+.day-label.mon{color:#2c5f9e;}.day-label.tue{color:#27836b;}.day-label.wed{color:#8a4f9e;}.day-label.thu{color:#c17f5a;}.day-label.fri{color:#cc4444;}.day-label.sat{color:#666;}
+.toast{position:fixed;bottom:24px;right:24px;background:var(--sage-dark);color:white;padding:12px 20px;border-radius:10px;font-size:13px;box-shadow:0 4px 20px rgba(0,0,0,.2);z-index:9999;transform:translateY(80px);opacity:0;transition:all .3s cubic-bezier(.34,1.56,.64,1);max-width:320px;}
+.toast.show{transform:translateY(0);opacity:1;}.toast.error{background:#c62828;}
+.loading-overlay{position:fixed;inset:0;background:rgba(255,255,255,.85);z-index:9998;display:none;flex-direction:column;align-items:center;justify-content:center;gap:16px;font-size:14px;color:var(--sage-dark);}
+.spinner{width:40px;height:40px;border:4px solid var(--sage-light);border-top-color:var(--sage-dark);border-radius:50%;animation:spin .8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+@media(max-width:640px){.form-grid-2,.form-grid-3,.form-grid-4{grid-template-columns:1fr;}.approval-row{grid-template-columns:1fr;}.today-info{flex-direction:column;gap:12px;}.dash-grid{grid-template-columns:1fr 1fr;}}
+
+/* ===== 参照パネル ===== */
+.ref-panel{background:linear-gradient(135deg,#f0f7f1,#eaf4f8);border:1.5px solid #b8d8bc;border-radius:10px;margin-bottom:16px;overflow:hidden;}
+.ref-toggle{display:flex;align-items:center;gap:10px;padding:11px 16px;cursor:pointer;user-select:none;}
+.ref-toggle:hover{background:rgba(122,158,126,.1);}
+.ref-toggle .rt-title{font-size:13px;font-weight:700;color:var(--sage-dark);flex:1;}
+.ref-toggle .rt-badge{font-size:11px;background:var(--sage-dark);color:white;padding:2px 9px;border-radius:12px;}
+.ref-toggle .rt-arrow{font-size:11px;color:var(--sage);transition:transform .25s;}
+.ref-toggle.open .rt-arrow{transform:rotate(180deg);}
+.ref-body{display:none;padding:0 16px 16px 16px;}
+.ref-body.open{display:block;}
+.ref-sec{margin-top:12px;}
+.ref-sec-title{font-size:11px;font-weight:700;color:var(--text-mid);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;padding-bottom:5px;border-bottom:1px solid rgba(0,0,0,.08);}
+.ref-grid{display:grid;gap:8px;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));}
+.ref-item{background:white;border:1px solid var(--border);border-radius:8px;padding:10px 12px;}
+.ref-item-lbl{font-size:10px;font-weight:700;color:var(--sage-dark);margin-bottom:4px;}
+.ref-item-val{font-size:12px;color:var(--text-dark);line-height:1.7;white-space:pre-wrap;max-height:80px;overflow-y:auto;}
+.ref-item-val.empty{color:var(--text-light);font-style:italic;}
+.ref-copy-btn{margin-top:6px;padding:3px 10px;background:var(--sage-dark);color:white;border:none;border-radius:6px;font-size:11px;cursor:pointer;font-family:'Noto Sans JP',sans-serif;}
+.ref-copy-btn:hover{background:var(--sage);}
+.ref-prev-wrap{background:white;border:1.5px solid var(--border);border-radius:8px;padding:12px;margin-top:10px;}
+.ref-prev-title{font-size:12px;font-weight:700;color:var(--terracotta);margin-bottom:8px;}
+.ref-prev-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.ref-prev-item{background:var(--cream);border-radius:6px;padding:8px 10px;}
+.ref-prev-item .rpi-lbl{font-size:10px;color:var(--text-light);margin-bottom:3px;}
+.ref-prev-item .rpi-val{font-size:12px;line-height:1.6;white-space:pre-wrap;max-height:60px;overflow-y:auto;}
+.ref-copy-all{width:100%;margin-top:10px;padding:7px;background:var(--terracotta);color:white;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Noto Sans JP',sans-serif;}
+.ref-copy-all:hover{filter:brightness(1.1);}
+.ref-loading{text-align:center;padding:12px;color:var(--text-light);font-size:12px;}
+/* ===== 承認バッジ ===== */
+.approval-badge{display:inline-block;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:700;}
+.ab-draft{background:#f5f5f5;color:#666;}
+.ab-applied{background:#fff3cd;color:#856404;}
+.ab-syunin{background:#cfe2ff;color:#0a4c8e;}
+.ab-done{background:#d1fae5;color:#065f46;}
+.ab-reject{background:#fee2e2;color:#991b1b;}
+/* ===== 通知パネル ===== */
+.notify-item{background:white;border:1px solid var(--border);border-radius:8px;padding:12px 14px;margin-bottom:8px;cursor:pointer;transition:background .15s;}
+.notify-item:hover{background:var(--cream);}
+.notify-item.unread{border-left:4px solid var(--sage-dark);}
+.notify-title{font-size:13px;font-weight:700;margin-bottom:3px;}
+.notify-msg{font-size:12px;color:var(--text-mid);line-height:1.6;}
+.notify-date{font-size:11px;color:var(--text-light);margin-top:4px;}
+/* ===== 承認フォーム ===== */
+.approval-card{background:white;border:1.5px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:10px;}
+.approval-card-title{font-size:13px;font-weight:700;margin-bottom:6px;}
+.approval-meta{display:flex;gap:12px;flex-wrap:wrap;font-size:12px;color:var(--text-mid);margin-bottom:10px;}
+.approval-actions{display:flex;gap:8px;flex-wrap:wrap;}
+.btn-approve{padding:7px 18px;background:#4d7252;color:white;border:none;border-radius:8px;font-size:13px;font-family:'Noto Sans JP',sans-serif;font-weight:600;cursor:pointer;}
+.btn-approve:hover{background:var(--sage);}
+.btn-reject-modal{padding:7px 18px;background:white;color:#c0392b;border:1.5px solid #f0b8b8;border-radius:8px;font-size:13px;font-family:'Noto Sans JP',sans-serif;cursor:pointer;}
+.btn-reject-modal:hover{background:#fdeaea;}
+/* ===== 承認ステータスバー ===== */
+.approval-status-bar{display:flex;align-items:center;gap:6px;padding:8px 14px;background:var(--cream);border-radius:8px;margin-top:8px;font-size:12px;}
+
+
+@media print {
+  /* 印刷時はモーダルのヘッダー・ボタン類・ナビ・ヘッダーを全て非表示 */
+  body > *:not(#printModal) { display: none !important; }
+  #printModal { position: static !important; background: none !important; padding: 0 !important; }
+  #printModal > div { box-shadow: none !important; border-radius: 0 !important; width: 100% !important; max-width: 100% !important; }
+  #printModal > div > div:first-child { display: none !important; } /* ヘッダーボタン行を非表示 */
+  #pdfLoadMsg { display: none !important; }
+  #pdfIframe { height: 100vh !important; }
+}
+</style>
+</head>
+<body>
+
+<!-- ログインオーバーレイ -->
+<div id="loginOverlay" style="position:fixed;inset:0;background:linear-gradient(135deg,#3a5e3f,#4d7252);z-index:9000;display:flex;align-items:center;justify-content:center;padding:20px;">
+  <div style="background:white;border-radius:16px;padding:36px 32px;width:100%;max-width:400px;box-shadow:0 20px 60px rgba(0,0,0,.3);">
+    <div style="text-align:center;margin-bottom:28px;">
+      <img src="data:image/png;base64,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" alt="はぐくみロゴ" style="width:100px;height:auto;margin-bottom:10px;display:block;margin-left:auto;margin-right:auto;">
+      <div style="font-family:'Noto Serif JP',serif;font-size:20px;font-weight:700;color:#2d2a26;letter-spacing:0.03em;">はぐくみノート</div>
+      <div style="font-size:12px;color:#9a9088;margin-top:5px;">はぐくみ保育計画・記録システム</div>
+      <div id="gardenSubtitle" style="font-size:14px;font-weight:700;color:#4d7252;margin-top:6px;">はぐくみ保育園</div>
+    </div>
+    <div id="loginError" style="display:none;background:#fdeaea;border:1px solid #f5b8b8;color:#c62828;padding:10px 14px;border-radius:8px;font-size:13px;margin-bottom:14px;"></div>
+    <div style="margin-bottom:14px;">
+      <label style="font-size:11px;font-weight:700;color:#8a8480;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:5px;">保育園</label>
+      <select id="loginGarden" style="width:100%;padding:10px 14px;border:1.5px solid #ddd8d0;border-radius:8px;font-size:14px;background:white;cursor:pointer;" onchange="updateGardenTitle()">
+        <option value="hagukumi1">はぐくみ保育園</option>
+        <option value="hagukumi2">第2はぐくみ保育園</option>
+      </select>
+    </div>
+    <div style="margin-bottom:14px;">
+      <label style="font-size:11px;font-weight:700;color:#8a8480;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:5px;">ユーザー名</label>
+      <input id="loginUser" type="text" placeholder="例：tanaka" style="width:100%;padding:10px 14px;border:1.5px solid #ddd8d0;border-radius:8px;font-size:14px;font-family:'Noto Sans JP',sans-serif;" onkeydown="if(event.key==='Enter')document.getElementById('loginPass').focus()">
+    </div>
+    <div style="margin-bottom:20px;">
+      <label style="font-size:11px;font-weight:700;color:#8a8480;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:5px;">パスワード</label>
+      <input id="loginPass" type="password" placeholder="パスワード" style="width:100%;padding:10px 14px;border:1.5px solid #ddd8d0;border-radius:8px;font-size:14px;font-family:'Noto Sans JP',sans-serif;" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <button onclick="doLogin()" style="width:100%;padding:12px;background:#4d7252;color:white;border:none;border-radius:10px;font-size:15px;font-family:'Noto Sans JP',sans-serif;font-weight:700;cursor:pointer;transition:background .2s;" onmouseover="this.style.background='#7a9e7e'" onmouseout="this.style.background='#4d7252'">ログイン</button>
+    <div style="text-align:center;margin-top:12px;">
+    </div>
+  </div>
+</div>
+
+
+
+<header class="app-header">
+  <div class="header-inner">
+    <div class="header-logo"><img src="data:image/png;base64,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" alt="🌱" style="height:28px;width:auto;vertical-align:middle;margin-right:6px;"> はぐくみノート<span id="headerGardenName">はぐくみ保育園</span></div>
+    <div class="header-divider"></div>
+    <div class="header-info"><span id="headerNendo">📅 2026年度</span><span id="headerGardenName2">🏫 はぐくみ保育園</span></div>
+    <div class="sync-status"><div class="sync-dot orange" id="syncDot"></div><span id="syncLabel">未接続</span></div>
+    <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:rgba(255,255,255,.85);">
+      <button onclick="showSection('approval')" style="position:relative;background:none;border:none;cursor:pointer;font-size:20px;padding:4px 8px;" title="通知">🔔<span id="bellBadge" style="display:none;position:absolute;top:0;right:0;background:#e53935;color:white;border-radius:50%;font-size:9px;font-weight:700;width:16px;height:16px;line-height:16px;text-align:center;">0</span></button>
+      <span id="loginUserLabel" style="background:rgba(255,255,255,.15);padding:4px 10px;border-radius:20px;">👤 ---</span>
+      <button onclick="doLogout()" style="padding:5px 12px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);color:white;border-radius:8px;font-size:11px;cursor:pointer;font-family:'Noto Sans JP',sans-serif;">ログアウト</button>
+    </div>
+  </div>
+  <nav class="nav-tabs">
+    <div class="nav-tab active" onclick="showSection('home')">🏠 ホーム</div>
+    <div class="nav-tab" onclick="showSection('nensyuu')">📋 年間指導計画</div>
+    <div class="nav-tab" onclick="showSection('getsuan')">📅 月案</div>
+    <div class="nav-tab" onclick="showSection('shuuan')">📆 週案</div>
+    <div class="nav-tab" onclick="showSection('nisshi')">📓 日誌</div>
+    <div class="nav-tab" onclick="showSection('kobetsu')">👶 個別記録（乳児）</div>
+    <div class="nav-tab" onclick="showSection('kansatsu')">🔍 観察記録（幼児）</div>
+    <div class="nav-tab" onclick="showSection('print')">🖨️ 様式出力</div>
+    <div class="nav-tab" onclick="showSection('approval')">✅ 承認</div>
+    <div class="nav-tab" onclick="showSection('master')">⚙️ マスタ管理</div>
+  </nav>
+</header>
+
+<main class="app-main">
+
+<section id="home" class="section active">
+  <div class="today-info">
+    <div><div class="ti-date" id="todayDate">---</div><div class="ti-sub">本日の日付</div></div>
+    <div class="ti-right">
+      <div id="tiGardenInfo">🏫 はぐくみ保育園　2026年度</div>
+      <div id="tiStaffInfo">👤 園長：鈴木　主任：加藤（さ）</div>
+      <div id="homeConnInfo" style="margin-top:6px;padding:4px 10px;background:rgba(255,255,255,.15);border-radius:8px;">⏳ スプレッドシート：未接続</div>
+    </div>
+  </div>
+  <div class="dash-grid">
+    <div class="dash-card dc-nensyuu" onclick="showSection('nensyuu')"><div class="dc-icon">📋</div><div class="dc-title">年間指導計画</div><div class="dc-sub">4期分のねらいを入力</div></div>
+    <div class="dash-card dc-getsuan" onclick="showSection('getsuan')"><div class="dc-icon">📅</div><div class="dc-title">月案</div><div class="dc-sub">月ごとの指導計画・行事</div></div>
+    <div class="dash-card dc-shuuan" onclick="showSection('shuuan')"><div class="dc-icon">📆</div><div class="dc-title">週案</div><div class="dc-sub">週ごとの計画・曜日別内容</div></div>
+    <div class="dash-card dc-nisshi" onclick="showSection('nisshi')"><div class="dc-icon">📓</div><div class="dc-title">日誌</div><div class="dc-sub">毎日の保育記録</div></div>
+    <div class="dash-card dc-kobetsu" onclick="showSection('kobetsu')"><div class="dc-icon">👶</div><div class="dc-title">個別記録（乳児）</div><div class="dc-sub">乳児の月別個別記録</div></div>
+    <div class="dash-card dc-kansatsu" onclick="showSection('kansatsu')"><div class="dc-icon">🔍</div><div class="dc-title">観察記録（幼児）</div><div class="dc-sub">幼児の月別観察記録</div></div>
+  </div>
+  <div class="card" style="margin-top:16px;">
+    <div class="card-header"><div class="icon" style="background:#e8f0fe;">📋</div>今月のノルマ状況 <span id="myTaskMonth" style="font-size:12px;color:var(--text-mid);margin-left:8px;"></span></div>
+    <div class="card-body" id="myTaskArea">
+      <div style="color:var(--text-light);font-size:13px;text-align:center;padding:20px;">ログイン後に読み込みます…</div>
+    </div>
+  </div>
+</section>
+
+<section id="nensyuu" class="section">
+  <div class="card">
+    <div class="card-header"><div class="icon" style="background:#fff9e0;">📋</div>年間指導計画 入力</div>
+    <div class="card-body">
+      <div class="db-panel"><div class="db-panel-title">📂 保存済みデータを呼び出す</div><div class="db-list" id="ns_dbList"><span class="db-empty">（保存データなし）</span></div></div>
+      <div class="form-grid form-grid-3">
+        <div class="form-group"><label class="form-label">対象年度<span class="required">*</span></label><input class="form-control" id="ns_nendo" type="number" value="2026"></div>
+        <div class="form-group"><label class="form-label">対象クラス<span class="required">*</span></label>
+          <select class="form-control" id="ns_class" onchange="updateAutoFields('ns');checkExistingData('ns')">
+            <option value="">-- 選択 --</option><option>ひよこ</option><option>りす</option><option>うさぎ</option><option>こぐま</option><option>ぱんだ</option><option>とら</option>
+          </select></div>
+        <div class="form-group"><label class="form-label">担任（連名）</label><input class="form-control" id="ns_tanin" readonly></div>
+      </div>
+      <div id="ns_existBanner" style="display:none;background:#fff8e1;border:1.5px solid #f9a825;border-radius:8px;padding:10px 14px;margin:8px 0 4px;"></div>
+      <div class="form-sep"></div>
+      <div class="form-group"><label class="form-label">年間目標<span class="required">*</span></label><textarea class="form-control tall" id="ns_mokuhyo" placeholder="・年間を通じた目標を入力…" maxlength="690" oninput="updateCount(this,690)"></textarea><div style="text-align:right;font-size:10px;color:var(--text-light);margin-top:2px;"><span id="cnt_ns_mokuhyo">0</span>/690文字</div></div>
+    </div>
+  </div>
+  <div id="nensyuuPeriods"></div>
+  <div class="card">
+    <div class="card-header"><div class="icon" style="background:#fff9e0;">✅</div>年間振り返り・承認</div>
+    <div class="card-body">
+      <div class="form-group"><label class="form-label">年間振り返り</label><textarea class="form-control tall" id="ns_furikaeri" placeholder="年間を通じた振り返り…" maxlength="690" oninput="updateCount(this,690)"></textarea><div style="text-align:right;font-size:10px;color:var(--text-light);margin-top:2px;"><span id="cnt_ns_furikaeri">0</span>/690文字</div></div>
+      <div class="approval-row">
+        <div class="form-group"><label class="form-label">主任承認</label><select class="form-control" id="ns_syunin"><option value="">-- 選択 --</option></select></div>
+        <div class="form-group"><label class="form-label">園長承認</label><select class="form-control" id="ns_encho"><option value="">-- 選択 --</option></select></div>
+      </div>
+      <div class="btn-row">
+        <span id="ns_check" class="status-badge status-warn">⚠️ 未確認</span>
+        <button class="btn btn-check" onclick="checkForm('ns',['ns_class','ns_mokuhyo'])">📊 入力チェック</button>
+        <button class="btn btn-primary" onclick="saveForm('nensyuu','ns')">💾 スプレッドシートに保存</button>
+          <button class="btn btn-check" onclick="applyApproval('nensyuu','ns','年間指導計画')">📤 申請する</button>
+          <span id="ns_approvalStatus" class="approval-badge ab-draft">未申請</span</button>
+        <button class="btn btn-secondary" onclick="clearForm('ns')">🗑️ クリア</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="getsuan" class="section">
+  <div class="card">
+    <div class="card-header"><div class="icon" style="background:#fdeee6;">📅</div>月案 入力</div>
+    <div class="card-body">
+      <div class="db-panel"><div class="db-panel-title">📂 保存済みデータを呼び出す</div><div class="db-list" id="gu_dbList"><span class="db-empty">（保存データなし）</span></div></div>
+
+      <!-- 参照パネル：月案 -->
+      <div class="ref-panel" id="gu_refPanel" style="display:none;">
+        <div class="ref-toggle" onclick="toggleRef('gu')" id="gu_refToggle">
+          <span class="rt-title">📚 上位計画・前回データを参照</span>
+          <span class="rt-badge" id="gu_refBadge">読込中…</span>
+          <span class="rt-arrow">▼</span>
+        </div>
+        <div class="ref-body" id="gu_refBody">
+          <div class="ref-sec">
+            <div class="ref-sec-title">📋 年間指導計画（該当期のねらい）</div>
+            <div class="ref-grid" id="gu_nsRef"><div class="ref-loading">クラスと月を選択すると表示されます</div></div>
+          </div>
+          <div class="ref-sec">
+            <div class="ref-sec-title">📅 前月の月案</div>
+            <div class="ref-prev-wrap" id="gu_prevRef">
+              <div class="ref-loading">クラスと月を選択すると表示されます</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="form-grid form-grid-4">
+        <div class="form-group"><label class="form-label">対象年度<span class="required">*</span></label><input class="form-control" id="gu_nendo" type="number" value="2026"></div>
+        <div class="form-group"><label class="form-label">対象クラス<span class="required">*</span></label>
+          <select class="form-control" id="gu_class" onchange="updateAutoFields('gu');loadRefPanel('gu')">
+            <option value="">-- 選択 --</option><option>ひよこ</option><option>りす</option><option>うさぎ</option><option>こぐま</option><option>ぱんだ</option><option>とら</option>
+          </select></div>
+        <div class="form-group"><label class="form-label">対象月<span class="required">*</span></label>
+          <select class="form-control" id="gu_month" onchange="loadRefPanel('gu');checkExistingData('gu')"><option value="">-- 選択 --</option><option value="4">4月</option><option value="5">5月</option><option value="6">6月</option><option value="7">7月</option><option value="8">8月</option><option value="9">9月</option><option value="10">10月</option><option value="11">11月</option><option value="12">12月</option><option value="1">1月</option><option value="2">2月</option><option value="3">3月</option></select></div>
+        <div class="form-group"><label class="form-label">担任（連名）</label><input class="form-control" id="gu_tanin" readonly></div>
+      </div>
+      <div id="gu_existBanner" style="display:none;background:#fff8e1;border:1.5px solid #f9a825;border-radius:8px;padding:10px 14px;margin:8px 0 4px;"></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-header"><div class="icon" style="background:#fff3e0;">📅</div>行事日程（最大5件）</div>
+    <div class="card-body">
+      <table class="event-table"><thead><tr><th>No</th><th style="width:110px">日付（日）</th><th>行事内容</th></tr></thead>
+      <tbody>
+        <tr><td class="event-num">①</td><td><input type="number" id="gu_ev1d" min="1" max="31" placeholder="日"></td><td><input type="text" id="gu_ev1c" placeholder="行事内容"></td></tr>
+        <tr><td class="event-num">②</td><td><input type="number" id="gu_ev2d" min="1" max="31" placeholder="日"></td><td><input type="text" id="gu_ev2c" placeholder="行事内容"></td></tr>
+        <tr><td class="event-num">③</td><td><input type="number" id="gu_ev3d" min="1" max="31" placeholder="日"></td><td><input type="text" id="gu_ev3c" placeholder="行事内容"></td></tr>
+        <tr><td class="event-num">④</td><td><input type="number" id="gu_ev4d" min="1" max="31" placeholder="日"></td><td><input type="text" id="gu_ev4c" placeholder="行事内容"></td></tr>
+        <tr><td class="event-num">⑤</td><td><input type="number" id="gu_ev5d" min="1" max="31" placeholder="日"></td><td><input type="text" id="gu_ev5c" placeholder="行事内容"></td></tr>
+      </tbody></table>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-header"><div class="icon" style="background:#e8f5e9;">🌿</div>養護・教育のねらい</div>
+    <div class="card-body">
+      <div class="form-grid form-grid-2">
+        <div class="form-group"><span class="cat-label yogo">養護</span><label class="form-label">生命の保持<span class="required">*</span></label><textarea class="form-control" id="gu_seimei" placeholder="生命の保持…" maxlength="190" oninput="updateCount(this,190)"></textarea><div style="text-align:right;font-size:10px;color:var(--text-light);margin-top:2px;"><span id="cnt_gu_seimei">0</span>/190文字</div></div>
+        <div class="form-group"><span class="cat-label yogo">養護</span><label class="form-label">情緒の安定<span class="required">*</span></label><textarea class="form-control" id="gu_jyoucho" placeholder="情緒の安定…" maxlength="190" oninput="updateCount(this,190)"></textarea><div style="text-align:right;font-size:10px;color:var(--text-light);margin-top:2px;"><span id="cnt_gu_jyoucho">0</span>/190文字</div></div>
+        <div class="form-group"><span class="cat-label kyoiku">教育</span><label class="form-label">健康<span class="required">*</span></label><textarea class="form-control" id="gu_kenko" placeholder="健康…" maxlength="110" oninput="updateCount(this,110)"></textarea><div style="text-align:right;font-size:10px;color:var(--text-light);margin-top:2px;"><span id="cnt_gu_kenko">0</span>/110文字</div></div>
+        <div class="form-group"><span class="cat-label kyoiku">教育</span><label class="form-label">人間関係<span class="required">*</span></label><textarea class="form-control" id="gu_ningen" placeholder="人間関係…" maxlength="110" oninput="updateCount(this,110)"></textarea><div style="text-align:right;font-size:10px;color:var(--text-light);margin-top:2px;"><span id="cnt_gu_ningen">0</span>/110文字</div></div>
+        <div class="form-group"><span class="cat-label kyoiku">教育</span><label class="form-label">環境<span class="required">*</span></label><textarea class="form-control" id="gu_kankyo" placeholder="環境…" maxlength="110" oninput="updateCount(this,110)"></textarea><div style="text-align:right;font-size:10px;color:var(--text-light);margin-top:2px;"><span id="cnt_gu_kankyo">0</span>/110文字</div></div>
+        <div class="form-group"><span class="cat-label kyoiku">教育</span><label class="form-label">言葉<span class="required">*</span></label><textarea class="form-control" id="gu_kotoba" placeholder="言葉…" maxlength="110" oninput="updateCount(this,110)"></textarea><div style="text-align:right;font-size:10px;color:var(--text-light);margin-top:2px;"><span id="cnt_gu_kotoba">0</span>/110文字</div></div>
+        <div class="form-group"><span class="cat-label kyoiku">教育</span><label class="form-label">表現<span class="required">*</span></label><textarea class="form-control" id="gu_hyougen" placeholder="表現…" maxlength="110" oninput="updateCount(this,110)"></textarea><div style="text-align:right;font-size:10px;color:var(--text-light);margin-top:2px;"><span id="cnt_gu_hyougen">0</span>/110文字</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-header"><div class="icon" style="background:#e3f2fd;">📝</div>環境・配慮・連携</div>
+    <div class="card-body">
+      <div class="form-grid form-grid-2">
+        <div class="form-group"><label class="form-label">予想される子どもの姿<span class="required">*</span></label><textarea class="form-control" id="gu_sugata" placeholder="予想される子どもの姿…" maxlength="580" oninput="updateCount(this,580)"></textarea><div style="text-align:right;font-size:10px;color:var(--text-light);margin-top:2px;"><span id="cnt_gu_sugata">0</span>/580文字</div></div>
+        <div class="form-group"><label class="form-label">環境構成<span class="required">*</span></label><textarea class="form-control" id="gu_kankyo2" placeholder="環境構成…" maxlength="580" oninput="updateCount(this,580)"></textarea><div style="text-align:right;font-size:10px;color:var(--text-light);margin-top:2px;"><span id="cnt_gu_kankyo2">0</span>/580文字</div></div>
+        <div class="form-group"><label class="form-label">個別配慮<span class="required">*</span></label><textarea class="form-control" id="gu_kobetsu2" placeholder="個別配慮…" maxlength="200" oninput="updateCount(this,200)"></textarea><div style="text-align:right;font-size:10px;color:var(--text-light);margin-top:2px;"><span id="cnt_gu_kobetsu2">0</span>/200文字</div></div>
+        <div class="form-group"><label class="form-label">家庭との連携<span class="required">*</span></label><textarea class="form-control" id="gu_katei" placeholder="家庭との連携…" maxlength="320" oninput="updateCount(this,320)"></textarea><div style="text-align:right;font-size:10px;color:var(--text-light);margin-top:2px;"><span id="cnt_gu_katei">0</span>/320文字</div></div>
+        <div class="form-group"><label class="form-label">保護者支援事項<span class="required">*</span></label><textarea class="form-control" id="gu_hogo" placeholder="保護者支援事項…" maxlength="580" oninput="updateCount(this,580)"></textarea><div style="text-align:right;font-size:10px;color:var(--text-light);margin-top:2px;"><span id="cnt_gu_hogo">0</span>/580文字</div></div>
+        <div class="form-group"><label class="form-label">月間振り返り</label><textarea class="form-control" id="gu_furikaeri" placeholder="月間振り返り…" maxlength="380" oninput="updateCount(this,380)"></textarea><div style="text-align:right;font-size:10px;color:var(--text-light);margin-top:2px;"><span id="cnt_gu_furikaeri">0</span>/380文字</div></div>
+      </div>
+      <div class="approval-row">
+        <div class="form-group"><label class="form-label">主任承認</label><select class="form-control" id="gu_syunin"><option value="">-- 選択 --</option></select></div>
+        <div class="form-group"><label class="form-label">園長承認</label><select class="form-control" id="gu_encho"><option value="">-- 選択 --</option></select></div>
+      </div>
+      <div class="btn-row">
+        <span id="gu_check" class="status-badge status-warn">⚠️ 未確認</span>
+        <button class="btn btn-check" onclick="checkForm('gu',['gu_class','gu_month','gu_seimei','gu_jyoucho','gu_kenko'])">📊 入力チェック</button>
+        <button class="btn btn-primary" onclick="saveForm('getsuan','gu')">💾 スプレッドシートに保存</button>
+          <button class="btn btn-check" onclick="applyApproval('getsuan','gu','月案')">📤 申請する</button>
+          <span id="gu_approvalStatus" class="approval-badge ab-draft">未申請</span</button>
+        <button class="btn btn-secondary" onclick="clearForm('gu')">🗑️ クリア</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="shuuan" class="section">
+  <div class="card">
+    <div class="card-header"><div class="icon" style="background:#e8f5e9;">📆</div>週案 入力</div>
+    <div class="card-body">
+      <div class="db-panel"><div class="db-panel-title">📂 保存済みデータを呼び出す</div><div class="db-list" id="su_dbList"><span class="db-empty">（保存データなし）</span></div></div>
+
+      <!-- 参照パネル：週案 -->
+      <div class="ref-panel" id="su_refPanel" style="display:none;">
+        <div class="ref-toggle" onclick="toggleRef('su')" id="su_refToggle">
+          <span class="rt-title">📚 上位計画・前回データを参照</span>
+          <span class="rt-badge" id="su_refBadge">読込中…</span>
+          <span class="rt-arrow">▼</span>
+        </div>
+        <div class="ref-body" id="su_refBody">
+          <div class="ref-sec">
+            <div class="ref-sec-title">📅 月案（今月のねらい）</div>
+            <div class="ref-grid" id="su_guRef"><div class="ref-loading">クラスと月を選択すると表示されます</div></div>
+          </div>
+          <div class="ref-sec">
+            <div class="ref-sec-title">📆 前週の週案</div>
+            <div class="ref-prev-wrap" id="su_prevRef">
+              <div class="ref-loading">クラスと週を選択すると表示されます</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="form-grid form-grid-4">
+        <div class="form-group"><label class="form-label">対象年度<span class="required">*</span></label><input class="form-control" id="su_nendo" type="number" value="2026"></div>
+        <div class="form-group"><label class="form-label">対象クラス<span class="required">*</span></label>
+          <select class="form-control" id="su_class" onchange="updateAutoFields('su');loadRefPanel('su')">
+            <option value="">-- 選択 --</option><option>ひよこ</option><option>りす</option><option>うさぎ</option><option>こぐま</option><option>ぱんだ</option><option>とら</option>
+          </select></div>
+        <div class="form-group"><label class="form-label">対象月<span class="required">*</span></label>
+          <select class="form-control" id="su_month" onchange="loadRefPanel('su');onSuWeekChange()"><option value="">-- 選択 --</option><option value="4">4月</option><option value="5">5月</option><option value="6">6月</option><option value="7">7月</option><option value="8">8月</option><option value="9">9月</option><option value="10">10月</option><option value="11">11月</option><option value="12">12月</option><option value="1">1月</option><option value="2">2月</option><option value="3">3月</option></select></div>
+        <div class="form-group"><label class="form-label">対象週<span class="required">*</span></label>
+          <select class="form-control" id="su_week" onchange="onSuWeekChange();checkExistingData('su')"><option value="">-- 選択 --</option><option value="1">第1週</option><option value="2">第2週</option><option value="3">第3週</option><option value="4">第4週</option><option value="5">第5週</option></select></div>
+        <div class="form-group">
+          <label class="form-label">週開始日（月曜日）</label>
+          <input class="form-control" type="date" id="su_start_date" onchange="onSuStartDateChange()">
+        </div>
+      </div>
+      <div class="form-group" style="margin-top:12px;"><label class="form-label">担任（連名）</label><input class="form-control" id="su_tanin" readonly></div>
+    </div>
+      <div id="su_existBanner" style="display:none;background:#fff8e1;border:1.5px solid #f9a825;border-radius:8px;padding:10px 14px;margin:8px 0 4px;"></div>
+  </div>
+  <div class="card">
+    <div class="card-header"><div class="icon" style="background:#e8f5e9;">🎯</div>今週の計画</div>
+    <div class="card-body">
+      <div class="form-grid form-grid-2">
+        <div class="form-group"><label class="form-label">前週の子どもの姿<span class="required">*</span></label><textarea class="form-control" id="su_zenshu" placeholder="前週の子どもの姿…" maxlength="34" oninput="updateCount(this,34)"></textarea><div style="text-align:right;font-size:10px;color:var(--text-light);margin-top:2px;"><span id="cnt_su_zenshu">0</span>/34文字</div></div>
+        <div class="form-group"><label class="form-label">今週のねらい<span class="required">*</span></label><textarea class="form-control" id="su_nerai" placeholder="今週のねらい…" maxlength="34" oninput="updateCount(this,34)"></textarea><div style="text-align:right;font-size:10px;color:var(--text-light);margin-top:2px;"><span id="cnt_su_nerai">0</span>/34文字</div></div>
+        <div class="form-group"><label class="form-label">環境構成<span class="required">*</span></label><textarea class="form-control" id="su_kankyo" placeholder="環境構成…" maxlength="34" oninput="updateCount(this,34)"></textarea><div style="text-align:right;font-size:10px;color:var(--text-light);margin-top:2px;"><span id="cnt_su_kankyo">0</span>/34文字</div></div>
+        <div class="form-group"><label class="form-label">保護者との連携<span class="required">*</span></label><textarea class="form-control" id="su_renkei" placeholder="保護者との連携…" maxlength="34" oninput="updateCount(this,34)"></textarea><div style="text-align:right;font-size:10px;color:var(--text-light);margin-top:2px;"><span id="cnt_su_renkei">0</span>/34文字</div></div>
+        <div class="form-group" style="grid-column:1/-1;"><label class="form-label">保育者の援助・配慮<span class="required">*</span></label><textarea class="form-control" id="su_enjo" placeholder="保育者の援助・配慮…" maxlength="34" oninput="updateCount(this,34)"></textarea><div style="text-align:right;font-size:10px;color:var(--text-light);margin-top:2px;"><span id="cnt_su_enjo">0</span>/34文字</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-header"><div class="icon" style="background:#dceefb;">📅</div>保育内容（曜日別計画）</div>
+    <div class="card-body">
+      <table style="width:100%;border-collapse:collapse;" id="su_dayTable">
+        <tr><td class="day-label mon" style="width:70px;border:1px solid var(--border);text-align:center;padding:4px;font-size:11px;"><div>月</div><div id="su_date_mon" style="font-size:10px;color:var(--text-mid);"></div></td><td style="border:1px solid var(--border);padding:4px;"><textarea id="su_mon" class="form-control" style="min-height:60px;border:none;resize:vertical;" placeholder="月曜日…" maxlength="75" oninput="updateCount(this,75)"></textarea><div style="text-align:right;font-size:10px;color:var(--text-light);margin-top:2px;"><span id="cnt_su_mon">0</span>/75文字</div></td></tr>
+        <tr><td class="day-label tue" style="border:1px solid var(--border);text-align:center;padding:4px;font-size:11px;"><div>火</div><div id="su_date_tue" style="font-size:10px;color:var(--text-mid);"></div></td><td style="border:1px solid var(--border);padding:4px;"><textarea id="su_tue" class="form-control" style="min-height:60px;border:none;resize:vertical;" placeholder="火曜日…" maxlength="75" oninput="updateCount(this,75)"></textarea><div style="text-align:right;font-size:10px;color:var(--text-light);margin-top:2px;"><span id="cnt_su_tue">0</span>/75文字</div></td></tr>
+        <tr><td class="day-label wed" style="border:1px solid var(--border);text-align:center;padding:4px;font-size:11px;"><div>水</div><div id="su_date_wed" style="font-size:10px;color:var(--text-mid);"></div></td><td style="border:1px solid var(--border);padding:4px;"><textarea id="su_wed" class="form-control" style="min-height:60px;border:none;resize:vertical;" placeholder="水曜日…" maxlength="75" oninput="updateCount(this,75)"></textarea><div style="text-align:right;font-size:10px;color:var(--text-light);margin-top:2px;"><span id="cnt_su_wed">0</span>/75文字</div></td></tr>
+        <tr><td class="day-label thu" style="border:1px solid var(--border);text-align:center;padding:4px;font-size:11px;"><div>木</div><div id="su_date_thu" style="font-size:10px;color:var(--text-mid);"></div></td><td style="border:1px solid var(--border);padding:4px;"><textarea id="su_thu" class="form-control" style="min-height:60px;border:none;resize:vertical;" placeholder="木曜日…" maxlength="75" oninput="updateCount(this,75)"></textarea><div style="text-align:right;font-size:10px;color:var(--text-light);margin-top:2px;"><span id="cnt_su_thu">0</span>/75文字</div></td></tr>
+        <tr><td class="day-label fri" style="border:1px solid var(--border);text-align:center;padding:4px;font-size:11px;"><div>金</div><div id="su_date_fri" style="font-size:10px;color:var(--text-mid);"></div></td><td style="border:1px solid var(--border);padding:4px;"><textarea id="su_fri" class="form-control" style="min-height:60px;border:none;resize:vertical;" placeholder="金曜日…" maxlength="75" oninput="updateCount(this,75)"></textarea><div style="text-align:right;font-size:10px;color:var(--text-light);margin-top:2px;"><span id="cnt_su_fri">0</span>/75文字</div></td></tr>
+        <tr><td class="day-label sat" style="border:1px solid var(--border);text-align:center;padding:4px;font-size:11px;"><div style="color:#e67e22;">土</div><div id="su_date_sat" style="font-size:10px;color:#e67e22;"></div></td><td style="border:1px solid var(--border);padding:4px;"><textarea id="su_sat" class="form-control" style="min-height:60px;border:none;resize:vertical;" placeholder="別紙参照" maxlength="75" oninput="updateCount(this,75)"></textarea><div style="text-align:right;font-size:10px;color:var(--text-light);margin-top:2px;"><span id="cnt_su_sat">0</span>/75文字</div></td></tr>
+      </table>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-header"><div class="icon" style="background:#fff9e0;">📝</div>振り返り・承認</div>
+    <div class="card-body">
+      <div class="form-group"><label class="form-label">週の評価・反省</label><textarea class="form-control" id="su_furikaeri" placeholder="週の評価・反省…" maxlength="55" oninput="updateCount(this,55)"></textarea><div style="text-align:right;font-size:10px;color:var(--text-light);margin-top:2px;"><span id="cnt_su_furikaeri">0</span>/55文字</div></div>
+      <div class="approval-row">
+        <div class="form-group"><label class="form-label">主任承認</label><select class="form-control" id="su_syunin"><option value="">-- 選択 --</option></select></div>
+        <div class="form-group"><label class="form-label">園長承認</label><select class="form-control" id="su_encho"><option value="">-- 選択 --</option></select></div>
+      </div>
+      <div class="btn-row">
+        <span id="su_check" class="status-badge status-warn">⚠️ 未確認</span>
+        <button class="btn btn-check" onclick="checkForm('su',['su_class','su_month','su_week','su_zenshu','su_nerai'])">📊 入力チェック</button>
+        <button class="btn btn-primary" onclick="saveForm('shuuan','su')">💾 スプレッドシートに保存</button>
+          <button class="btn btn-check" onclick="applyApproval('shuuan','su','週案')">📤 申請する</button>
+          <span id="su_approvalStatus" class="approval-badge ab-draft">未申請</span</button>
+        <button class="btn btn-secondary" onclick="clearForm('su')">🗑️ クリア</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="nisshi" class="section">
+  <div class="card">
+    <div class="card-header"><div class="icon" style="background:#dceefb;">📓</div>日誌 入力</div>
+    <div class="card-body">
+      <div class="db-panel"><div class="db-panel-title">📂 保存済みデータを呼び出す</div><div class="db-list" id="ni_dbList"><span class="db-empty">（保存データなし）</span></div></div>
+      <div class="form-grid form-grid-3">
+        <div class="form-group"><label class="form-label">対象日付<span class="required">*</span></label><input class="form-control" id="ni_date" type="date" onchange="updateYoubi();checkExistingData('ni')"></div>
+        <div class="form-group"><label class="form-label">クラス名<span class="required">*</span></label>
+          <select class="form-control" id="ni_class"><option value="">-- 選択 --</option><option>ひよこ</option><option>りす</option><option>うさぎ</option><option>こぐま</option><option>ぱんだ</option><option>とら</option></select></div>
+        <div class="form-group"><label class="form-label">曜日</label><input class="form-control" id="ni_youbi" readonly></div>
+      </div>
+      <div class="form-group" style="margin-top:12px;"><label class="form-label">記入者<span class="required">*</span></label>
+        <select class="form-control" id="ni_kinyusha" style="max-width:300px;"><option value="">-- 選択 --</option><option>加藤（り）</option><option>大口</option><option>坂口</option><option>水谷</option><option>佐村</option><option>土肥</option><option>石川</option><option>平山</option><option>阿部</option><option>伊藤</option></select></div>
+    </div>
+      <div id="ni_existBanner" style="display:none;background:#fff8e1;border:1.5px solid #f9a825;border-radius:8px;padding:10px 14px;margin:8px 0 4px;"></div>
+  </div>
+  <div class="card">
+    <div class="card-header"><div class="icon" style="background:#e3f2fd;">📊</div>出欠記録</div>
+    <div class="card-body">
+      <div class="form-grid form-grid-3">
+        <div class="form-group"><label class="form-label">出席数<span class="required">*</span></label><input class="form-control" id="ni_shusseki" type="number" min="0"></div>
+        <div class="form-group"><label class="form-label">欠席数<span class="required">*</span></label><input class="form-control" id="ni_kesseki" type="number" min="0"></div>
+        <div class="form-group"><label class="form-label">欠席児童名・理由</label><input class="form-control" id="ni_kesseki_name" placeholder="氏名（理由）"></div>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-header"><div class="icon" style="background:#fdeee6;">📝</div>保育記録</div>
+    <div class="card-body">
+      <div class="form-grid form-grid-2">
+        <div class="form-group"><label class="form-label">保育の内容（記録）<span class="required">*</span></label><textarea class="form-control tall" id="ni_hoiku" placeholder="今日の保育内容…" maxlength="260" oninput="updateCount(this,260)"></textarea><div style="text-align:right;font-size:10px;color:var(--text-light);margin-top:2px;"><span id="cnt_ni_hoiku">0</span>/260文字</div></div>
+        <div class="form-group"><label class="form-label">健康管理<span class="required">*</span></label><textarea class="form-control tall" id="ni_kenko" placeholder="健康状態…" maxlength="70" oninput="updateCount(this,70)"></textarea><div style="text-align:right;font-size:10px;color:var(--text-light);margin-top:2px;"><span id="cnt_ni_kenko">0</span>/70文字</div></div>
+        <div class="form-group"><label class="form-label">特記事項（個別配慮）</label><textarea class="form-control" id="ni_tokki" placeholder="特記事項…" maxlength="50" oninput="updateCount(this,50)"></textarea><div style="text-align:right;font-size:10px;color:var(--text-light);margin-top:2px;"><span id="cnt_ni_tokki">0</span>/50文字</div></div>
+        <div class="form-group"><label class="form-label">評価・反省<span class="required">*</span></label><textarea class="form-control" id="ni_hyouka" placeholder="評価・反省…" maxlength="130" oninput="updateCount(this,130)"></textarea><div style="text-align:right;font-size:10px;color:var(--text-light);margin-top:2px;"><span id="cnt_ni_hyouka">0</span>/130文字</div></div>
+      </div>
+      <div class="approval-row">
+        <div class="form-group"><label class="form-label">主任確認</label><select class="form-control" id="ni_syunin"><option value="">-- 選択 --</option></select></div>
+        <div class="form-group"><label class="form-label">園長確認</label><select class="form-control" id="ni_encho"><option value="">-- 選択 --</option></select></div>
+      </div>
+      <div class="btn-row">
+        <span id="ni_check" class="status-badge status-warn">⚠️ 未確認</span>
+        <button class="btn btn-check" onclick="checkForm('ni',['ni_date','ni_class','ni_kinyusha','ni_hoiku','ni_kenko','ni_hyouka'])">📊 入力チェック</button>
+        <button class="btn btn-primary" onclick="saveForm('nisshi','ni')">💾 スプレッドシートに保存</button>
+          <button class="btn btn-check" onclick="applyApproval('nisshi','ni','日誌')">📤 申請する</button>
+          <span id="ni_approvalStatus" class="approval-badge ab-draft">未申請</span</button>
+        <button class="btn btn-secondary" onclick="clearForm('ni')">🗑️ クリア</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="kobetsu" class="section">
+  <div class="card">
+    <div class="card-header"><div class="icon" style="background:#f3e5f5;">👶</div>乳児個別記録 入力</div>
+    <div class="card-body">
+      <div class="db-panel"><div class="db-panel-title">📂 保存済みデータを呼び出す</div><div class="db-list" id="ko_dbList"><span class="db-empty">（保存データなし）</span></div></div>
+      <div class="form-grid form-grid-3">
+        <div class="form-group"><label class="form-label">対象クラス<span class="required">*</span></label>
+          <select class="form-control" id="ko_class" onchange="updateChildList('ko')"><option value="">-- 選択 --</option><option>ひよこ</option><option>りす</option><option>うさぎ</option></select></div>
+        <div class="form-group"><label class="form-label">対象月<span class="required">*</span></label>
+          <select class="form-control" id="ko_month" onchange="updateChildInfo('ko')"><option value="">-- 選択 --</option><option value="4">4月</option><option value="5">5月</option><option value="6">6月</option><option value="7">7月</option><option value="8">8月</option><option value="9">9月</option><option value="10">10月</option><option value="11">11月</option><option value="12">12月</option><option value="1">1月</option><option value="2">2月</option><option value="3">3月</option></select></div>
+        <div class="form-group"><label class="form-label">園児選択<span class="required">*</span></label>
+          <select class="form-control" id="ko_child" onchange="updateChildInfo('ko');checkExistingData('ko')"><option value="">-- クラスを先に選択 --</option></select></div>
+      </div>
+      <div id="ko_existBanner" style="display:none;background:#fff8e1;border:1.5px solid #f9a825;border-radius:8px;padding:10px 14px;margin:8px 0 4px;"></div>
+      <div class="form-grid form-grid-3" style="margin-top:12px;">
+        <div class="form-group"><label class="form-label">月齢</label><input class="form-control" id="ko_getsurei" readonly></div>
+        <div class="form-group"><label class="form-label">性別</label><input class="form-control" id="ko_seibetsu" readonly></div>
+        <div class="form-group"><label class="form-label">担任名（記入者）</label><input class="form-control" id="ko_tanin" readonly></div>
+        <input type="hidden" id="ko_hira"><input type="hidden" id="ko_birth"><input type="hidden" id="ko_nendo">
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-header"><div class="icon" style="background:#f3e5f5;">📝</div>今月の記録</div>
+    <div class="card-body">
+      <div class="form-grid form-grid-2">
+        <div class="form-group"><label class="form-label">ねらい<span class="required">*</span></label><textarea class="form-control" id="ko_nerai" placeholder="今月のねらい…" maxlength="80" oninput="updateCount(this,80)"></textarea><div style="text-align:right;font-size:10px;color:var(--text-light);margin-top:2px;"><span id="cnt_ko_nerai">0</span>/80文字</div></div>
+        <div class="form-group"><label class="form-label">内容<span class="required">*</span></label><textarea class="form-control" id="ko_naiyou" placeholder="保育内容…" maxlength="80" oninput="updateCount(this,80)"></textarea><div style="text-align:right;font-size:10px;color:var(--text-light);margin-top:2px;"><span id="cnt_ko_naiyou">0</span>/80文字</div></div>
+        <div class="form-group"><label class="form-label">子どもの姿<span class="required">*</span></label><textarea class="form-control" id="ko_sugata" placeholder="子どもの姿…" maxlength="80" oninput="updateCount(this,80)"></textarea><div style="text-align:right;font-size:10px;color:var(--text-light);margin-top:2px;"><span id="cnt_ko_sugata">0</span>/80文字</div></div>
+        <div class="form-group"><label class="form-label">保育者の配慮<span class="required">*</span></label><textarea class="form-control" id="ko_hairyo" placeholder="保育者の配慮…" maxlength="200" oninput="updateCount(this,200)"></textarea><div style="text-align:right;font-size:10px;color:var(--text-light);margin-top:2px;"><span id="cnt_ko_hairyo">0</span>/200文字</div></div>
+        <div class="form-group"><label class="form-label">特記事項</label><textarea class="form-control" id="ko_tokki" placeholder="特記事項…" maxlength="80" oninput="updateCount(this,80)"></textarea><div style="text-align:right;font-size:10px;color:var(--text-light);margin-top:2px;"><span id="cnt_ko_tokki">0</span>/80文字</div></div>
+        <div class="form-group"><label class="form-label">評価・反省<span class="required">*</span></label><textarea class="form-control" id="ko_hyouka" placeholder="評価・反省…" maxlength="200" oninput="updateCount(this,200)"></textarea><div style="text-align:right;font-size:10px;color:var(--text-light);margin-top:2px;"><span id="cnt_ko_hyouka">0</span>/200文字</div></div>
+      </div>
+      <div class="approval-row">
+        <div class="form-group"><label class="form-label">主任承認</label><select class="form-control" id="ko_syunin"><option value="">-- 選択 --</option></select></div>
+        <div class="form-group"><label class="form-label">園長承認</label><select class="form-control" id="ko_encho"><option value="">-- 選択 --</option></select></div>
+      </div>
+      <div class="btn-row">
+        <span id="ko_check" class="status-badge status-warn">⚠️ 未確認</span>
+        <button class="btn btn-check" onclick="checkForm('ko',['ko_class','ko_month','ko_child','ko_nerai','ko_naiyou'])">📊 入力チェック</button>
+        <button class="btn btn-primary" onclick="saveForm('kobetsu','ko')">💾 スプレッドシートに保存</button>
+          <button class="btn btn-check" onclick="applyApproval('kobetsu','ko','個別記録')">📤 申請する</button>
+          <span id="ko_approvalStatus" class="approval-badge ab-draft">未申請</span</button>
+        <button class="btn btn-secondary" onclick="clearForm('ko')">🗑️ クリア</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="kansatsu" class="section">
+  <div class="card">
+    <div class="card-header"><div class="icon" style="background:#fde8e8;">🔍</div>幼児観察記録 入力</div>
+    <div class="card-body">
+      <div class="db-panel"><div class="db-panel-title">📂 保存済みデータを呼び出す</div><div class="db-list" id="ka_dbList"><span class="db-empty">（保存データなし）</span></div></div>
+      <div class="form-grid form-grid-3">
+        <div class="form-group"><label class="form-label">対象クラス<span class="required">*</span></label>
+          <select class="form-control" id="ka_class" onchange="updateChildList('ka')"><option value="">-- 選択 --</option><option>こぐま</option><option>ぱんだ</option><option>とら</option></select></div>
+        <div class="form-group"><label class="form-label">対象月<span class="required">*</span></label>
+          <select class="form-control" id="ka_month"><option value="">-- 選択 --</option><option value="4">4月</option><option value="5">5月</option><option value="6">6月</option><option value="7">7月</option><option value="8">8月</option><option value="9">9月</option><option value="10">10月</option><option value="11">11月</option><option value="12">12月</option><option value="1">1月</option><option value="2">2月</option><option value="3">3月</option></select></div>
+        <div class="form-group"><label class="form-label">園児選択<span class="required">*</span></label>
+          <select class="form-control" id="ka_child" onchange="updateChildInfo('ka');checkExistingData('ka')"><option value="">-- クラスを先に選択 --</option></select></div>
+      </div>
+      <div id="ka_existBanner" style="display:none;background:#fff8e1;border:1.5px solid #f9a825;border-radius:8px;padding:10px 14px;margin:8px 0 4px;"></div>
+      <div class="form-grid form-grid-3" style="margin-top:12px;">
+        <div class="form-group"><label class="form-label">性別</label><input class="form-control" id="ka_seibetsu" readonly></div>
+        <div class="form-group"><label class="form-label">ひらがな</label><input class="form-control" id="ka_hira" readonly></div>
+        <div class="form-group"><label class="form-label">担任名（記入者）</label><input class="form-control" id="ka_tanin" readonly></div>
+        <input type="hidden" id="ka_birth"><input type="hidden" id="ka_nendo">
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-header"><div class="icon" style="background:#fde8e8;">📝</div>保育記録</div>
+    <div class="card-body">
+      <div class="form-group"><label class="form-label">保育記録<span class="required">*</span></label><textarea class="form-control tall" id="ka_kiroku" placeholder="今月の保育記録を入力…" maxlength="200" oninput="updateCount(this,200)"></textarea><div style="text-align:right;font-size:10px;color:var(--text-light);margin-top:2px;"><span id="cnt_ka_kiroku">0</span>/200文字</div></div>
+      <div class="approval-row">
+        <div class="form-group"><label class="form-label">主任承認</label><select class="form-control" id="ka_syunin"><option value="">-- 選択 --</option></select></div>
+        <div class="form-group"><label class="form-label">園長承認</label><select class="form-control" id="ka_encho"><option value="">-- 選択 --</option></select></div>
+      </div>
+      <div class="btn-row">
+        <span id="ka_check" class="status-badge status-warn">⚠️ 未確認</span>
+        <button class="btn btn-check" onclick="checkForm('ka',['ka_class','ka_month','ka_child','ka_kiroku'])">📊 入力チェック</button>
+        <button class="btn btn-primary" onclick="saveForm('kansatsu','ka')">💾 スプレッドシートに保存</button>
+          <button class="btn btn-check" onclick="applyApproval('kansatsu','ka','観察記録')">📤 申請する</button>
+          <span id="ka_approvalStatus" class="approval-badge ab-draft">未申請</span</button>
+        <button class="btn btn-secondary" onclick="clearForm('ka')">🗑️ クリア</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ===== 様式出力 ===== -->
+<section id="print" class="section">
+  <div class="card">
+    <div class="card-header">
+      <div class="icon" style="background:#e8f5e9;">🖨️</div>
+      様式出力・ダウンロード
+    </div>
+    <div class="card-body">
+      <p style="font-size:13px;color:var(--text-mid);margin-bottom:20px;">印刷したい書類を選んで「印刷プレビュー」または「Excelダウンロード」をクリックしてください。</p>
+
+      <!-- 絞り込み -->
+      <div class="form-grid form-grid-3" style="margin-bottom:20px;">
+        <div class="form-group">
+          <label class="form-label">年度</label>
+          <input class="form-control" id="pr_nendo" type="number" value="2026">
+        </div>
+        <div class="form-group">
+          <label class="form-label">クラス</label>
+          <select class="form-control" id="pr_class" onchange="updatePrExtra(currentPrType||\'\')">
+            <option value="">すべて</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">月（月案・週案・日誌）</label>
+          <select class="form-control" id="pr_month">
+            <option value="">すべて</option>
+            <option value="4">4月</option><option value="5">5月</option><option value="6">6月</option>
+            <option value="7">7月</option><option value="8">8月</option><option value="9">9月</option>
+            <option value="10">10月</option><option value="11">11月</option><option value="12">12月</option>
+            <option value="1">1月</option><option value="2">2月</option><option value="3">3月</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- 追加絞り込み（週案・日誌・個別/観察） -->
+      <div class="form-grid form-grid-3" style="margin-bottom:16px;" id="pr_extra">
+        <div class="form-group" id="pr_week_group" style="display:none;">
+          <label class="form-label">第何週</label>
+          <select class="form-control" id="pr_week">
+            <option value="">-- 選択 --</option>
+            <option value="1">第1週</option><option value="2">第2週</option>
+            <option value="3">第3週</option><option value="4">第4週</option><option value="5">第5週</option>
+          </select>
+        </div>
+        <div class="form-group" id="pr_date_group" style="display:none;">
+          <label class="form-label">日付</label>
+          <input class="form-control" type="date" id="pr_date">
+        </div>
+        <div class="form-group" id="pr_child_group" style="display:none;">
+          <label class="form-label">園児名</label>
+          <select class="form-control" id="pr_child">
+            <option value="">-- 選択 --</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- 様式一覧 -->
+      <div style="display:grid;gap:12px;">
+
+        <!-- 年間指導計画 -->
+        <div style="background:var(--cream);border:1.5px solid var(--border);border-radius:10px;padding:16px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
+          <div style="flex:1;min-width:160px;">
+            <div style="font-weight:700;font-size:14px;margin-bottom:3px;">📋 年間指導計画</div>
+            <div style="font-size:12px;color:var(--text-light);">4期分のねらい・担任・園長承認欄</div>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button class="btn btn-check" onclick="openPrintPreview('nensyuu')">🖨️ 印刷プレビュー</button>
+            <button class="btn btn-secondary" onclick="downloadExcel('nensyuu')">📥 Excelダウンロード</button>
+          <button class="btn btn-check" onclick="exportToExcelTemplate('nensyuu')" title="元のExcel様式に転記してダウンロード">📋 元様式で出力</button>
+          </div>
+        </div>
+
+        <!-- 月案 -->
+        <div style="background:var(--cream);border:1.5px solid var(--border);border-radius:10px;padding:16px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
+          <div style="flex:1;min-width:160px;">
+            <div style="font-weight:700;font-size:14px;margin-bottom:3px;">📅 月案</div>
+            <div style="font-size:12px;color:var(--text-light);">月別 養護・教育ねらい・行事・振り返り</div>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button class="btn btn-check" onclick="openPrintPreview('getsuan')">🖨️ 印刷プレビュー</button>
+            <button class="btn btn-secondary" onclick="downloadExcel('getsuan')">📥 Excelダウンロード</button>
+          <button class="btn btn-check" onclick="exportToExcelTemplate('getsuan')" title="元のExcel様式に転記してダウンロード">📋 元様式で出力</button>
+          </div>
+        </div>
+
+        <!-- 週案日誌（統合） -->
+        <div style="background:var(--cream);border:1.5px solid var(--border);border-radius:10px;padding:16px;">
+          <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:12px;">
+            <div style="flex:1;min-width:160px;">
+              <div style="font-weight:700;font-size:14px;margin-bottom:3px;">📆 週案日誌</div>
+              <div style="font-size:12px;color:var(--text-light);">週ねらい・曜日別保育・日誌を1枚で出力</div>
+            </div>
+          </div>
+          <!-- 週指定 or 日付指定 どちらかで出力 -->
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+            <div style="background:#f0f7ff;border:1.5px solid #90caf9;border-radius:8px;padding:12px;">
+              <div style="font-size:12px;font-weight:700;color:#1565c0;margin-bottom:8px;">📅 週で指定</div>
+              <div style="display:flex;flex-direction:column;gap:6px;">
+                <select class="form-control" id="pr_shuuan_week" style="font-size:12px;" onchange="clearPrDate()">
+                  <option value="">-- 第何週 --</option>
+                  <option value="1">第1週</option><option value="2">第2週</option>
+                  <option value="3">第3週</option><option value="4">第4週</option><option value="5">第5週</option>
+                </select>
+                <button class="btn btn-check" style="font-size:12px;" onclick="openPrintPreviewShuuanNisshi('week')">🖨️ 週で出力</button>
+              </div>
+            </div>
+            <div style="background:#f0f7ff;border:1.5px solid #90caf9;border-radius:8px;padding:12px;">
+              <div style="font-size:12px;font-weight:700;color:#1565c0;margin-bottom:8px;">📓 日付で指定（その週を出力）</div>
+              <div style="display:flex;flex-direction:column;gap:6px;">
+                <input class="form-control" type="date" id="pr_shuuan_date" style="font-size:12px;" onchange="clearPrWeek()">
+                <button class="btn btn-check" style="font-size:12px;" onclick="openPrintPreviewShuuanNisshi('date')">🖨️ 日付で出力</button>
+              </div>
+            </div>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button class="btn btn-secondary" onclick="downloadExcel('shuuan')">📥 週案日誌 Excelダウンロード</button>
+          </div>
+        </div>
+
+        <!-- 個別記録 -->
+        <div style="background:var(--cream);border:1.5px solid var(--border);border-radius:10px;padding:16px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
+          <div style="flex:1;min-width:160px;">
+            <div style="font-weight:700;font-size:14px;margin-bottom:3px;">👶 個別記録（乳児）</div>
+            <div style="font-size:12px;color:var(--text-light);">園児別 月齢・ねらい・評価</div>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button class="btn btn-check" onclick="openPrintPreview('kobetsu')">🖨️ 印刷プレビュー</button>
+            <button class="btn btn-secondary" onclick="downloadExcel('kobetsu')">📥 Excelダウンロード</button>
+          <button class="btn btn-check" onclick="exportToExcelTemplate('kobetsu')" title="元のExcel様式に転記してダウンロード">📋 元様式で出力</button>
+          </div>
+        </div>
+
+        <!-- 観察記録 -->
+        <div style="background:var(--cream);border:1.5px solid var(--border);border-radius:10px;padding:16px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
+          <div style="flex:1;min-width:160px;">
+            <div style="font-weight:700;font-size:14px;margin-bottom:3px;">🔍 観察記録（幼児）</div>
+            <div style="font-size:12px;color:var(--text-light);">園児別 月次保育記録</div>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button class="btn btn-check" onclick="openPrintPreview('kansatsu')">🖨️ 印刷プレビュー</button>
+            <button class="btn btn-secondary" onclick="downloadExcel('kansatsu')">📥 Excelダウンロード</button>
+          <button class="btn btn-check" onclick="exportToExcelTemplate('kansatsu')" title="元のExcel様式に転記してダウンロード">📋 元様式で出力</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 承認・通知 ===== -->
+<section id="approval" class="section">
+  <div class="card">
+    <div class="card-header"><div class="icon" style="background:#e8f5e9;">🔔</div>通知一覧
+      <span id="notifyCount" style="margin-left:8px;background:#e53935;color:white;padding:2px 8px;border-radius:12px;font-size:12px;display:none;">0</span>
+    </div>
+    <div class="card-body">
+      <div id="notifyList"><div style="text-align:center;padding:20px;color:var(--text-light);font-size:13px;">通知はありません</div></div>
+      <button class="btn btn-secondary" style="margin-top:10px;" onclick="loadNotifications()">↺ 更新</button>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-header"><div class="icon" style="background:#fff3cd;">✅</div>承認待ち書類</div>
+    <div class="card-body">
+      <div id="pendingList"><div style="text-align:center;padding:20px;color:var(--text-light);font-size:13px;">承認待ちの書類はありません</div></div>
+      <button class="btn btn-secondary" style="margin-top:10px;" onclick="loadPending()">↺ 更新</button>
+    </div>
+  </div>
+</section>
+<section id="master" class="section">
+  <div class="card">
+    <div class="card-header"><div class="icon" style="background:#e8f0fe;">👶</div>園児名簿 CSVインポート</div>
+    <div class="card-body">
+      <p style="font-size:13px;color:var(--text-mid);margin-bottom:12px;">
+        CSVファイルの列順：<code>name, sei, mei, hira, hiraSei, hiraMei, birth, sex, class</code><br>
+        1行目はヘッダー行として読み飛ばします。文字コードはUTF-8またはShift-JIS対応。
+      </p>
+      <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:12px;">
+        <input type="file" id="csvFileInput" accept=".csv" style="font-size:13px;">
+        <button class="btn btn-primary" onclick="importChildrenCsv()">📥 CSVを取り込む</button>
+        <button class="btn btn-check" onclick="downloadChildrenCsv()">📤 現在のデータをCSVで出力</button>
+      </div>
+      <div id="csvImportResult" style="font-size:13px;margin-top:8px;"></div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:16px;">
+    <div class="card-header"><div class="icon" style="background:#fff9e0;">🏷️</div>クラス・担任マスタ</div>
+    <div class="card-body">
+      <table style="width:100%;border-collapse:collapse;font-size:13px;">
+        <thead><tr style="background:var(--cream);">
+          <th style="padding:8px 12px;text-align:left;border-bottom:2px solid var(--border);">クラス</th>
+          <th style="padding:8px 12px;text-align:center;border-bottom:2px solid var(--border);">年齢</th>
+          <th style="padding:8px 12px;text-align:left;border-bottom:2px solid var(--border);">担任</th>
+          <th style="padding:8px 12px;text-align:center;border-bottom:2px solid var(--border);">園児数</th>
+        </tr></thead>
+        <tbody id="masterClassTable"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:16px;">
+    <div class="card-header"><div class="icon" style="background:#fce4ec;">👤</div>職員・承認者マスタ</div>
+    <div class="card-body">
+      <table style="width:100%;border-collapse:collapse;font-size:13px;">
+        <thead><tr style="background:var(--cream);">
+          <th style="padding:8px 12px;text-align:left;border-bottom:2px solid var(--border);">氏名</th>
+          <th style="padding:8px 12px;text-align:left;border-bottom:2px solid var(--border);">役割</th>
+        </tr></thead>
+        <tbody id="masterApproverTable"></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+
+<!-- 差し戻しモーダル -->
+<div id="rejectModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:8500;align-items:center;justify-content:center;padding:20px;">
+  <div style="background:white;border-radius:14px;padding:28px;width:100%;max-width:480px;">
+    <div style="font-weight:700;font-size:16px;margin-bottom:6px;">⚠️ 差し戻し</div>
+    <div id="rejectTarget" style="font-size:13px;color:var(--text-mid);margin-bottom:14px;"></div>
+    <label style="font-size:12px;font-weight:700;display:block;margin-bottom:6px;">差し戻し理由 <span style="color:#e53935;">*</span></label>
+    <textarea id="rejectComment" style="width:100%;height:100px;padding:10px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:'Noto Sans JP',sans-serif;resize:vertical;" placeholder="修正してほしい内容を具体的に…"></textarea>
+    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:14px;">
+      <button onclick="closeRejectModal()" style="padding:9px 20px;background:var(--cream);border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:'Noto Sans JP',sans-serif;cursor:pointer;">キャンセル</button>
+      <button onclick="submitReject()" style="padding:9px 20px;background:#c0392b;color:white;border:none;border-radius:8px;font-size:13px;font-family:'Noto Sans JP',sans-serif;font-weight:700;cursor:pointer;">差し戻す</button>
+    </div>
+  </div>
+</div>
+<!-- 印刷プレビューモーダル -->
+
+<!-- 追加条件選択モーダル -->
+<div id="prExtraModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:8500;align-items:center;justify-content:center;padding:20px;">
+  <div style="background:white;border-radius:14px;padding:24px;width:100%;max-width:400px;box-shadow:0 20px 60px rgba(0,0,0,.3);">
+    <div style="font-weight:700;font-size:15px;margin-bottom:16px;" id="prExtraTitle">📋 条件を選択</div>
+
+    <div id="prExtraWeekGroup" style="display:none;margin-bottom:14px;">
+      <label style="font-size:12px;font-weight:700;color:var(--text-mid);margin-bottom:4px;display:block;">第何週</label>
+      <select class="form-control" id="prExtraWeek">
+        <option value="">-- 選択 --</option>
+        <option value="1">第1週</option><option value="2">第2週</option>
+        <option value="3">第3週</option><option value="4">第4週</option><option value="5">第5週</option>
+      </select>
+    </div>
+
+    <div id="prExtraChildGroup" style="display:none;margin-bottom:14px;">
+      <label style="font-size:12px;font-weight:700;color:var(--text-mid);margin-bottom:4px;display:block;">園児名</label>
+      <select class="form-control" id="prExtraChild">
+        <option value="">-- 選択 --</option>
+      </select>
+    </div>
+
+    <div id="prExtraDateGroup" style="display:none;margin-bottom:14px;">
+      <label style="font-size:12px;font-weight:700;color:var(--text-mid);margin-bottom:4px;display:block;">日付</label>
+      <input class="form-control" type="date" id="prExtraDate">
+    </div>
+
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px;">
+      <button class="btn btn-secondary" onclick="document.getElementById('prExtraModal').style.display='none'">キャンセル</button>
+      <button class="btn btn-primary" onclick="confirmPrExtra()">🖨️ プレビューする</button>
+    </div>
+  </div>
+</div>
+<div id="printModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:8000;align-items:flex-start;justify-content:center;padding:20px;overflow-y:auto;">
+  <div style="background:white;border-radius:14px;width:100%;max-width:860px;margin:auto;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.3);">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid var(--border);background:var(--sage-dark);color:white;">
+      <span id="printModalTitle" style="font-weight:700;font-size:14px;">印刷プレビュー</span>
+      <div style="display:flex;gap:8px;">
+        <a id="printPdfDownloadBtn" href="#" target="_blank" style="display:none;padding:7px 16px;background:#e3f2fd;color:#1565c0;border-radius:8px;font-size:13px;text-decoration:none;font-weight:700;">📄 PDFダウンロード</a><a id="printDownloadBtn" href="#" target="_blank" style="display:none;padding:7px 16px;background:#e8f5e9;color:#4d7252;border-radius:8px;font-size:13px;text-decoration:none;font-weight:700;">📥 Excelダウンロード</a>
+        <button onclick="printPdfDirect()" style="padding:7px 16px;background:white;color:var(--sage-dark);border:none;border-radius:8px;font-size:13px;font-family:'Noto Sans JP',sans-serif;font-weight:700;cursor:pointer;">🖨️ 印刷する</button>
+        <button onclick="closePrintModal()" style="padding:7px 14px;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:white;border-radius:8px;font-size:13px;cursor:pointer;">✕ 閉じる</button>
+      </div>
+    </div>
+    <div id="printContent" style="padding:32px;"></div>
+  </div>
+</div>
+
+</main>
+<div class="toast" id="toast"></div>
+<div class="loading-overlay" id="loadingOverlay" style="display:none;">
+  <div class="spinner"></div>
+  <span id="loadingMsg">Googleスプレッドシートと通信中…</span>
+</div>
+
+<script>
+const GAS_URL_KEY='hagukumi_gas_url';
+const SESSION_KEY='hagukumi_session';
+// GAS_URLはGASテンプレートから埋め込まれる
+let GAS_URL = 'https://script.google.com/macros/s/AKfycbwoqfkqLiOrg9uFz7Qq1CmsqL0aXeD6dxuZRpPQnZVKSuvFK9OHUbjEz3iMt4raD6Ms/exec' || localStorage.getItem(GAS_URL_KEY) || '';
+let SESSION=JSON.parse(localStorage.getItem(SESSION_KEY)||'null');
+
+const MONTH_TO_PERIOD={4:1,5:1,6:2,7:2,8:2,9:3,10:3,11:3,12:3,1:4,2:4,3:4};
+const PERIOD_LABELS={1:'第1期（4-5月）',2:'第2期（6-8月）',3:'第3期（9-12月）',4:'第4期（1-3月）'};
+
+const MASTER={
+  classes:[],
+  children:{},
+  kihon:{name:'',encho:'',syunin:''},
+  approvers:{encho:[],syunin:[]},
+};
+
+
+// ========== ノルマダッシュボード ==========
+
+// 期限計算ユーティリティ
+function getDeadline(type, nendo, month, weekStart, targetDate) {
+  const now = new Date();
+  const year = nendo || now.getFullYear();
+  
+  if (type === 'getsuan') {
+    // 月案：該当月の月末-7日
+    const lastDay = new Date(year, month, 0); // 月末
+    lastDay.setDate(lastDay.getDate() - 6);
+    return lastDay;
+  }
+  if (type === 'shuuan') {
+    // 週案：対象週月曜-2日（土曜）
+    if (!weekStart) return null;
+    const d = new Date(weekStart);
+    d.setDate(d.getDate() - 2);
+    return d;
+  }
+  if (type === 'nisshi') {
+    // 日誌：該当日の翌日
+    if (!targetDate) return null;
+    const d = new Date(targetDate);
+    d.setDate(d.getDate() + 1);
+    return d;
+  }
+  if (type === 'kobetsu' || type === 'kansatsu') {
+    // 個別・観察：翌月第1月曜
+    const d = new Date(year, month, 1); // 翌月1日
+    const dow = d.getDay();
+    const diff = dow === 1 ? 0 : dow === 0 ? 1 : 8 - dow;
+    d.setDate(d.getDate() + diff);
+    return d;
+  }
+  return null;
+}
+
+function deadlineLabel(deadline) {
+  if (!deadline) return '';
+  const now = new Date(); now.setHours(0,0,0,0);
+  const diff = Math.ceil((deadline - now) / 86400000);
+  const fmt = (deadline.getMonth()+1) + '/' + deadline.getDate();
+  const days = diff > 0 ? '残' + diff + '日' : diff === 0 ? '今日まで' : Math.abs(diff) + '日超過';
+  const color = diff < 0 ? '#e74c3c' : diff <= 3 ? '#e67e22' : '#4d7252';
+  return {label: fmt + '（' + days + '）', color, overdue: diff < 0};
+}
+
+function statusBadge(st) {
+  const map = {
+    '承認済':  {bg:'#4d7252', text:'承認済'},
+    '申請中':  {bg:'#c9a84c', text:'申請中'},
+    '未申請':  {bg:'#888',    text:'未申請'},
+    '未作成':  {bg:'#e0776a', text:'未作成'},
+    '差し戻し':{bg:'#e74c3c', text:'差し戻し'},
+  };
+  const s = map[st] || {bg:'#aaa', text:st};
+  return '<span style="padding:2px 8px;border-radius:12px;font-size:10px;font-weight:700;color:white;background:'+s.bg+';">'+s.text+'</span>';
+}
+
+function buildTaskSection(id, icon, title, deadline, summary, detailHtml) {
+  const dl = deadline ? deadlineLabel(deadline) : null;
+  const dlHtml = dl
+    ? '<span style="font-size:11px;font-weight:600;color:'+dl.color+';margin-left:8px;">期限：'+dl.label+'</span>'
+    : '';
+  return `
+  <div style="border:1px solid var(--border);border-radius:10px;margin-bottom:10px;overflow:hidden;">
+    <div onclick="toggleTask('${id}')" style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--cream);cursor:pointer;user-select:none;">
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+        <span style="font-size:13px;font-weight:700;">${icon} ${title}</span>
+        ${dlHtml}
+        <span style="font-size:12px;color:var(--text-mid);">${summary}</span>
+      </div>
+      <span id="${id}_arrow" style="font-size:12px;color:var(--text-mid);">▶</span>
+    </div>
+    <div id="${id}_detail" style="display:none;padding:12px 14px;background:white;">
+      ${detailHtml}
+    </div>
+  </div>`;
+}
+
+function toggleTask(id) {
+  const el = document.getElementById(id + '_detail');
+  const arrow = document.getElementById(id + '_arrow');
+  if (!el) return;
+  const open = el.style.display !== 'none';
+  el.style.display = open ? 'none' : 'block';
+  if (arrow) arrow.textContent = open ? '▶' : '▼';
+}
+
+async function loadMyTasks() {
+  if (!SESSION || !GAS_URL) return;
+  const now = new Date();
+  const month = now.getMonth() + 1;
+  const nendo = MASTER.kihon.nendo || now.getFullYear();
+
+  // 権限でクラスを決定
+  // admin/encho/syunin → 全クラス
+  // クラス名（例：とら、とら,ぱんだ） → 該当クラスのみ
+  const allRoles = ['admin','encho','syunin','管理者','園長','主任'];
+  let targetClasses;
+  if (allRoles.includes(SESSION.role)) {
+    targetClasses = MASTER.classes;
+  } else {
+    // roleをカンマ区切りで分割してクラス名リストとして扱う
+    const myClassNames = (SESSION.role || '').split(/[,、]/).map(s => s.trim()).filter(Boolean);
+    targetClasses = MASTER.classes.filter(c => myClassNames.includes(c.name));
+    if (targetClasses.length === 0) targetClasses = MASTER.classes; // フォールバック
+  }
+
+  const monthEl = document.getElementById('myTaskMonth');
+  if (monthEl) monthEl.textContent = nendo + '年度 ' + month + '月';
+
+  const area = document.getElementById('myTaskArea');
+  if (!area) return;
+  area.innerHTML = '<div style="color:var(--text-light);font-size:13px;text-align:center;padding:20px;">読み込み中…</div>';
+
+  try {
+    const [kobRes, kanRes, getRes] = await Promise.all([
+      gasGet({action:'get', type:'kobetsu'}),
+      gasGet({action:'get', type:'kansatsu'}),
+      gasGet({action:'get', type:'getsuan'}),
+    ]);
+
+    const kobData = kobRes && kobRes.data || [];
+    const kanData = kanRes && kanRes.data || [];
+    const getData = getRes && getRes.data || [];
+
+    let html = '';
+
+    targetClasses.forEach((cls, ci) => {
+      const children = MASTER.children[cls.name] || [];
+      const age = cls.age;
+      const id = 'task_' + ci;
+
+      html += '<div style="margin-bottom:12px;">';
+      html += '<div style="font-weight:700;font-size:13px;color:var(--sage-dark);padding:6px 10px;background:var(--cream);border-radius:8px;margin-bottom:8px;">🏷️ ' + cls.name + 'クラス（' + cls.tanin.join('・') + '）</div>';
+
+      // 月案
+      const getRow = getData.find(r =>
+        String(r['対象クラス']) === cls.name &&
+        String(r['対象月']) === String(month) &&
+        String(r['対象年度']) === String(nendo)
+      );
+      const getSt = getRow ? (getRow['承認状態'] || '未申請') : '未作成';
+      const getDl = getDeadline('getsuan', nendo, month);
+      html += buildTaskSection(
+        id+'_get', '📅', '月案',
+        getDl,
+        statusBadge(getSt),
+        getRow
+          ? '<div style="font-size:12px;color:var(--text-mid);">保存日時：'+String(getRow['保存日時']||'').slice(0,10)+'　記録者：'+(getRow['記録者']||'')+'</div>'
+          : '<div style="display:flex;align-items:center;gap:8px;">'
+            + '<span style="font-size:12px;color:#e0776a;">まだ作成されていません</span>'
+            + '<button class="btn btn-primary task-goto-btn" style="padding:3px 12px;font-size:11px;"'
+            + ' data-type="getsuan" data-cls="'+cls.name+'" data-nendo="'+nendo+'" data-month="'+month+'" data-child="">✏️ 作成する→</button>'
+            + '</div>'
+      );
+
+      // 個別記録（乳児）or 観察記録（幼児）
+      if (children.length > 0) {
+        const isNyuji = age <= 2;
+        const recType = isNyuji ? 'kobetsu' : 'kansatsu';
+        const recData = isNyuji ? kobData : kanData;
+        const recIcon = isNyuji ? '👶' : '🔍';
+        const recLabel = isNyuji ? '個別記録' : '観察記録';
+        const recDl = getDeadline(recType, nendo, month);
+
+        let done = 0;
+        let detailHtml = '<div style="display:flex;flex-wrap:wrap;gap:6px;">';
+        children.forEach(c => {
+          const row = recData.find(r =>
+            String(r['対象クラス']) === cls.name &&
+            String(r['対象月']) === String(month) &&
+            (r['園児名'] === c.name || r['氏名'] === c.name)
+          );
+          const st = row ? (row['承認状態'] || '未申請') : '未作成';
+          if (st === '承認済') done++;
+          const bg = st==='承認済'?'#4d7252':st==='申請中'?'#c9a84c':st==='未申請'?'#888':'#e0776a';
+          const shortName = c.name.split('　')[0] || c.name;
+          if(st === '未作成'){
+            detailHtml += '<button class="btn btn-primary task-goto-btn" style="padding:3px 10px;font-size:11px;"'
+              + ' data-type="'+recType+'" data-cls="'+cls.name+'" data-nendo="'+nendo+'" data-month="'+month+'" data-child="'+c.name+'">';
+            detailHtml += shortName + ' ✏️作成→';
+            detailHtml += '</button>';
+          } else {
+            detailHtml += '<div style="padding:5px 10px;border-radius:20px;font-size:11px;color:white;background:'+bg+';white-space:nowrap;">';
+            detailHtml += shortName + ' ' + statusBadge(st);
+            detailHtml += '</div>';
+          }
+        });
+        detailHtml += '</div>';
+
+        const summary = statusBadge(done===children.length?'承認済':done>0?'申請中':'未作成') +
+          ' <span style="font-size:11px;color:var(--text-mid);">'+done+'/'+children.length+'名完了</span>';
+
+        html += buildTaskSection(id+'_rec', recIcon, recLabel, recDl, summary, detailHtml);
+      }
+
+      html += '</div>';
+    });
+
+    area.innerHTML = html || '<div style="color:var(--text-light);font-size:13px;text-align:center;padding:20px);">担当クラスのデータがありません</div>';
+    // 未作成ボタンのイベント設定
+    area.querySelectorAll('.task-goto-btn').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        gotoFormWithData(btn.dataset.type, btn.dataset.cls, btn.dataset.nendo, btn.dataset.month, btn.dataset.child);
+      });
+    });
+  } catch(e) {
+    area.innerHTML = '<div style="color:#c0392b;font-size:13px;padding:10px;">読み込みエラー: ' + e.message + '</div>';
+  }
+}
+
+
+// マスタをDBから読み込んで更新
+async function loadMasterFromDB(){
+  if(!SESSION||!GAS_URL)return;
+  try{
+    const res=await gasGet({action:'getMaster'});
+    if(!res||!res.ok)return;
+
+    // 基本情報
+    const kihon=(res.kihon&&res.kihon[0])||{};
+    MASTER.kihon={
+      name:kihon['name']||kihon['園名']||'',
+      nendo:Number(kihon['nendo']||kihon['年度']||new Date().getFullYear()),
+      encho:kihon['encho']||kihon['園長']||'',
+      syunin:kihon['syunin']||kihon['主任']||'',
+    };
+
+    // 年度セレクトを自動設定
+    const nendoEls=['pr_nendo','ns_nendo','gu_nendo','su_nendo','ko_nendo','ka_nendo'];
+    nendoEls.forEach(id=>{
+      const el=document.getElementById(id);
+      if(!el||!MASTER.kihon.nendo)return;
+      if(el.tagName==='SELECT'){
+        for(let i=0;i<el.options.length;i++){
+          if(String(el.options[i].value)===String(MASTER.kihon.nendo))el.options[i].selected=true;
+        }
+      } else {
+        // hidden input等はvalueに直接セット
+        el.value = String(MASTER.kihon.nendo);
+      }
+    });
+
+    // クラス（DBのヘッダー: name,age,code,t1,t2,t3,t4）
+    MASTER.classes=(res.classes||[]).map(c=>{
+      const name=c['name']||c['クラス名']||'';
+      const age=Number(c['age']??c['年齢']??0);
+      // t1〜t4が担任列
+      const tanin=[c['t1'],c['t2'],c['t3'],c['t4']].filter(t=>t&&String(t).trim()!='');
+      return {name,age,tanin};
+    });
+
+    // 園児（DBヘッダー: name,seimei,hira,hiraSei,hiraMei,birth,sex,class）
+    MASTER.children={};
+    (res.children||[]).forEach(c=>{
+      const cls=c['class']||c['クラス']||c['クラス名']||'';
+      if(!MASTER.children[cls])MASTER.children[cls]=[];
+      MASTER.children[cls].push({
+        name:c['name']||c['氏名']||'',
+        hira:c['hira']||c['ひらがな']||'',
+        hiraSei:c['hiraSei']||'',
+        hiraMei:c['hiraMei']||'',
+        birth:c['birth']||c['生年月日']||'',
+        sex:c['sex']||c['性別']||'',
+      });
+    });
+
+    // 承認者
+    MASTER.approvers={encho:[],syunin:[]};
+    (res.approvers||[]).forEach(a=>{
+      const role=a['役割']||'';
+      const name=a['氏名']||'';
+      if(role==='園長')MASTER.approvers.encho.push(name);
+      if(role==='主任')MASTER.approvers.syunin.push(name);
+    });
+
+    // 画面に反映
+    applyMasterToUI();
+  }catch(e){console.error('loadMaster error:',e);}
+}
+
+function applyMasterToUI(){
+  // 園名・園長・主任を各所に反映
+  const gName=MASTER.kihon.name||(SESSION&&SESSION.gardenName)||'';
+  const encho=MASTER.kihon.encho||'';
+  const syunin=MASTER.kihon.syunin||'';
+  const nendo=MASTER.kihon.nendo||new Date().getFullYear();
+
+  const gardenNameEl=document.getElementById('gardenSubtitle');
+  if(gardenNameEl)gardenNameEl.textContent=gName;
+  const headerGarden=document.getElementById('headerGardenName');
+  if(headerGarden)headerGarden.textContent=gName;
+  const headerGarden2=document.getElementById('headerGardenName2');
+  if(headerGarden2)headerGarden2.textContent='🏫 '+gName;
+  const headerNendo=document.getElementById('headerNendo');
+  if(headerNendo)headerNendo.textContent='📅 '+nendo+'年度';
+  const tiGarden=document.getElementById('tiGardenInfo');
+  if(tiGarden)tiGarden.textContent='🏫 '+gName+'　'+nendo+'年度';
+  const tiStaff=document.getElementById('tiStaffInfo');
+  if(tiStaff)tiStaff.textContent='👤 園長：'+encho+'　主任：'+syunin;
+  document.title='はぐくみノート｜'+gName;
+
+  // クラス選択を動的更新
+  // 全クラス対象
+  const allClsSels=['pr_class','ns_class','gu_class','su_class','ni_class'];
+  // 乳児のみ(0-2歳)
+  const nyujiClsSels=['ko_class'];
+  // 幼児のみ(3-5歳)
+  const yojiClsSels=['ka_class'];
+
+  const fillCls = (ids, filterFn) => {
+    ids.forEach(id=>{
+      const el=document.getElementById(id);
+      if(!el)return;
+      const first=el.options[0];
+      el.innerHTML='';
+      el.appendChild(first);
+      MASTER.classes.filter(filterFn).forEach(c=>{
+        const o=document.createElement('option');
+        o.value=c.name;o.textContent=c.name;
+        el.appendChild(o);
+      });
+    });
+  };
+  fillCls(allClsSels,   ()=>true);
+  fillCls(nyujiClsSels, c=>c.age<=2);
+  fillCls(yojiClsSels,  c=>c.age>=3);
+
+  // 様式の園長・主任承認欄をMASTER.kihonから自動セット
+  const enchoEls=['ns_encho','gu_encho','su_encho','ni_encho','ko_encho','ka_encho'];
+  const syuninEls=['ns_syunin','gu_syunin','su_syunin','ni_syunin','ko_syunin','ka_syunin'];
+  enchoEls.forEach(id=>{
+    const el=document.getElementById(id);
+    if(!el)return;
+    el.innerHTML='<option value="">-- 選択 --</option>';
+    if(encho){const o=document.createElement('option');o.value=encho;o.textContent=encho;o.selected=true;el.appendChild(o);}
+  });
+  syuninEls.forEach(id=>{
+    const el=document.getElementById(id);
+    if(!el)return;
+    el.innerHTML='<option value="">-- 選択 --</option>';
+    if(syunin){const o=document.createElement('option');o.value=syunin;o.textContent=syunin;o.selected=true;el.appendChild(o);}
+  });
+
+  // 個別・観察記録の園児選択を更新
+  ['ko_child','ka_child'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(!el)return;
+    const clsId = id==='ko_child'?'ko_class':'ka_class';
+    const cls=document.getElementById(clsId)?.value||'';
+    const children=cls?(MASTER.children[cls]||[]):Object.values(MASTER.children||{}).flat();
+    el.innerHTML='<option value="">-- 選択 --</option>';
+    children.forEach(c=>{
+      const o=document.createElement('option');
+      o.value=c.name;o.textContent=c.name;
+      el.appendChild(o);
+    });
+  });
+}
+
+const PERIODS=[{num:1,label:'第1期',months:'4月-5月',emoji:'🌸',bg:'#e8f5e9'},{num:2,label:'第2期',months:'6月-8月',emoji:'☀️',bg:'#fdeee6'},{num:3,label:'第3期',months:'9月-12月',emoji:'🍂',bg:'#dceefb'},{num:4,label:'第4期',months:'1月-3月',emoji:'❄️',bg:'#fff9e0'}];
+const NS_FIELDS=[{id:'seimei',label:'養護（生命の保持）'},{id:'jyoucho',label:'養護（情緒の安定）'},{id:'kenko',label:'教育（健康）'},{id:'ningen',label:'教育（人間関係）'},{id:'kankyo',label:'教育（環境）'},{id:'kotoba',label:'教育（言葉）'},{id:'hyougen',label:'教育（表現）'},{id:'kankyo2',label:'環境構成（援助・配慮）'},{id:'kosodate',label:'子育て支援（保護者支援）'},{id:'ki_furikaeri',label:'期の振り返り'}];
+const WEEKDAYS=['日','月','火','水','木','金','土'];
+const DB_CFGS={
+  ns:{type:'nensyuu',label:r=>`${r['対象年度']||''}年度 ${r['対象クラス']||''}クラス`,key:r=>`${r['対象年度']}${r['対象クラス']}`},
+  gu:{type:'getsuan',label:r=>`${r['対象クラス']||''} ${r['対象月']||''}月`,key:r=>`${r['対象年度']}${r['対象クラス']}${r['対象月']}`},
+  su:{type:'shuuan',label:r=>`${r['対象クラス']||''} ${r['対象月']||''}月 第${r['対象週']||''}週`,key:r=>`${r['対象年度']}${r['対象クラス']}${r['対象月']}${r['対象週']}`},
+  ni:{type:'nisshi',label:r=>`${r['対象日付']||''} ${r['クラス名']||''}`,key:r=>`${r['対象日付']}${r['クラス名']}`},
+  ko:{type:'kobetsu',label:r=>`${r['対象クラス']||''} ${r['対象月']||''}月 ${r['園児名']||''}`,key:r=>`${r['対象クラス']}${r['対象月']}${r['園児名']}`},
+  ka:{type:'kansatsu',label:r=>`${r['対象クラス']||''} ${r['対象月']||''}月 ${r['園児名']||''}`,key:r=>`${r['対象クラス']}${r['対象月']}${r['園児名']}`},
+};
+const FMAPS={
+  ns:{'対象年度':'ns_nendo','対象クラス':'ns_class','担任':'ns_tanin','年間目標':'ns_mokuhyo','年間振り返り':'ns_furikaeri','主任承認':'ns_syunin','園長承認':'ns_encho'},
+  gu:{'対象年度':'gu_nendo','対象クラス':'gu_class','対象月':'gu_month','担任':'gu_tanin','生命の保持':'gu_seimei','情緒の安定':'gu_jyoucho','健康':'gu_kenko','人間関係':'gu_ningen','環境':'gu_kankyo','言葉':'gu_kotoba','表現':'gu_hyougen','予想される姿':'gu_sugata','環境構成':'gu_kankyo2','個別配慮':'gu_kobetsu2','家庭連携':'gu_katei','保護者支援':'gu_hogo','月振り返り':'gu_furikaeri','主任承認':'gu_syunin','園長承認':'gu_encho','ev1d':'gu_ev1d','ev1c':'gu_ev1c','ev2d':'gu_ev2d','ev2c':'gu_ev2c','ev3d':'gu_ev3d','ev3c':'gu_ev3c','ev4d':'gu_ev4d','ev4c':'gu_ev4c','ev5d':'gu_ev5d','ev5c':'gu_ev5c'},
+  su:{'対象年度':'su_nendo','対象クラス':'su_class','対象月':'su_month','対象週':'su_week','対象週開始日':'su_start_date','担任':'su_tanin','前週の子どもの姿':'su_zenshu','今週のねらい':'su_nerai','環境構成':'su_kankyo','保護者連携':'su_renkei','援助配慮':'su_enjo','月曜':'su_mon','火曜':'su_tue','水曜':'su_wed','木曜':'su_thu','金曜':'su_fri','土曜':'su_sat','週振り返り':'su_furikaeri','主任承認':'su_syunin','園長承認':'su_encho'},
+  ni:{'対象日付':'ni_date','クラス名':'ni_class','記入者':'ni_kinyusha','出席数':'ni_shusseki','欠席数':'ni_kesseki','欠席理由':'ni_kesseki_name','保育内容':'ni_hoiku','健康管理':'ni_kenko','特記事項':'ni_tokki','評価反省':'ni_hyouka','主任確認':'ni_syunin','園長確認':'ni_encho'},
+  ko:{'対象年度':'ko_nendo','対象クラス':'ko_class','対象月':'ko_month','園児名':'ko_child','ひらがな':'ko_hira','性別':'ko_seibetsu','生年月日':'ko_birth','担任':'ko_tanin','ねらい':'ko_nerai','内容':'ko_naiyou','子どもの姿':'ko_sugata','保育者の配慮':'ko_hairyo','特記事項':'ko_tokki','評価反省':'ko_hyouka','主任承認':'ko_syunin','園長承認':'ko_encho'},
+  ka:{'対象年度':'ka_nendo','対象クラス':'ka_class','対象月':'ka_month','園児名':'ka_child','ひらがな':'ka_hira','性別':'ka_seibetsu','生年月日':'ka_birth','担任':'ka_tanin','保育記録':'ka_kiroku','主任承認':'ka_syunin','園長承認':'ka_encho'},
+};
+const PRINT_LABELS={nensyuu:'年間指導計画',getsuan:'月案',shuuan:'週案日誌',nisshi:'週案日誌',kobetsu:'個別記録',kansatsu:'観察記録'};
+const APPROVAL_STATUS={'未申請':{cls:'ab-draft',label:'未申請'},'申請中':{cls:'ab-applied',label:'📤 申請中'},'主任承認済':{cls:'ab-syunin',label:'✅ 主任承認済'},'承認完了':{cls:'ab-done',label:'🎉 承認完了'},'差し戻し':{cls:'ab-reject',label:'⚠️ 差し戻し'}};
+let _rejectFlowId='';
+
+document.addEventListener('DOMContentLoaded',()=>{
+  const now=new Date();
+  document.getElementById('todayDate').textContent=`${now.getFullYear()}年${now.getMonth()+1}月${now.getDate()}日（${WEEKDAYS[now.getDay()]}）`;
+  document.getElementById('ni_date').value=now.toISOString().split('T')[0];
+  updateYoubi();
+  const tb=document.getElementById('masterTable');
+  MASTER.classes.forEach(mc=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td style="padding:8px 12px;border-bottom:1px solid var(--border);">${mc.name}</td><td style="padding:8px 12px;text-align:center;border-bottom:1px solid var(--border);">${mc.age}歳</td><td style="padding:8px 12px;border-bottom:1px solid var(--border);">${mc.tanin.join('・')}</td>`;
+    tb.appendChild(tr);
+  });
+  buildNensyuuPeriods();
+  if(!GAS_URL){showGasSetup();return;}
+  if(SESSION&&SESSION.token){applySession();loadAllDbLists();loadNotifications();loadPending();}
+  else showLoginOverlay();
+});
+
+function showLoginOverlay(){document.getElementById('loginOverlay').style.display='flex';}
+function hideLoginOverlay(){document.getElementById('loginOverlay').style.display='none';}
+
+function closeGasSetup(){document.getElementById('gasSetupModal').style.display='none';}
+
+function updateGardenTitle(){
+  const g=document.getElementById('loginGarden');
+  if(!g)return;
+  const name=g.options[g.selectedIndex].text;
+  const el=document.getElementById('gardenSubtitle');
+  if(el)el.textContent=name;
+}
+
+async function doLogin(){
+  const username=document.getElementById('loginUser').value.trim();
+  const password=document.getElementById('loginPass').value;
+  const gardenId=document.getElementById('loginGarden').value;
+  const errEl=document.getElementById('loginError');
+  errEl.style.display='none';
+  if(!username||!password){errEl.textContent='ユーザー名とパスワードを入力してください';errEl.style.display='block';return;}
+  if(!GAS_URL){showGasSetup();return;}
+  showLoading('認証中…');
+  try{
+    const r=await fetch(GAS_URL,{method:'POST',body:JSON.stringify({action:'login',username,password,gardenId})});
+    const d=await r.json();
+    hideLoading();
+    if(d.ok){
+      SESSION={token:d.token,username:d.username,role:d.role,email:d.email||'',expiry:d.expiry,gardenId:d.gardenId||gardenId,gardenName:d.gardenName||''};
+      localStorage.setItem(SESSION_KEY,JSON.stringify(SESSION));
+      hideLoginOverlay();applySession();loadMasterFromDB().then(()=>loadMyTasks());loadAllDbLists();loadNotifications();loadPending();
+      showToast('✅ ようこそ、'+d.username+' さん（'+SESSION.gardenName+'）');
+    }else{errEl.textContent=d.error||'ログイン失敗';errEl.style.display='block';}
+  }catch(e){hideLoading();errEl.textContent='接続エラー：'+e.message;errEl.style.display='block';console.error('Login error:',e);}
+}
+
+function applySession(){
+  if(!SESSION)return;
+  const gardenName=SESSION.gardenName||'';
+  document.getElementById('loginUserLabel').textContent=(gardenName?'🏫 '+gardenName+' ':'')+'👤 '+SESSION.username;
+  updateConnUI(true);
+}
+
+async function doLogout(){
+  if(!confirm('ログアウトしますか？'))return;
+  if(SESSION&&GAS_URL)try{await fetch(GAS_URL,{method:'POST',body:JSON.stringify({action:'logout',token:SESSION.token})});}catch(e){}
+  SESSION=null;localStorage.removeItem(SESSION_KEY);
+  document.getElementById('loginUser').value='';document.getElementById('loginPass').value='';
+  document.getElementById('loginUserLabel').textContent='👤 ---';
+  updateConnUI(false);showLoginOverlay();
+}
+
+function saveGasUrl(){
+  const u=document.getElementById('gasUrlInput').value.trim();
+  if(!u.startsWith('https://script.google.com')){showToast('❌ 正しいGAS URLを入力してください','error');return;}
+  GAS_URL=u;localStorage.setItem(GAS_URL_KEY,u);closeGasSetup();showLoginOverlay();
+  showToast('✅ GAS URLを保存しました');
+}
+
+function tok(){return SESSION?SESSION.token:'';}
+
+
+// 年案フィールドの文字数上限（実測値ベース）
+const NS_FIELD_LIMITS = {
+  seimei: 190, jyoucho: 190, kenko: 190, ningen: 190,
+  kankyo: 190, kotoba: 190, hyougen: 190,
+  enjo: 225, kosodato: 130, furikaeri: 190,
+};
+function updateCount(el, max) {
+  const len = el.value.length;
+  const spanId = 'cnt_' + el.id;
+  const span = document.getElementById(spanId);
+  if (span) {
+    span.textContent = len;
+    span.style.color = len >= max ? '#e74c3c' : len >= max * 0.9 ? '#e67e22' : 'var(--text-light)';
+  }
+}
+
+
+// ========== マスタ管理 ==========
+
+function showMasterSection(){
+  renderMasterClassTable();
+  renderMasterApproverTable();
+}
+
+function renderMasterClassTable(){
+  const tbody = document.getElementById('masterClassTable');
+  if(!tbody) return;
+  tbody.innerHTML = '';
+  MASTER.classes.forEach(c=>{
+    const childCount = (MASTER.children[c.name]||[]).length;
+    const tr = document.createElement('tr');
+    tr.innerHTML = '<td style="padding:8px 12px;border-bottom:1px solid var(--border);">'+c.name+'</td>'
+      +'<td style="padding:8px 12px;text-align:center;border-bottom:1px solid var(--border);">'+c.age+'歳</td>'
+      +'<td style="padding:8px 12px;border-bottom:1px solid var(--border);">'+(c.tanin.join('・')||'未設定')+'</td>'
+      +'<td style="padding:8px 12px;text-align:center;border-bottom:1px solid var(--border);">'+childCount+'名</td>';
+    tbody.appendChild(tr);
+  });
+}
+
+function renderMasterApproverTable(){
+  const tbody = document.getElementById('masterApproverTable');
+  if(!tbody) return;
+  tbody.innerHTML = '';
+  (MASTER.approvers.encho||[]).forEach(n=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML='<td style="padding:8px 12px;border-bottom:1px solid var(--border);">'+n+'</td><td style="padding:8px 12px;border-bottom:1px solid var(--border);">園長</td>';
+    tbody.appendChild(tr);
+  });
+  (MASTER.approvers.syunin||[]).forEach(n=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML='<td style="padding:8px 12px;border-bottom:1px solid var(--border);">'+n+'</td><td style="padding:8px 12px;border-bottom:1px solid var(--border);">主任</td>';
+    tbody.appendChild(tr);
+  });
+}
+
+// CSVインポート（Shift-JIS/UTF-8対応）
+async function importChildrenCsv(){
+  const fileInput = document.getElementById('csvFileInput');
+  const resultEl = document.getElementById('csvImportResult');
+  if(!fileInput.files||!fileInput.files[0]){
+    resultEl.innerHTML='<span style="color:#e74c3c;">ファイルを選択してください</span>';
+    return;
+  }
+  const file = fileInput.files[0];
+  resultEl.innerHTML = '読み込み中…';
+
+  // Shift-JIS/UTF-8両対応で読み込み
+  const readFile = (encoding) => new Promise((resolve,reject)=>{
+    const reader = new FileReader();
+    reader.onload = e => resolve(e.target.result);
+    reader.onerror = reject;
+    reader.readAsText(file, encoding);
+  });
+
+  let text = await readFile('UTF-8');
+  // 文字化けしてたらShift-JISで再試行
+  if(text.includes('�')) text = await readFile('Shift-JIS');
+
+  const lines = text.split(/\r?\n/).filter(l=>l.trim());
+  if(lines.length < 2){ resultEl.innerHTML='<span style="color:#e74c3c;">データが空です</span>'; return; }
+
+  // ヘッダー行を取得
+  const headers = lines[0].split(',').map(h=>h.replace(/^"|"$/g,'').trim());
+  const rows = [];
+  for(let i=1;i<lines.length;i++){
+    const vals = lines[i].match(/(".*?"|[^,]+)(?=,|$)/g)||lines[i].split(',');
+    const obj = {};
+    headers.forEach((h,j)=>{ obj[h]=(vals[j]||'').replace(/^"|"$/g,'').trim(); });
+    if(obj.name||obj.sei) rows.push(obj);
+  }
+
+  if(!rows.length){ resultEl.innerHTML='<span style="color:#e74c3c;">有効なデータがありません</span>'; return; }
+
+  // GASに保存
+  showLoading('園児データを保存中…');
+  try{
+    const res = await gasPost({action:'saveMaster', masterType:'children', data:rows});
+    hideLoading();
+    if(res&&res.ok){
+      resultEl.innerHTML='<span style="color:#4d7252;">✅ '+rows.length+'名のデータを取り込みました</span>';
+      showToast('✅ 園児データを'+rows.length+'名取り込みました');
+      await loadMasterFromDB();
+      renderMasterClassTable();
+    } else {
+      resultEl.innerHTML='<span style="color:#e74c3c;">❌ '+(res?res.error:'保存失敗')+'</span>';
+    }
+  }catch(e){
+    hideLoading();
+    resultEl.innerHTML='<span style="color:#e74c3c;">❌ エラー: '+e.message+'</span>';
+  }
+}
+
+async function downloadChildrenCsv(){
+  const allChildren = Object.values(MASTER.children||{}).flat();
+  if(!allChildren.length){ showToast('⚠️ 園児データがありません','error'); return; }
+  const headers = ['name','sei','mei','hira','hiraSei','hiraMei','birth','sex','class'];
+  const csv = '\uFEFF' + [headers.join(','), ...allChildren.map(c=>
+    [c.name,c.sei||'',c.mei||'',c.hira,c.hiraSei||'',c.hiraMei||'',c.birth,c.sex,
+      Object.keys(MASTER.children).find(k=>(MASTER.children[k]||[]).some(x=>x.name===c.name))||''
+    ].map(v=>'"'+String(v||'').replace(/"/g,'""')+'"').join(',')
+  )].join('\n');
+  const a=document.createElement('a');
+  a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);
+  a.download='園児名簿.csv'; a.click();
+}
+
+async function gasGet(params){
+  if(!GAS_URL)return null;
+  // GETの代わりにPOSTを使用（CORS対策）
+  const gardenId=SESSION&&SESSION.gardenId?SESSION.gardenId:'hagukumi1';
+  const body={...params,token:tok(),gardenId};
+  const r=await fetch(GAS_URL,{method:'POST',body:JSON.stringify(body)});
+  const d=await r.json();
+  if(!d.ok&&d.error&&(d.error.includes('認証エラー')||d.error.includes('再ログイン')||d.error.includes('期限切れ'))){handleAuthError();return null;}
+  return d;
+}
+async function gasPost(body){
+  if(!GAS_URL){showToast('⚠️ GAS URLが未設定です','error');return null;}
+  const r=await fetch(GAS_URL,{method:'POST',body:JSON.stringify({...body,token:tok()})});
+  const d=await r.json();
+  if(!d.ok&&d.error&&d.error.includes('認証エラー')){handleAuthError();return null;}
+  return d;
+}
+function handleAuthError(){SESSION=null;localStorage.removeItem(SESSION_KEY);showToast('⚠️ セッション切れ。再ログインしてください','error');setTimeout(showLoginOverlay,1200);}
+
+// 参照パネル
+function toggleRef(prefix){
+  document.getElementById(prefix+'_refToggle').classList.toggle('open');
+  document.getElementById(prefix+'_refBody').classList.toggle('open');
+}
+
+async function loadRefPanel(prefix){
+  const cls=document.getElementById(prefix+'_class')?.value;
+  const month=parseInt(document.getElementById(prefix+'_month')?.value)||0;
+  const nendo=document.getElementById(prefix+'_nendo')?.value||'2026';
+  const panel=document.getElementById(prefix+'_refPanel');
+  if(!panel)return;
+  if(!cls||!month){panel.style.display='none';return;}
+  panel.style.display='block';
+  if(prefix==='gu')await loadGuRef(cls,month,nendo);
+  if(prefix==='su')await loadSuRef(cls,month,nendo);
+}
+
+async function loadGuRef(cls,month,nendo){
+  const pNum=MONTH_TO_PERIOD[month];
+  document.getElementById('gu_refBadge').textContent=PERIOD_LABELS[pNum]+' | 前月参照';
+  const nsRef=document.getElementById('gu_nsRef');
+  nsRef.innerHTML='<div class="ref-loading">年間計画を取得中…</div>';
+  try{
+    const res=await gasGet({action:'get',type:'nensyuu',key:nendo+cls});
+    if(res&&res.ok&&res.data){
+      const data=res.data;
+      const items=NS_FIELDS.filter(f=>{const k='第'+pNum+'期_'+f.label;return data[k]&&String(data[k]).trim();});
+      if(!items.length){nsRef.innerHTML='<div class="ref-loading">年間計画データがありません（先に入力してください）</div>';}
+      else nsRef.innerHTML=items.map(f=>{
+        const k='第'+pNum+'期_'+f.label;const v=data[k]||'';
+        const targetId='gu_'+f.id;
+        return '<div class="ref-item"><div class="ref-item-lbl">'+f.label+'</div><div class="ref-item-val">'+esc(v)+'</div>'
+          +'<button class="ref-copy-btn" data-target="'+targetId+'" onclick="copyRefItem(this)">📋 コピー</button></div>';
+      }).join('');
+    }else{nsRef.innerHTML='<div class="ref-loading">年間計画データがありません</div>';}
+  }catch(e){nsRef.innerHTML='<div class="ref-loading">取得エラー</div>';}
+
+  const pm=month===4?3:(month===1?12:month-1);
+  const pn=(month===4)?parseInt(nendo)-1:nendo;
+  const prevRef=document.getElementById('gu_prevRef');
+  prevRef.innerHTML='<div class="ref-loading">前月データを取得中…</div>';
+  try{
+    const res=await gasGet({action:'get',type:'getsuan',key:pn+''+cls+''+pm});
+    if(res&&res.ok&&res.data)renderPrevPanel(prevRef,res.data,'前月（'+pm+'月）の月案',['生命の保持','情緒の安定','健康','人間関係','環境','言葉','表現','月振り返り']);
+    else prevRef.innerHTML='<div class="ref-loading">前月データがありません</div>';
+  }catch(e){prevRef.innerHTML='<div class="ref-loading">取得エラー</div>';}
+}
+
+async function loadSuRef(cls,month,nendo){
+  document.getElementById('su_refBadge').textContent=month+'月 月案 | 前週参照';
+  const guRef=document.getElementById('su_guRef');
+  guRef.innerHTML='<div class="ref-loading">月案を取得中…</div>';
+  try{
+    const res=await gasGet({action:'get',type:'getsuan',key:nendo+''+cls+''+month});
+    if(res&&res.ok&&res.data){
+      const data=res.data;
+      const fields=['生命の保持','情緒の安定','健康','人間関係','環境','言葉','表現','予想される姿'];
+      const items=fields.filter(f=>data[f]&&String(data[f]).trim());
+      if(!items.length){guRef.innerHTML='<div class="ref-loading">月案データがありません（先に月案を入力してください）</div>';}
+      else guRef.innerHTML=items.map(f=>{
+        const v=data[f]||'';
+        return '<div class="ref-item"><div class="ref-item-lbl">'+f+'</div><div class="ref-item-val">'+esc(v)+'</div>'
+          +'<button class="ref-copy-btn" data-target="su_nerai" onclick="copyRefItem(this)">📋 週ねらいへコピー</button></div>';
+      }).join('');
+    }else{guRef.innerHTML='<div class="ref-loading">月案データがありません</div>';}
+  }catch(e){guRef.innerHTML='<div class="ref-loading">取得エラー</div>';}
+
+  const week=parseInt(document.getElementById('su_week')?.value)||1;
+  const prevRef=document.getElementById('su_prevRef');
+  if(week>1){
+    prevRef.innerHTML='<div class="ref-loading">前週データを取得中…</div>';
+    try{
+      const res=await gasGet({action:'get',type:'shuuan',key:nendo+''+cls+''+month+''+(week-1)});
+      if(res&&res.ok&&res.data)renderPrevPanel(prevRef,res.data,'前週（第'+(week-1)+'週）の週案',['今週のねらい','前週の子どもの姿','環境構成','援助配慮','週振り返り']);
+      else prevRef.innerHTML='<div class="ref-loading">前週データがありません</div>';
+    }catch(e){prevRef.innerHTML='<div class="ref-loading">取得エラー</div>';}
+  }else{prevRef.innerHTML='<div class="ref-loading">第1週のため前週データはありません</div>';}
+}
+
+function renderPrevPanel(container,data,title,fields){
+  const items=fields.filter(f=>data[f]&&String(data[f]).trim());
+  if(!items.length){container.innerHTML='<div class="ref-loading">データがありません</div>';return;}
+  const MAP={'今週のねらい':'su_nerai','前週の子どもの姿':'su_zenshu','環境構成':'su_kankyo','援助配慮':'su_enjo','週振り返り':'su_furikaeri','生命の保持':'gu_seimei','情緒の安定':'gu_jyoucho','健康':'gu_kenko','人間関係':'gu_ningen','環境':'gu_kankyo','言葉':'gu_kotoba','表現':'gu_hyougen','月振り返り':'gu_furikaeri'};
+  const itemsJson = JSON.stringify(items.map(f=>({k:f,v:String(data[f]||'')})));
+  const safeJson = itemsJson.replace(/'/g,'\'');
+  container.innerHTML='<div class="ref-prev-title">'+title+'</div><div class="ref-prev-grid">'+
+    items.map(f=>'<div class="ref-prev-item"><div class="rpi-lbl">'+f+'</div><div class="rpi-val">'+esc(String(data[f]))+'</div></div>').join('')+
+    '</div><button class="ref-copy-all" id="copyAllBtn_'+Date.now()+'" data-items="">📋 前回データを転記（空欄のみ）</button>';
+  // ボタンにデータを設定（setAttribute使用でHTML解析回避）
+  const btn = container.querySelector('.ref-copy-all');
+  if(btn){ btn._items = items.map(f=>({k:f,v:String(data[f]||'')})); btn.onclick=function(){copyAllPrev(this._items);}; }
+}
+
+function copyRefItem(btn){
+  const val=btn.previousElementSibling.textContent;
+  const targetId=btn.dataset.target||'';
+  if(!targetId){showToast('⚠️ コピー先が不明です','error');return;}
+  copyToField(val,targetId);
+}
+function copyToField(value,targetId){
+  const el=document.getElementById(targetId);
+  if(!el){showToast('⚠️ コピー先が見つかりません','error');return;}
+  el.value=value;el.style.transition='background .3s';el.style.background='#e8f5e9';
+  setTimeout(()=>{el.style.background='';},800);showToast('📋 コピーしました');
+}
+
+function copyAllPrev(items){
+  const MAP={'今週のねらい':'su_nerai','前週の子どもの姿':'su_zenshu','環境構成':'su_kankyo','援助配慮':'su_enjo','週振り返り':'su_furikaeri','生命の保持':'gu_seimei','情緒の安定':'gu_jyoucho','健康':'gu_kenko','人間関係':'gu_ningen','環境':'gu_kankyo','言葉':'gu_kotoba','表現':'gu_hyougen','月振り返り':'gu_furikaeri'};
+  items.forEach(function(item){const id=MAP[item.k];if(id){const el=document.getElementById(id);if(el&&!el.value)el.value=item.v;}});
+  showToast('📋 前回データを転記しました（空欄のみ）');
+}
+
+// 承認フロー
+async function applyApproval(type,prefix,label){
+  if(SESSION&&SESSION.token==='demo'){showToast('🎮 デモモードでは申請できません','error');return;}
+  if(!SESSION){showToast('⚠️ ログインしてください','error');return;}
+  const data={};
+  Object.entries(FMAPS[prefix]).forEach(function(e){const el=document.getElementById(e[1]);if(el)data[e[0]]=el.value;});
+  const key=DB_CFGS[prefix].key(data);
+  if(!key||key.includes('undefined')){showToast('⚠️ クラスと対象期間を選択してから申請してください','error');return;}
+  const docTitle=label+'（'+(data['対象クラス']||data['クラス名']||'')+(data['対象月']?data['対象月']+'月':'')+(data['対象週']?'第'+data['対象週']+'週':'')+'）';
+  if(!confirm('「'+docTitle+'」を申請します。\n※申請前に保存してください。'))return;
+  showLoading('申請中…');
+  const res=await gasPost({action:'apply',type,key,docTitle});
+  hideLoading();
+  if(res&&res.ok){updateApprovalBadge(prefix,'申請中');showToast('📤 申請しました。主任に通知を送りました。');setTimeout(loadNotifications,1000);}
+  else if(res)showToast('❌ 申請失敗: '+(res.error||'不明'),'error');
+}
+
+function updateApprovalBadge(prefix,status){
+  const el=document.getElementById(prefix+'_approvalStatus');
+  if(!el)return;
+  const s=APPROVAL_STATUS[status]||{cls:'ab-draft',label:status};
+  el.className='approval-badge '+s.cls;el.textContent=s.label;
+}
+
+async function loadPending(){
+  if(!SESSION||!GAS_URL)return;
+  if(!['syunin','encho','admin'].includes(SESSION.role))return;
+  try{
+    const res=await gasGet({action:'getPending'});
+    const list=document.getElementById('pendingList');
+    if(!res||!res.ok||!res.data||res.data.length===0){list.innerHTML='<div style="text-align:center;padding:20px;color:var(--text-light);font-size:13px;">承認待ちの書類はありません</div>';return;}
+    list.innerHTML='';
+    res.data.forEach(function(item){
+      const div=document.createElement('div');div.className='approval-card';
+      const st=APPROVAL_STATUS[item['ステータス']]||{cls:'ab-draft',label:item['ステータス']};
+      const fid=item['フローID']||'';
+      const ftitle=item['書類タイトル']||item['書類ラベル']||'';
+      div.innerHTML='<div class="approval-card-title">'+esc(ftitle)+'</div>'
+        +'<div class="approval-meta"><span>📋 '+esc(item['書類ラベル'])+'</span><span>👤 '+esc(item['申請者'])+'</span>'
+        +'<span>🕐 '+String(item['申請日時']).slice(0,16)+'</span>'
+        +'<span class="approval-badge '+st.cls+'">'+st.label+'</span></div>'
+        +'<div class="approval-actions">'
+        +'<button class="btn-approve" data-fid="'+esc(fid)+'" data-title="'+esc(ftitle)+'" onclick="doApprove(this.dataset.fid,this.dataset.title)">✅ 承認する</button>'
+        +'<button class="btn-reject-modal" data-fid="'+esc(fid)+'" data-title="'+esc(ftitle)+'" onclick="openRejectModal(this.dataset.fid,this.dataset.title)">⚠️ 差し戻し</button></div>';
+      list.appendChild(div);
+    });
+  }catch(e){console.warn(e);}
+}
+
+async function doApprove(flowId,title){
+  if(!confirm('「'+title+'」を承認しますか？'))return;
+  showLoading('承認処理中…');
+  const res=await gasPost({action:'approve',flowId});
+  hideLoading();
+  if(res&&res.ok){showToast('✅ '+res.message);loadPending();loadNotifications();}
+  else if(res)showToast('❌ '+(res.error||'エラー'),'error');
+}
+
+function openRejectModal(flowId,title){
+  _rejectFlowId=flowId;
+  document.getElementById('rejectTarget').textContent='書類：'+title;
+  document.getElementById('rejectComment').value='';
+  document.getElementById('rejectModal').style.display='flex';
+}
+function closeRejectModal(){document.getElementById('rejectModal').style.display='none';_rejectFlowId='';}
+async function submitReject(){
+  const comment=document.getElementById('rejectComment').value.trim();
+  if(!comment){showToast('⚠️ 差し戻し理由を入力してください','error');return;}
+  showLoading('差し戻し処理中…');
+  const res=await gasPost({action:'reject',flowId:_rejectFlowId,comment});
+  hideLoading();
+  if(res&&res.ok){showToast('⚠️ 差し戻しました');closeRejectModal();loadPending();loadNotifications();}
+  else if(res)showToast('❌ '+(res.error||'エラー'),'error');
+}
+
+async function loadNotifications(){
+  if(!SESSION||!GAS_URL)return;
+  try{
+    const res=await gasGet({action:'getNotify'});
+    const list=document.getElementById('notifyList');
+    const badge=document.getElementById('bellBadge');
+    const count=document.getElementById('notifyCount');
+    if(!res||!res.ok||!res.data||res.data.length===0){
+      list.innerHTML='<div style="text-align:center;padding:20px;color:var(--text-light);font-size:13px;">通知はありません</div>';
+      badge.style.display='none';if(count)count.style.display='none';return;
+    }
+    const n=res.data.length;
+    badge.textContent=n;badge.style.display='block';
+    if(count){count.textContent=n;count.style.display='inline';}
+    list.innerHTML='';
+    res.data.forEach(function(item){
+      const div=document.createElement('div');div.className='notify-item unread';
+      div.innerHTML='<div class="notify-title">'+(item['タイトル']||'')+'</div>'
+        +'<div class="notify-msg">'+(item['メッセージ']||'').replace(/\n/g,'<br>')+'</div>'
+        +'<div class="notify-date">'+String(item['作成日時']).slice(0,16)+'</div>';
+      div.onclick=async function(){
+        div.classList.remove('unread');
+        await gasPost({action:'readNotify',id:item['通知ID']});
+        loadNotifications();
+      };
+      list.appendChild(div);
+    });
+  }catch(e){console.warn(e);}
+}
+
+async function loadAllDbLists(){for(const p of Object.keys(DB_CFGS))await loadDbList(p);}
+
+async function loadDbList(prefix){
+  if(!GAS_URL||!SESSION)return;
+  try{
+    const res=await gasGet({action:'get',type:DB_CFGS[prefix].type});
+    const cnt=document.getElementById(prefix+'_dbList');
+    if(!cnt)return;
+    if(!res||!res.ok||!res.data||res.data.length===0){cnt.innerHTML='<span class="db-empty">（保存データなし）</span>';return;}
+    cnt.innerHTML='';
+    res.data.forEach(function(row){
+      const item=document.createElement('div');item.className='db-item';
+      const st=row['承認状態']||'未申請';
+      const stI=APPROVAL_STATUS[st]||{cls:'ab-draft',label:st};
+      const dt=row['保存日時']?'<span class="db-date">'+String(row['保存日時']).slice(0,10)+'</span>':'';
+      item.innerHTML='<span>📄 '+DB_CFGS[prefix].label(row)+'</span><span class="approval-badge '+stI.cls+'" style="font-size:10px;">'+stI.label+'</span>'+dt;
+      item.onclick=function(){loadRecord(prefix,DB_CFGS[prefix].key(row));};
+      cnt.appendChild(item);
+    });
+  }catch(e){console.warn(e);}
+}
+
+async function loadRecord(prefix,key){
+  showLoading('データを読み込み中…');
+  try{
+    const res=await gasGet({action:'get',type:DB_CFGS[prefix].type,key});
+    hideLoading();
+    if(!res||!res.ok||!res.data){showToast('⚠️ データが見つかりません','error');return;}
+    Object.entries(FMAPS[prefix]).forEach(function(e){const el=document.getElementById(e[1]);if(el&&res.data[e[0]]!==undefined)el.value=res.data[e[0]];});
+    if(prefix==='ns')PERIODS.forEach(function(p){NS_FIELDS.forEach(function(f){const el=document.getElementById('ns_'+p.num+'_'+f.id);const dk='第'+p.num+'期_'+f.label;if(el&&res.data[dk]!==undefined)el.value=res.data[dk];});});
+    if(res.data['承認状態'])updateApprovalBadge(prefix,res.data['承認状態']);
+    showToast('📂 データを読み込みました');
+  }catch(e){hideLoading();showToast('❌ 読み込みエラー','error');}
+}
+
+async function saveForm(type,prefix){
+  if(SESSION&&SESSION.token==='demo'){showToast('🎮 デモモードでは保存できません','error');return;}
+  if(!GAS_URL||!SESSION){showToast('⚠️ ログインしてください','error');return;}
+  showLoading('スプレッドシートに保存中…');
+  try{
+    const data={};
+    Object.entries(FMAPS[prefix]).forEach(function(e){const el=document.getElementById(e[1]);if(el)data[e[0]]=el.value;});
+    if(prefix==='ns')PERIODS.forEach(function(p){NS_FIELDS.forEach(function(f){const el=document.getElementById('ns_'+p.num+'_'+f.id);if(el)data['第'+p.num+'期_'+f.label]=el.value;});});
+    const key=DB_CFGS[prefix].key(data);
+    const res=await gasPost({action:'save',type,key,data});
+    hideLoading();
+    if(res&&res.ok){showToast('💾 保存しました');await loadDbList(prefix);}
+    else if(res)showToast('❌ 保存失敗: '+(res.error||'不明'),'error');
+  }catch(e){hideLoading();showToast('❌ 通信エラー: '+e.message,'error');}
+}
+
+
+// ========== 祝日データ（日本） ==========
+const JP_HOLIDAYS = {
+  '2025-01-01':'元日','2025-01-13':'成人の日','2025-02-11':'建国記念の日',
+  '2025-02-23':'天皇誕生日','2025-02-24':'天皇誕生日振替','2025-03-20':'春分の日',
+  '2025-04-29':'昭和の日','2025-05-03':'憲法記念日','2025-05-04':'みどりの日',
+  '2025-05-05':'こどもの日','2025-05-06':'こどもの日振替','2025-07-21':'海の日',
+  '2025-08-11':'山の日','2025-09-15':'敬老の日','2025-09-23':'秋分の日',
+  '2025-10-13':'スポーツの日','2025-11-03':'文化の日','2025-11-23':'勤労感謝の日',
+  '2025-11-24':'勤労感謝の日振替',
+  '2026-01-01':'元日','2026-01-12':'成人の日','2026-02-11':'建国記念の日',
+  '2026-02-23':'天皇誕生日','2026-03-20':'春分の日','2026-04-29':'昭和の日',
+  '2026-05-03':'憲法記念日','2026-05-04':'みどりの日','2026-05-05':'こどもの日',
+  '2026-07-20':'海の日','2026-08-11':'山の日','2026-09-21':'敬老の日',
+  '2026-09-22':'秋分の日','2026-10-12':'スポーツの日','2026-11-03':'文化の日',
+  '2026-11-23':'勤労感謝の日',
+  '2027-01-01':'元日','2027-01-11':'成人の日','2027-02-11':'建国記念の日',
+  '2027-02-23':'天皇誕生日','2027-03-21':'春分の日','2027-04-29':'昭和の日',
+  '2027-05-03':'憲法記念日','2027-05-04':'みどりの日','2027-05-05':'こどもの日',
+  '2027-07-19':'海の日','2027-08-11':'山の日','2027-09-20':'敬老の日',
+  '2027-09-23':'秋分の日','2027-10-11':'スポーツの日','2027-11-03':'文化の日',
+  '2027-11-23':'勤労感謝の日',
+};
+
+function dateStr(d){ // YYYY-MM-DD形式
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+
+function formatDateLabel(d){
+  const ds = dateStr(d);
+  const holiday = JP_HOLIDAYS[ds];
+  const md = (d.getMonth()+1)+'/'+ d.getDate();
+  if(holiday) return '<span style="color:#e74c3c;">'+md+'<br>'+holiday+'</span>';
+  return md;
+}
+
+// 週開始日から各曜日日付をセット
+function setSuDates(startDate){
+  const days=['mon','tue','wed','thu','fri','sat'];
+  days.forEach((d,i)=>{
+    const dt = new Date(startDate);
+    dt.setDate(dt.getDate()+i);
+    const el = document.getElementById('su_date_'+d);
+    if(el) el.innerHTML = formatDateLabel(dt);
+    // 祝日なら土曜同様「別紙参照」をデフォルト
+    const ds = dateStr(dt);
+    const ta = document.getElementById('su_'+d);
+    if(ta && JP_HOLIDAYS[ds] && !ta.value){
+      ta.value = JP_HOLIDAYS[ds];
+    }
+  });
+  // 土曜日デフォルト「別紙参照」
+  const satEl = document.getElementById('su_sat');
+  if(satEl && !satEl.value) satEl.value = '別紙参照';
+}
+
+// 週番号から月曜日を計算（対象月・年度から）
+function getMonday(year, month, weekNum){
+  // 対象月の1日から最初の月曜日を探す
+  const d = new Date(year, month-1, 1);
+  const dow = d.getDay(); // 0=日
+  const firstMon = dow===1 ? 1 : dow===0 ? 2 : 9-dow;
+  const monDay = firstMon + (weekNum-1)*7;
+  return new Date(year, month-1, monDay);
+}
+
+function onSuWeekChange(){
+  const week = parseInt(document.getElementById('su_week').value);
+  const month = parseInt(document.getElementById('su_month').value);
+  const nendo = parseInt(document.getElementById('su_nendo').value);
+  if(!week||!month||!nendo) return;
+  const mon = getMonday(nendo, month, week);
+  const ds = dateStr(mon);
+  document.getElementById('su_start_date').value = ds;
+  setSuDates(mon);
+  // 前週の姿を自動転記
+  loadSuPrevZenshu(nendo, document.getElementById('su_class').value, month, week);
+}
+
+function onSuStartDateChange(){
+  const val = document.getElementById('su_start_date').value;
+  if(!val) return;
+  const d = new Date(val);
+  if(d.getDay()!==1){ showToast('⚠️ 月曜日の日付を入力してください','error'); return; }
+  setSuDates(d);
+}
+
+// 前週の子どもの姿を自動転記
+async function loadSuPrevZenshu(nendo, cls, month, week){
+  const zenshuEl = document.getElementById('su_zenshu');
+  if(!zenshuEl || !cls) return;
+  if(zenshuEl.value) return; // 既に入力あれば上書きしない
+  let prevMonth=month, prevWeek=week-1;
+  if(prevWeek<1){ prevMonth--; prevWeek=5; }
+  if(prevMonth<1) return;
+  try{
+    const res = await gasGet({action:'get',type:'shuuan',key:String(nendo)+cls+String(prevMonth)+String(prevWeek)});
+    if(res&&res.ok&&res.data&&res.data['今週のねらい']){
+      zenshuEl.value = res.data['今週のねらい'];
+      showToast('✅ 前週のねらいを転記しました');
+    } else {
+      zenshuEl.value = '（前週データなし）';
+    }
+  }catch(e){ zenshuEl.value='（前週データ取得エラー）'; }
+}
+
+
+function updatePrChildList(){
+  const cls=document.getElementById('pr_class').value;
+  const sel=document.getElementById('pr_child');
+  if(!sel)return;
+  const children=cls?(MASTER.children[cls]||[]):Object.values(MASTER.children||{}).flat();
+  sel.innerHTML='<option value="">-- 選択 --</option>';
+  children.forEach(c=>{
+    const o=document.createElement('option');
+    o.value=c.name;o.textContent=c.name;
+    sel.appendChild(o);
+  });
+}
+
+// ========== 既存データ確認 ==========
+async function checkExistingData(prefix){
+  if(!GAS_URL||!SESSION||SESSION.token==='demo') return;
+  const cfg = DB_CFGS[prefix];
+  if(!cfg) return;
+  const data = {};
+  Object.entries(FMAPS[prefix]).forEach(function(e){
+    const el = document.getElementById(e[1]);
+    if(el) data[e[0]] = el.value;
+  });
+  const key = cfg.key(data);
+  if(!key || key.length < 2) return;
+  const banner = document.getElementById(prefix+'_existBanner');
+  if(!banner) return;
+  banner.style.display = 'none';
+  try{
+    const res = await gasGet({action:'get', type:cfg.type, key:key});
+    if(res && res.ok && res.data){
+      banner._cachedData = res.data;
+      banner._prefix = prefix;
+      const savedAt = res.data['保存日時'] ? '（'+res.data['保存日時']+'保存）' : '';
+      const status  = res.data['承認状態'] || '未申請';
+      // ボタンはDOMで作成（クォート混在回避）
+      banner.innerHTML = '';
+      const bDiv = document.createElement('div');
+      bDiv.style.cssText = 'display:flex;align-items:center;gap:10px;flex-wrap:wrap;';
+      const bSpan = document.createElement('span');
+      bSpan.style.fontSize = '13px';
+      bSpan.innerHTML = '📂 登録済みデータがあります' + savedAt + ' 承認状態：<strong>' + status + '</strong>';
+      const bLoad = document.createElement('button');
+      bLoad.className = 'btn btn-primary';
+      bLoad.style.cssText = 'padding:5px 14px;font-size:12px;';
+      bLoad.textContent = '読み込む';
+      bLoad.onclick = function(){ loadExistingData(banner); };
+      const bSkip = document.createElement('button');
+      bSkip.className = 'btn btn-secondary';
+      bSkip.style.cssText = 'padding:5px 14px;font-size:12px;';
+      bSkip.textContent = '新規入力';
+      bSkip.onclick = function(){ banner.style.display='none'; };
+      bDiv.appendChild(bSpan);
+      bDiv.appendChild(bLoad);
+      bDiv.appendChild(bSkip);
+      banner.appendChild(bDiv);
+      banner.style.display = 'block';
+    }
+  }catch(e){ /* 無視 */ }
+}
+
+function loadExistingData(banner){
+  if(!banner || !banner._cachedData) return;
+  const data   = banner._cachedData;
+  const prefix = banner._prefix;
+  banner.style.display = 'none';
+  Object.entries(FMAPS[prefix]).forEach(function(e){
+    const el = document.getElementById(e[1]);
+    if(el && data[e[0]] !== undefined && !el.readOnly){
+      el.value = data[e[0]];
+      if(el.tagName==='TEXTAREA') updateCount(el, parseInt(el.maxLength)||9999);
+    }
+  });
+  if(prefix==='ns'){
+    PERIODS.forEach(function(p){
+      NS_FIELDS.forEach(function(f){
+        const el = document.getElementById('ns_'+p.num+'_'+f.id);
+        const dbKey = '第'+p.num+'期_'+f.label;
+        if(el && data[dbKey] !== undefined) el.value = data[dbKey];
+      });
+    });
+  }
+  showToast('📂 登録済みデータを読み込みました');
+}
+
+function updatePrExtra(type){
+  // 様式出力クラスセレクトを型に応じて乳児/幼児/全クラスに切り替え
+  const prCls = document.getElementById('pr_class');
+  const prevVal = prCls ? prCls.value : '';
+  if(prCls){
+    const first = prCls.options[0];
+    prCls.innerHTML=''; prCls.appendChild(first);
+    const filterFn = type==='kobetsu' ? c=>c.age<=2 : type==='kansatsu' ? c=>c.age>=3 : ()=>true;
+    (MASTER.classes||[]).filter(filterFn).forEach(c=>{
+      const o=document.createElement('option');
+      o.value=c.name; o.textContent=c.name;
+      prCls.appendChild(o);
+    });
+    if(prevVal) prCls.value=prevVal;
+  }
+  document.getElementById('pr_week_group').style.display  = type==='shuuan'  ? 'block' : 'none';
+  document.getElementById('pr_date_group').style.display  = type==='nisshi'  ? 'block' : 'none';
+  document.getElementById('pr_child_group').style.display = (type==='kobetsu'||type==='kansatsu') ? 'block' : 'none';
+  // 園児選択を更新
+  if(type==='kobetsu'||type==='kansatsu'){
+    const cls = document.getElementById('pr_class').value;
+    const sel = document.getElementById('pr_child');
+    const allChildren = MASTER.children||{};
+    const filterAge = type==='kobetsu'
+      ? (cls ? [cls] : (MASTER.classes||[]).filter(c=>c.age<=2).map(c=>c.name))
+      : (cls ? [cls] : (MASTER.classes||[]).filter(c=>c.age>=3).map(c=>c.name));
+    const children = filterAge.flatMap(cn=>allChildren[cn]||[]);
+    sel.innerHTML='<option value="">-- 選択 --</option>';
+    children.forEach(c=>{
+      const o=document.createElement('option');
+      o.value=c.name; o.textContent=c.name;
+      sel.appendChild(o);
+    });
+  }
+}
+
+let currentPrType='';
+function clearPrDate(){ document.getElementById('pr_shuuan_date').value=''; }
+function clearPrWeek(){ document.getElementById('pr_shuuan_week').value=''; }
+
+async function openPrintPreviewShuuanNisshi(mode){
+  if(!SESSION){showToast('⚠️ ログインしてください','error');return;}
+  const cls   = document.getElementById('pr_class').value;
+  const nendo = document.getElementById('pr_nendo').value;
+  const month = document.getElementById('pr_month').value;
+  if(!cls){showToast('⚠️ クラスを選択してください','error');return;}
+
+  if(mode==='week'){
+    const week = document.getElementById('pr_shuuan_week').value;
+    if(!week){showToast('⚠️ 第何週かを選択してください','error');return;}
+    if(!month){showToast('⚠️ 月を選択してください','error');return;}
+    currentPrType='shuuan';
+    await doExecPreview('shuuan', week, '', '');
+
+  } else {
+    // 日付から月曜を計算して週案を検索
+    const dateStr = document.getElementById('pr_shuuan_date').value;
+    if(!dateStr){showToast('⚠️ 日付を入力してください','error');return;}
+    const d = new Date(dateStr);
+    const dow = d.getDay();
+    const monday = new Date(d);
+    monday.setDate(d.getDate() - (dow===0?6:dow-1));
+    const mondayStr = monday.getFullYear()+'-'+String(monday.getMonth()+1).padStart(2,'0')+'-'+String(monday.getDate()).padStart(2,'0');
+    const targetMonth = monday.getMonth()+1;
+
+    showLoading('週案を検索中…');
+    try{
+      const res = await gasGet({action:'get', type:'shuuan'});
+      hideLoading();
+      if(!res||!res.ok){showToast('❌ データ取得失敗','error');return;}
+      const rows = res.data||[];
+      // 対象週開始日を文字列正規化して比較
+      const normalize = v => {
+        if(!v) return '';
+        const s = String(v);
+        // "2026/04/07" 形式を "2026-04-07" に統一
+        return s.replace(/\//g,'-').replace(/[T ].*/,'').trim();
+      };
+      let matched = rows.find(r=>
+        normalize(r['対象週開始日']) === mondayStr &&
+        (r['対象クラス']||'').trim() === cls.trim()
+      );
+      // 見つからなければ月+週で探す（開始日が未入力のケース）
+      if(!matched){
+        matched = rows.find(r=>
+          String(r['対象月']||'') === String(targetMonth) &&
+          (r['対象クラス']||'').trim() === cls.trim()
+          // 週は複数あるため最初にマッチしたもの
+        );
+      }
+      if(matched){
+        currentPrType='shuuan';
+        document.getElementById('pr_month').value = String(targetMonth);
+        await doExecPreview('shuuan', String(matched['対象週']||''), '', '');
+      } else {
+        showToast('⚠️ この日付の週案が見つかりません。週で出力してください。','error');
+      }
+    }catch(e){hideLoading();showToast('❌ エラー: '+e.message,'error');}
+  }
+}
+
+async function openPrintPreview(type){
+  if(!SESSION){showToast('⚠️ ログインしてください','error');return;}
+  const cls   = document.getElementById('pr_class').value;
+  const nendo = document.getElementById('pr_nendo').value;
+  const month = document.getElementById('pr_month').value;
+  if(!cls){showToast('⚠️ クラスを選択してください','error');return;}
+  currentPrType = type;
+
+  // 週案・日誌・個別・観察は追加条件モーダルを先に表示
+  if(['shuuan','kobetsu','kansatsu'].includes(type)){
+    document.getElementById('prExtraTitle').textContent = '🖨️ '+(PRINT_LABELS[type]||type)+'の条件を選択';
+    document.getElementById('prExtraWeekGroup').style.display  = type==='shuuan'  ?'block':'none';
+    document.getElementById('prExtraDateGroup').style.display  = type==='nisshi'  ?'block':'none';
+    document.getElementById('prExtraChildGroup').style.display = (type==='kobetsu'||type==='kansatsu')?'block':'none';
+    // 園児リストを現在のクラスで構築
+    if(type==='kobetsu'||type==='kansatsu'){
+      const sel = document.getElementById('prExtraChild');
+      const kids = cls ? (MASTER.children[cls]||[]) : Object.values(MASTER.children||{}).flat();
+      sel.innerHTML = '<option value="">-- 選択 --</option>';
+      kids.forEach(c=>{ const o=document.createElement('option'); o.value=c.name; o.textContent=c.name; sel.appendChild(o); });
+    }
+    document.getElementById('prExtraWeek').value  = '';
+    document.getElementById('prExtraChild').value = '';
+    document.getElementById('prExtraDate').value  = '';
+    document.getElementById('prExtraModal').style.display = 'flex';
+    return;
+  }
+  // 年案・月案は追加条件不要
+  doExecPreview(type, '', '', '');
+}
+
+function confirmPrExtra(){
+  const type  = currentPrType;
+  const week  = document.getElementById('prExtraWeek').value;
+  const child = document.getElementById('prExtraChild').value;
+  const date  = document.getElementById('prExtraDate').value;
+  if(type==='shuuan'&&!week){showToast('⚠️ 第何週か選択してください','error');return;}
+  if((type==='kobetsu'||type==='kansatsu')&&!child){showToast('⚠️ 園児名を選択してください','error');return;}
+  if(type==='nisshi'&&!date){showToast('⚠️ 日付を選択してください','error');return;}
+  document.getElementById('prExtraModal').style.display='none';
+  doExecPreview(type, week, child, date);
+}
+
+
+// 日誌フォームの日付から週案日誌統合プレビュー
+async function openPrintPreviewNisshi(){
+  const dateStr = document.getElementById('ni_date')?.value;
+  const niCls   = document.getElementById('ni_class')?.value;
+  if(!SESSION){showToast('⚠️ ログインしてください','error');return;}
+
+  // pr_classをni_classに合わせる
+  const prCls = document.getElementById('pr_class');
+  if(prCls && niCls) prCls.value = niCls;
+
+  if(!dateStr){
+    // 日付未入力→通常の週案プレビューへ
+    openPrintPreview('shuuan');
+    return;
+  }
+
+  // その日が属する週の月曜日を計算
+  const d = new Date(dateStr);
+  const dow = d.getDay();
+  const diffToMon = dow === 0 ? -6 : 1 - dow;
+  d.setDate(d.getDate() + diffToMon);
+  const monday = d.toISOString().slice(0,10);
+
+  // 週案DBから該当週のデータを検索（キー: nendo+cls+month+week）
+  const nendo = document.getElementById('pr_nendo')?.value || (MASTER.kihon?.nendo||'');
+  const month = d.getMonth() + 1;
+
+  showLoading('週案データを検索中…');
+  try{
+    const res = await gasGet({action:'get', type:'shuuan'});
+    hideLoading();
+    if(!res||!res.ok) { openPrintPreview('shuuan'); return; }
+
+    // 週開始日が一致するレコードを探す
+    const matched = (res.data||[]).find(r =>
+      (r['対象週開始日']||'').startsWith(monday) &&
+      (r['対象クラス']||'') === (niCls||prCls?.value||'')
+    );
+    if(matched){
+      // 週案キーを組み立てて直接プレビュー実行
+      const wkey = (matched['対象年度']||nendo) + (matched['対象クラス']||'') + (matched['対象月']||month) + (matched['対象週']||'');
+      currentPrType = 'shuuan';
+      await doExecPreview('shuuan', matched['対象週']||'', '', '');
+    } else {
+      showToast('⚠️ この日付の週案データが見つかりません。週を選んで出力します。');
+      openPrintPreview('shuuan');
+    }
+  }catch(e){
+    hideLoading();
+    openPrintPreview('shuuan');
+  }
+}
+
+async function doExecPreview(type, week, child, date){
+  const cls   = document.getElementById('pr_class').value;
+  const nendo = document.getElementById('pr_nendo').value;
+  const month = document.getElementById('pr_month').value;
+  const keyMap = {
+    nensyuu:  nendo+cls,
+    getsuan:  nendo+cls+month,
+    shuuan:   nendo+cls+month+week,
+    nisshi:   date+cls,
+    kobetsu:  cls+month+child,
+    kansatsu: cls+month+child,
+  };
+  const key = keyMap[type]||'';
+  if(!key){showToast('⚠️ 条件が不足しています','error');return;}
+  showLoading('様式を生成中…（初回は数秒かかります）');
+  try{
+    const nendoForExport = document.getElementById('pr_nendo')?.value || (MASTER.kihon?.nendo||'');
+    const res = await gasGet({action:'exportExcel',type,key,nendo:nendoForExport});
+    hideLoading();
+    if(!res||!res.ok){showToast('❌ '+(res?res.error:'エラー'),'error');return;}
+    const modal = document.getElementById('printModal');
+    document.getElementById('printModalTitle').textContent = '🖨️ '+(PRINT_LABELS[type]||type);
+    const dlBtn = document.getElementById('printDownloadBtn');
+    if(dlBtn){dlBtn.href=res.xlsxUrl; dlBtn.style.display='inline-block';}
+    const pdfBtn = document.getElementById('printPdfDownloadBtn');
+    if(pdfBtn){pdfBtn.href=res.pdfUrl; pdfBtn.style.display='inline-block';}
+    // Google Docs Viewerでiframeプレビュー（ダウンロードなし）
+    const viewerUrl = 'https://docs.google.com/viewer?url='+encodeURIComponent(res.pdfUrl)+'&embedded=true';
+    const contentEl = document.getElementById('printContent');
+    contentEl.innerHTML =
+      '<div id="pdfLoadMsg" style="text-align:center;padding:16px 0;font-size:12px;color:#888;">読み込み中…（10〜20秒かかる場合があります）</div>'+
+      '<iframe id="pdfIframe" src="'+viewerUrl+'" style="width:100%;height:76vh;border:none;border-radius:8px;" title="印刷プレビュー"></iframe>';
+    // Viewerはonloadが確実でないので15秒後にメッセージ消去
+    setTimeout(()=>{ const m=document.getElementById('pdfLoadMsg'); if(m)m.style.display='none'; }, 15000);
+    // PDFのURLを保持（印刷ボタン用・新タブで開く）
+    modal._pdfUrl = res.pdfUrl;
+    modal.style.display='flex';
+  }catch(e){hideLoading();showToast('❌ エラー: '+e.message,'error');}
+}
+
+function printPdfDirect(){
+  const modal = document.getElementById('printModal');
+  const url = modal._pdfUrl;
+  if(url){ window.open(url, '_blank'); }
+  else { showToast('⚠️ PDFがまだ生成されていません','error'); }
+}
+function closePrintModal(){document.getElementById('printModal').style.display='none';const dlBtn=document.getElementById('printDownloadBtn');if(dlBtn)dlBtn.style.display='none';const pdfBtn=document.getElementById('printPdfDownloadBtn');if(pdfBtn)pdfBtn.style.display='none';}
+
+function buildPrintHtml(type,rows){
+  const skip=new Set(['検索キー','記録者','保存日時']);
+  return rows.map(function(row,i){
+    const fields=Object.entries(row).filter(function(e){return !skip.has(e[0])&&e[1]!==''&&e[1]!=null;}).map(function(e){
+      return '<tr><td style="padding:7px 12px;font-size:12px;font-weight:600;color:#555;background:#f9f9f9;border:1px solid #e0e0e0;white-space:nowrap;width:160px;">'+e[0]+'</td>'
+        +'<td style="padding:7px 12px;font-size:13px;border:1px solid #e0e0e0;white-space:pre-wrap;line-height:1.7;">'+String(e[1]).replace(/</g,'&lt;')+'</td></tr>';
+    }).join('');
+    const title=row['対象クラス']||row['クラス名']||'';
+    const sub=[row['対象年度']?row['対象年度']+'年度':'',row['対象月']?row['対象月']+'月':'',row['対象週']?'第'+row['対象週']+'週':'',row['対象日付']||'',row['園児名']||''].filter(Boolean).join(' ');
+    return '<div style="page-break-after:'+(i<rows.length-1?'always':'avoid')+';margin-bottom:32px;">'
+      +'<div style="background:#4d7252;color:white;padding:10px 16px;border-radius:8px 8px 0 0;display:flex;justify-content:space-between;align-items:center;">'
+      +'<span style="font-weight:700;font-size:15px;">'+(PRINT_LABELS[type]||type)+' '+title+'</span>'
+      +'<span style="font-size:12px;opacity:.85;">'+sub+'</span></div>'
+      +'<table style="width:100%;border-collapse:collapse;">'+fields+'</table></div>';
+  }).join('');
+}
+
+
+// Excel テンプレート出力
+async function exportToExcelTemplate(type) {
+  if (!SESSION) { showToast('⚠️ ログインしてください', 'error'); return; }
+  if (SESSION.token === 'demo') { showToast('🎮 デモモードでは使用できません', 'error'); return; }
+
+  const cls   = document.getElementById('pr_class').value;
+  const nendo = document.getElementById('pr_nendo').value;
+  const month = document.getElementById('pr_month').value;
+
+  // 検索キーの生成
+  const keyMap = {
+    nensyuu: nendo + cls,
+    getsuan: nendo + cls + month,
+    shuuan:  nendo + cls + month + (document.getElementById('pr_week')?.value || ''),
+    nisshi:  (document.getElementById('pr_date')?.value || '') + cls,
+    kobetsu: cls + month + (document.getElementById('pr_child')?.value || ''),
+    kansatsu:cls + month + (document.getElementById('pr_child')?.value || ''),
+  };
+  const key = keyMap[type] || '';
+
+  if (!key || key.includes('undefined') || key === nendo || key === cls) {
+    showToast('⚠️ クラス・年度・月などの条件を選択してください', 'error');
+    return;
+  }
+
+  showLoading('Excelファイルを生成中…（数秒かかります）');
+  try {
+    const res = await gasGet({ action: 'exportExcel', type, key });
+    hideLoading();
+    if (res && res.ok && res.url) {
+      showToast('✅ Excel生成完了！ダウンロードが始まります');
+      // ダウンロード
+      const a = document.createElement('a');
+      a.href = res.url;
+      a.target = '_blank';
+      a.download = res.fileName || 'export.xlsx';
+      a.click();
+    } else if (res) {
+      const msg = res.error || '不明なエラー';
+      if (msg.includes('テンプレートファイルIDが未設定')) {
+        showToast('⚠️ テンプレート未設定：スプレッドシートメニュー→「Excelテンプレート設定」を実行してください', 'error');
+      } else {
+        showToast('❌ ' + msg, 'error');
+      }
+    }
+  } catch(e) {
+    hideLoading();
+    showToast('❌ 通信エラー: ' + e.message, 'error');
+  }
+}
+
+async function downloadExcel(type){
+  if(!SESSION){showToast('⚠️ ログインしてください','error');return;}
+  const cls=document.getElementById('pr_class').value;
+  const nendo=document.getElementById('pr_nendo').value;
+  const month=document.getElementById('pr_month').value;
+  
+  // 月案のみExcel様式転記に対応
+  if(type==='getsuan'){
+    if(!cls||!month){showToast('⚠️ クラスと月を選択してください','error');return;}
+    showLoading('データ取得中…');
+    try{
+      // DBからデータ取得
+      const res=await gasGet({action:'get',type:'getsuan'});
+      hideLoading();
+      if(!res||!res.ok){showToast('❌ データ取得失敗','error');return;}
+      let rows=res.data||[];
+      if(cls)rows=rows.filter(r=>(r['対象クラス']||r['クラス名']||'')===cls);
+      if(nendo)rows=rows.filter(r=>String(r['対象年度']||'')===String(nendo));
+      if(month)rows=rows.filter(r=>String(r['対象月']||'')===String(month));
+      if(!rows.length){showToast('⚠️ 該当データがありません','error');return;}
+      const data=rows[0];
+      // Excel様式に転記
+      showLoading('Excel様式に転記中…');
+      const expRes=await gasGet({action:'exportGetsuan',...data});
+      hideLoading();
+      if(!expRes||!expRes.ok){showToast('❌ Excel転記失敗: '+(expRes?expRes.error:''),'error');return;}
+      // ダウンロードリンクを開く
+      const url='https://docs.google.com/spreadsheets/d/'+expRes.fileId+'/export?format=xlsx';
+      window.open(url,'_blank');
+      showToast('✅ Excel様式を出力しました！新しいタブでダウンロードしてください。');
+    }catch(e){hideLoading();showToast('❌ エラー: '+e.message,'error');}
+    return;
+  }
+  
+  // その他はCSVダウンロード
+  showLoading('データ取得中…');
+  try{
+    const res=await gasGet({action:'get',type});
+    hideLoading();
+    if(!res||!res.ok){showToast('❌ データ取得失敗','error');return;}
+    let rows=res.data||[];
+    if(cls)rows=rows.filter(r=>(r['対象クラス']||r['クラス名']||'')===cls);
+    if(nendo)rows=rows.filter(r=>String(r['対象年度']||'')===String(nendo));
+    if(month)rows=rows.filter(r=>String(r['対象月']||'')===String(month));
+    if(!rows.length){showToast('⚠️ 該当データがありません','error');return;}
+    const headers=Object.keys(rows[0]);
+    const csv='\uFEFF'+[headers.map(h=>'"'+h+'"').join(','),...rows.map(row=>headers.map(h=>'"'+String(row[h]||'').replace(/"/g,'""')+'"').join(','))].join('\n');
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
+    a.download=([PRINT_LABELS[type],nendo?nendo+'年度':'',cls,month?month+'月':''].filter(Boolean).join('_'))+'.csv';
+    a.click();showToast('⬇️ ダウンロードしました');
+  }catch(e){hideLoading();showToast('❌ エラー: '+e.message,'error');}
+}
+
+function buildNensyuuPeriods(){
+  const cont=document.getElementById('nensyuuPeriods');
+  PERIODS.forEach(function(p){
+    const d=document.createElement('div');d.className='card';
+    const f=NS_FIELDS.map(function(f){
+      const lim=NS_FIELD_LIMITS[f.id]||190;
+      return '<div class="form-group"><label class="form-label">'+f.label+'</label><textarea class="form-control" id="ns_'+p.num+'_'+f.id+'" maxlength="'+lim+'" oninput="updateCount(this,'+lim+')" placeholder="'+f.label+'…"></textarea><div style="text-align:right;font-size:10px;color:var(--text-light);margin-top:2px;"><span id="cnt_ns_'+p.num+'_'+f.id+'">0</span>/'+lim+'文字</div></div>';
+    }).join('');
+    d.innerHTML='<div class="card-header"><div class="icon" style="background:'+p.bg+';">'+p.emoji+'</div>'+p.label+'（'+p.months+'）</div><div class="card-body"><div class="form-grid form-grid-2">'+f+'</div></div>';
+    cont.appendChild(d);
+  });
+}
+
+function getTanin(cls){const c=MASTER.classes.find(function(x){return x.name===cls;});return c?c.tanin.join('・'):'';}
+function updateAutoFields(prefix){const cls=document.getElementById(prefix+'_class')?.value;const t=document.getElementById(prefix+'_tanin');if(t)t.value=cls?getTanin(cls):'';}
+function updateYoubi(){const d=document.getElementById('ni_date').value;if(d){const dt=new Date(d);document.getElementById('ni_youbi').value=WEEKDAYS[dt.getDay()]+'曜日';}}
+function updateChildList(prefix){
+  const cls=document.getElementById(prefix+'_class').value;
+  const sel=document.getElementById(prefix+'_child');
+  sel.innerHTML='<option value="">-- 選択 --</option>';
+  if(cls){(MASTER.children[cls]||[]).forEach(function(c){const o=document.createElement('option');o.value=c.name;o.textContent=c.name;sel.appendChild(o);});const t=document.getElementById(prefix+'_tanin');if(t)t.value=getTanin(cls);}
+}
+function updateChildInfo(prefix){
+  const cls  = document.getElementById(prefix+'_class').value;
+  const name = document.getElementById(prefix+'_child').value;
+  const month= parseInt(document.getElementById(prefix+'_month')?.value)||4;
+  const nendo= parseInt(document.getElementById(prefix+'_nendo')?.value) || MASTER.kihon?.nendo || (new Date().getFullYear());
+  if(!name||!cls)return;
+  const child=(MASTER.children[cls]||[]).find(c=>c.name===name);
+  if(!child)return;
+  // 性別
+  const seibetsuEl=document.getElementById(prefix+'_seibetsu');
+  if(seibetsuEl) seibetsuEl.value=child.sex||'';
+  // ひらがな
+  const hiraEl=document.getElementById(prefix+'_hira');
+  if(hiraEl) hiraEl.value=child.hira||'';
+  // 生年月日
+  const birthEl=document.getElementById(prefix+'_birth');
+  if(birthEl) birthEl.value=child.birth||'';
+  // 月齢計算（nendoと月から）
+  if(child.birth){
+    const b=new Date(child.birth);
+    const r=new Date(nendo, month-1, 1);
+    let y=r.getFullYear()-b.getFullYear(), m=r.getMonth()-b.getMonth();
+    if(m<0){y--;m+=12;}
+    const gesuEl=document.getElementById(prefix+'_getsurei');
+    if(gesuEl) gesuEl.value=y+'歳'+m+'ヶ月';
+  }
+}
+function checkForm(prefix,ids){const ok=ids.every(function(id){const el=document.getElementById(id);return el&&el.value.trim()!=='';});const b=document.getElementById(prefix+'_check');b.textContent=ok?'✅ 入力完了':'⚠️ 未入力項目があります';b.className='status-badge '+(ok?'status-ok':'status-warn');showToast(ok?'✅ 入力チェックOK！':'⚠️ 必須項目が未入力です',ok?'':'error');}
+function clearForm(prefix){if(!confirm('入力内容をクリアしますか？'))return;document.querySelectorAll('[id^="'+prefix+'_"]').forEach(function(el){if(el.tagName==='SELECT')el.selectedIndex=0;else if((el.tagName==='TEXTAREA'||el.tagName==='INPUT')&&!el.readOnly)el.value='';});showToast('🗑️ クリアしました');}
+function updateConnUI(ok){document.getElementById('syncDot').className='sync-dot '+(ok?'green':'orange');document.getElementById('syncLabel').textContent=ok?'スプレッドシート連携中':'未接続';const hi=document.getElementById('homeConnInfo');if(hi)hi.textContent=ok?'✅ Googleスプレッドシート：連携済み':'⚠️ スプレッドシート：未接続';}
+function showLoading(m){document.getElementById('loadingMsg').textContent=m||'通信中…';document.getElementById('loadingOverlay').style.display='flex';}
+function hideLoading(){document.getElementById('loadingOverlay').style.display='none';}
+function showToast(msg,type){const t=document.getElementById('toast');t.textContent=msg;t.className='toast show'+(type==='error'?' error':'');clearTimeout(t._t);t._t=setTimeout(function(){t.classList.remove('show');},3500);}
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+// ============================================================
+// デモモード（GAS未接続でUI確認用）
+// ============================================================
+function getDemoRows(type){
+  const demo={
+    nensyuu:[{
+      '検索キー':'2026とら','対象年度':'2026','対象クラス':'とら','担任':'伊藤',
+      '年間目標':'子ども一人ひとりの個性を大切にし、仲間とともに充実した園生活を送る。',
+      '第1期_養護（生命の保持）':'新しい環境に慣れるよう、個々の健康状態を丁寧に把握する。',
+      '第1期_教育（健康）':'戸外活動を積極的に取り入れ、体を動かす楽しさを感じる。',
+      '第1期_教育（人間関係）':'友達や保育者との関わりの中で、信頼関係を育む。',
+      '第2期_養護（生命の保持）':'夏の生活リズムを整え、健康で安全に過ごせるよう配慮する。',
+      '第2期_教育（健康）':'水遊びや戸外活動を通じて、夏ならではの遊びを楽しむ。',
+      '承認状態':'承認完了','記録者':'ito','保存日時':'2026/04/01 09:00',
+    }],
+    getsuan:[{
+      '検索キー':'2026とら4','対象年度':'2026','対象クラス':'とら','対象月':'4','担任':'伊藤',
+      '生命の保持':'新しい環境に慣れるよう、個々のペースを尊重しながら丁寧に関わる。',
+      '情緒の安定':'担任との信頼関係を築き、安心して自己表現できる環境を整える。',
+      '健康':'春の自然に触れながら、体を動かす楽しさを感じる。',
+      '人間関係':'友達と一緒に遊ぶ楽しさを味わい、関わりを広げる。',
+      '環境':'春の自然物（花・虫）に興味を持ち、発見を楽しむ。',
+      '言葉':'自分の気持ちや考えを言葉で伝えようとする。',
+      '表現':'歌やリズム遊びを通じて、表現する喜びを感じる。',
+      '予想される姿':'新しい友達や保育者に少しずつ慣れ、笑顔が増えてくる。',
+      '月振り返り':'','承認状態':'申請中','記録者':'ito','保存日時':'2026/04/10 10:00',
+    }],
+    shuuan:[{
+      '検索キー':'2026とら41','対象年度':'2026','対象クラス':'とら','対象月':'4','対象週':'1','担任':'伊藤',
+      '前週の子どもの姿':'進級し、緊張した様子も見られたが、好きな遊びを見つけて楽しんでいた。',
+      '今週のねらい':'新しい生活リズムに慣れ、安心して登園できるようにする。',
+      '環境構成':'好きなおもちゃを手の届く場所に置き、自由に選んで遊べる空間を確保する。',
+      '援助配慮':'一人ひとりの気持ちに寄り添い、不安な子には個別に対応する。',
+      '月曜':'朝の会・自由遊び・戸外遊び','火曜':'制作（こいのぼり）','水曜':'音楽遊び',
+      '木曜':'散歩（近隣公園）','金曜':'自由遊び・振り返り',
+      '週振り返り':'','承認状態':'未申請','記録者':'ito','保存日時':'2026/04/07 15:00',
+    }],
+    nisshi:[{
+      '検索キー':'2026-04-10とら','対象日付':'2026-04-10','クラス名':'とら','記入者':'伊藤',
+      '出席数':'12','欠席数':'1','欠席理由':'A児（発熱）',
+      '保育内容':'午前：戸外遊び（砂場・固定遊具）。異年齢で関わる場面が多く見られた。\n午後：制作活動（こいのぼり作り）。ハサミを使って上手に切る姿が見られた。',
+      '健康管理':'B児、鼻水あり。保護者に連絡済み。全員給食完食。',
+      '特記事項':'C児が初めて鉄棒に挑戦。最後まで諦めずに取り組んでいた。',
+      '評価反省':'戸外で伸び伸びと遊ぶ姿が見られた。次回は異年齢交流をより意識的に取り入れたい。',
+      '承認状態':'差し戻し','記録者':'ito','保存日時':'2026/04/10 17:30',
+    }],
+    kobetsu:[{
+      '検索キー':'ひよこ4松實　絃','対象クラス':'ひよこ','対象月':'4','園児名':'松實　絃',
+      '月齢':'1歳11ヶ月','性別':'男','担任':'加藤（り）',
+      'ねらい':'抱っこや声かけを通じて、保育者との信頼関係を育む。',
+      '内容':'ミルク・離乳食の摂取状況確認。午睡のリズム確立。',
+      '子どもの姿':'ミルクをよく飲み、機嫌よく過ごしている。笑顔が増えてきた。',
+      '保育者の配慮':'一人ひとりのペースに合わせて関わり、安心感を大切にする。',
+      '評価反省':'安定して過ごせるようになってきた。引き続き丁寧な関わりを続ける。',
+      '承認状態':'未申請','記録者':'kato','保存日時':'2026/04/05 16:00',
+    }],
+    kansatsu:[{
+      '検索キー':'とら4大津　咲斗','対象クラス':'とら','対象月':'4','園児名':'大津　咲斗',
+      '性別':'男','ひらがな':'おおつ　さくと','担任':'伊藤',
+      '保育記録':'友達と積極的に関わり、ごっこ遊びのリーダーシップをとる姿が見られた。\n語彙が豊かで、自分の気持ちを言葉で上手に表現できる。\n運動面では鉄棒・跳び箱に意欲的に取り組んでいる。',
+      '承認状態':'主任承認済','記録者':'ito','保存日時':'2026/04/09 16:30',
+    }],
+  };
+  return demo[type]||[];
+}
+function demoBlock(){showToast('🎮 デモモードでは操作できません','error');}
+function startDemo(){
+  SESSION={token:'demo',username:'デモユーザー',role:'admin',email:'',expiry:'2099-12-31'};
+  hideLoginOverlay();
+  document.getElementById('loginUserLabel').textContent='👤 デモユーザー';
+  document.getElementById('syncDot').className='sync-dot orange';
+  document.getElementById('syncLabel').textContent='デモモード（未保存）';
+  const hi=document.getElementById('homeConnInfo');
+  if(hi)hi.textContent='🎮 デモモード中（データは保存されません）';
+  showToast('🎮 デモモードで起動しました。保存・申請はできません。');
+
+  // デモ用サンプルデータをDB一覧に表示
+  renderDemoDbList();
+}
+
+function renderDemoDbList(){
+  const demoData={
+    ns:[{type:'nensyuu','対象年度':'2026','対象クラス':'とら','承認状態':'承認完了','保存日時':'2026/04/01'}],
+    gu:[{type:'getsuan','対象年度':'2026','対象クラス':'とら','対象月':'4','承認状態':'申請中','保存日時':'2026/04/10'},
+        {type:'getsuan','対象年度':'2026','対象クラス':'ぱんだ','対象月':'4','承認状態':'未申請','保存日時':'2026/04/08'}],
+    su:[{type:'shuuan','対象年度':'2026','対象クラス':'とら','対象月':'4','対象週':'1','承認状態':'未申請','保存日時':'2026/04/07'}],
+    ni:[{type:'nisshi','対象日付':'2026-04-10','クラス名':'とら','承認状態':'差し戻し','保存日時':'2026/04/10'}],
+    ko:[{type:'kobetsu','対象クラス':'ひよこ','対象月':'4','園児名':'松實　絃','承認状態':'未申請','保存日時':'2026/04/05'}],
+    ka:[{type:'kansatsu','対象クラス':'とら','対象月':'4','園児名':'大津　咲斗','承認状態':'主任承認済','保存日時':'2026/04/09'}],
+  };
+  Object.entries(demoData).forEach(([prefix,rows])=>{
+    const cnt=document.getElementById(prefix+'_dbList');
+    if(!cnt)return;
+    cnt.innerHTML='';
+    rows.forEach(row=>{
+      const item=document.createElement('div');item.className='db-item';
+      const st=row['承認状態']||'未申請';
+      const stI=APPROVAL_STATUS[st]||{cls:'ab-draft',label:st};
+      const dt=row['保存日時']?'<span class="db-date">'+row['保存日時'].slice(0,10)+'</span>':'';
+      item.innerHTML='<span>📄 '+DB_CFGS[prefix].label(row)+'</span>'
+        +'<span class="approval-badge '+stI.cls+'" style="font-size:10px;">'+stI.label+'</span>'+dt;
+      item.onclick=()=>loadDemoRecord(prefix,row);
+      cnt.appendChild(item);
+    });
+  });
+
+  // デモ通知
+  const notifyList=document.getElementById('notifyList');
+  if(notifyList){
+    notifyList.innerHTML='';
+    const demoNotifs=[
+      {title:'📋 承認依頼',msg:'田中さんが「月案（とら 4月）」を申請しました',date:'2026/04/10 09:15'},
+      {title:'⚠️ 差し戻し',msg:'「日誌（2026-04-10 とら）」が差し戻されました。\nコメント：欠席理由を詳しく記入してください',date:'2026/04/10 10:30'},
+    ];
+    demoNotifs.forEach(n=>{
+      const div=document.createElement('div');div.className='notify-item unread';
+      div.innerHTML='<div class="notify-title">'+n.title+'</div>'
+        +'<div class="notify-msg">'+n.msg.replace(/\n/g,'<br>')+'</div>'
+        +'<div class="notify-date">'+n.date+'</div>';
+      notifyList.appendChild(div);
+    });
+    const badge=document.getElementById('bellBadge');
+    if(badge){badge.textContent='2';badge.style.display='block';}
+    const count=document.getElementById('notifyCount');
+    if(count){count.textContent='2';count.style.display='inline';}
+  }
+
+  // デモ承認待ち
+  const pendingList=document.getElementById('pendingList');
+  if(pendingList){
+    pendingList.innerHTML='';
+    const demoPending=[
+      {フローID:'demo1',書類タイトル:'月案（とら 4月）',書類ラベル:'月案',申請者:'tanaka',申請日時:'2026/04/10 09:15',ステータス:'申請中'},
+    ];
+    demoPending.forEach(item=>{
+      const div=document.createElement('div');div.className='approval-card';
+      const st=APPROVAL_STATUS[item['ステータス']]||{cls:'ab-draft',label:item['ステータス']};
+      div.innerHTML='<div class="approval-card-title">'+item['書類タイトル']+'</div>'
+        +'<div class="approval-meta"><span>📋 '+item['書類ラベル']+'</span><span>👤 '+item['申請者']+'</span>'
+        +'<span>🕐 '+item['申請日時']+'</span><span class="approval-badge '+st.cls+'">'+st.label+'</span></div>'
+        +'<div class="approval-actions">'
+        +'<button class="btn-approve" onclick="showToast(this.dataset.msg,\'error\')" data-msg="🎮 デモモードでは承認できません">✅ 承認する</button>'
+        +'<button class="btn-reject-modal" onclick="showToast(this.dataset.msg,\'error\')" data-msg="🎮 デモモードでは差し戻しできません">⚠️ 差し戻し</button></div>';
+      pendingList.appendChild(div);
+    });
+  }
+}
+
+function loadDemoRecord(prefix,row){
+  // サンプルデータをフォームに流し込む
+  const sampleText={
+    ns:{'年間目標':'子ども一人ひとりの個性を大切にし、のびのびと成長できる保育を目指す。','第1期_養護（生命の保持）':'一人ひとりの健康状態を把握し、安心して園生活を送れるよう配慮する。','第1期_教育（健康）':'戸外活動を積極的に取り入れ、基本的な生活習慣を身につける。'},
+    gu:{'生命の保持':'新しい環境に慣れるよう、個々のペースを尊重しながら丁寧に関わる。','情緒の安定':'担任との信頼関係を築き、安心して表現できる環境を整える。','健康':'春の自然に触れながら、体を動かす楽しさを感じる。','予想される姿':'新しい友達や保育者に少しずつ慣れ、笑顔が増えてくる。'},
+    su:{'今週のねらい':'新しい生活リズムに慣れ、安心して登園できるようにする。','前週の子どもの姿':'泣いている子も多かったが、遊びを通じて笑顔が見られ始めた。','環境構成':'好きなおもちゃを手の届く場所に置き、自由に遊べる空間を確保する。'},
+    ni:{'保育内容':'午前：戸外遊び（砂場・固定遊具）。午後：制作活動（こいのぼり）。','健康管理':'全員元気。A児、鼻水あり。保護者に連絡済み。','評価反省':'戸外で伸び伸びと遊ぶ姿が見られた。次回は異年齢交流を取り入れたい。'},
+    ko:{'ねらい':'抱っこや授乳を通じて、保育者との信頼関係を築く。','子どもの姿':'ミルクをよく飲み、機嫌よく過ごしている。笑顔が増えてきた。'},
+    ka:{'保育記録':'友達と積極的に関わり、ごっこ遊びのリーダーシップをとる姿が見られた。語彙が豊かで、自分の気持ちを言葉で表現できる。'},
+  };
+  const sample=sampleText[prefix]||{};
+  Object.entries(FMAPS[prefix]).forEach(([dk,elId])=>{
+    const el=document.getElementById(elId);
+    if(el&&(row[dk]||sample[dk]))el.value=row[dk]||sample[dk]||'';
+  });
+  if(prefix==='ns'){
+    PERIODS.forEach(p=>{
+      NS_FIELDS.forEach(f=>{
+        const el=document.getElementById('ns_'+p.num+'_'+f.id);
+        const dk='第'+p.num+'期_'+f.label;
+        if(el&&sample[dk])el.value=sample[dk];
+      });
+    });
+  }
+  if(row['承認状態'])updateApprovalBadge(prefix,row['承認状態']);
+  showToast('📂 デモデータを読み込みました');
+  // 対応するセクションに移動
+  const secMap={ns:'nensyuu',gu:'getsuan',su:'shuuan',ni:'nisshi',ko:'kobetsu',ka:'kansatsu'};
+  if(secMap[prefix])showSection(secMap[prefix]);
+}
+
+
+// ノルマ画面の「作成する」ボタンから対象フォームに遷移してフィールドをセット
+function gotoFormWithData(type, cls, nendo, month, child){
+  const prefixMap = {getsuan:'gu', shuuan:'su', kobetsu:'ko', kansatsu:'ka', nisshi:'ni', nensyuu:'ns'};
+  const sectionMap = {getsuan:'getsuan', shuuan:'shuuan', kobetsu:'kobetsu', kansatsu:'kansatsu', nisshi:'nisshi', nensyuu:'nensyuu'};
+  const prefix  = prefixMap[type];
+  const section = sectionMap[type];
+  if(!prefix||!section) return;
+
+  showSection(section);
+  // 少し待ってからフィールドをセット（DOMが表示されてから）
+  setTimeout(function(){
+    const clsEl   = document.getElementById(prefix+'_class');
+    const nendoEl = document.getElementById(prefix+'_nendo');
+    const monthEl = document.getElementById(prefix+'_month');
+    const childEl = document.getElementById(prefix+'_child');
+    if(clsEl   && cls)   { clsEl.value   = cls;   clsEl.dispatchEvent(new Event('change')); }
+    if(nendoEl && nendo) { nendoEl.value = nendo;  }
+    if(monthEl && month) { monthEl.value = month;  monthEl.dispatchEvent(new Event('change')); }
+    if(childEl && child) {
+      // 園児リストが更新されるのを少し待つ
+      setTimeout(function(){
+        childEl.value = child;
+        childEl.dispatchEvent(new Event('change'));
+      }, 300);
+    }
+    // 画面をトップにスクロール
+    window.scrollTo({top:0, behavior:'smooth'});
+  }, 100);
+}
+
+function showSection(id){
+  document.querySelectorAll('.section').forEach(function(s){s.classList.remove('active');});
+  document.querySelectorAll('.nav-tab').forEach(function(t){t.classList.remove('active');});
+  document.getElementById(id).classList.add('active');
+  const m={home:0,nensyuu:1,getsuan:2,shuuan:3,nisshi:4,kobetsu:5,kansatsu:6,print:7,approval:8};
+  if(m[id]!==undefined)document.querySelectorAll('.nav-tab')[m[id]].classList.add('active');
+  window.scrollTo(0,0);
+  if(id==='approval'){loadNotifications();loadPending();}
+  // セクション移動時に全バナーをリセット
+  document.querySelectorAll('[id$="_existBanner"]').forEach(function(b){
+    b.style.display='none';
+    b.innerHTML='';
+    b._cachedData=null;
+  });
+}
+</script>
+
+</body>
+</html>
+      
