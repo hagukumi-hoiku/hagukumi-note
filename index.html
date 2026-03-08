@@ -816,31 +816,7 @@ textarea.form-control.tall{min-height:120px;}
   <!-- クラス・担任マスタ（編集可） -->
   <div class="card" style="margin-top:16px;">
     <div class="card-header">
-      <div class="icon" style="background:#fff9e0;">🏷️</div>クラス・担任マスタ
-      <button class="btn btn-primary" style="margin-left:auto;padding:5px 14px;font-size:12px;" onclick="openClassEditModal()">＋ クラス追加</button>
-    </div>
-    <div class="card-body">
-      <div style="background:#fffde7;border:1px solid #f9e076;border-radius:8px;padding:8px 14px;margin-bottom:12px;font-size:12px;color:#7d6608;">
-        ℹ️ クラス名はスプレッドシートの <strong>マスタ_クラス</strong> と連動しています。変更後は自動保存されます。<br>
-        <strong>年齢</strong>：0歳=ひよこ相当、1歳=りす相当…乳児(0〜2歳)と幼児(3〜5歳)でタスク種別が変わります。
-      </div>
-      <table style="width:100%;border-collapse:collapse;font-size:13px;">
-        <thead><tr style="background:var(--cream);">
-          <th style="padding:8px 12px;text-align:left;border-bottom:2px solid var(--border);">クラス名</th>
-          <th style="padding:8px 12px;text-align:center;border-bottom:2px solid var(--border);">年齢</th>
-          <th style="padding:8px 12px;text-align:left;border-bottom:2px solid var(--border);">担任</th>
-          <th style="padding:8px 12px;text-align:center;border-bottom:2px solid var(--border);">園児数</th>
-          <th style="padding:8px 12px;text-align:center;border-bottom:2px solid var(--border);">操作</th>
-        </tr></thead>
-        <tbody id="masterClassTable"></tbody>
-      </table>
-    </div>
-  </div>
-
-  <!-- 職員マスタ（編集可） -->
-  <div class="card" style="margin-top:16px;">
-    <div class="card-header">
-      <div class="icon" style="background:#fce4ec;">👤</div>職員・承認者マスタ
+      <div class="icon" style="background:#fce4ec;">👤</div>職員マスタ
       <button id="staffAddBtn" class="btn btn-primary" style="margin-left:auto;padding:5px 14px;font-size:12px;display:none;" onclick="openStaffEditModal()">＋ 職員追加</button>
     </div>
     <div class="card-body">
@@ -864,6 +840,30 @@ textarea.form-control.tall{min-height:120px;}
           <th style="padding:8px 12px;text-align:center;border-bottom:2px solid var(--border);">操作</th>
         </tr></thead>
         <tbody id="masterApproverTable"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 職員マスタ（編集可） -->
+  <div class="card" style="margin-top:16px;">
+    <div class="card-header">
+      <div class="icon" style="background:#fff9e0;">🏷️</div>クラス・担任マスタ
+      <button class="btn btn-primary" style="margin-left:auto;padding:5px 14px;font-size:12px;" onclick="openClassEditModal()">＋ クラス追加</button>
+    </div>
+    <div class="card-body">
+      <div style="background:#fffde7;border:1px solid #f9e076;border-radius:8px;padding:8px 14px;margin-bottom:12px;font-size:12px;color:#7d6608;">
+        ℹ️ クラス名はスプレッドシートの <strong>マスタ_クラス</strong> と連動しています。変更後は自動保存されます。<br>
+        <strong>年齢</strong>：0歳=ひよこ相当、1歳=りす相当…乳児(0〜2歳)と幼児(3〜5歳)でタスク種別が変わります。
+      </div>
+      <table style="width:100%;border-collapse:collapse;font-size:13px;">
+        <thead><tr style="background:var(--cream);">
+          <th style="padding:8px 12px;text-align:left;border-bottom:2px solid var(--border);">クラス名</th>
+          <th style="padding:8px 12px;text-align:center;border-bottom:2px solid var(--border);">年齢</th>
+          <th style="padding:8px 12px;text-align:left;border-bottom:2px solid var(--border);">担任</th>
+          <th style="padding:8px 12px;text-align:center;border-bottom:2px solid var(--border);">園児数</th>
+          <th style="padding:8px 12px;text-align:center;border-bottom:2px solid var(--border);">操作</th>
+        </tr></thead>
+        <tbody id="masterClassTable"></tbody>
       </table>
     </div>
   </div>
@@ -1236,7 +1236,23 @@ async function loadMyTasks() {
       );
 
       // 個別記録（乳児）or 観察記録（幼児）
-      if (children.length > 0) {
+      // 退園済み園児を除外（対象月より前に退園している場合はスキップ）
+      const activeChildren = children.filter(function(c) {
+        if (!c.taienDate) return true; // 退園日なし＝在園中
+        const taien = new Date(c.taienDate);
+        // 対象月の1日より前に退園していたら除外
+        const targetFirst = new Date(dispYear, dispMonth - 1, 1);
+        return taien >= targetFirst;
+      });
+      // 未入園の園児も除外（入園日が対象月より後）
+      const enrolledChildren = activeChildren.filter(function(c) {
+        if (!c.nyuenDate) return true; // 入園日なし＝対象外にしない
+        const nyuen = new Date(c.nyuenDate);
+        const targetLast = new Date(dispYear, dispMonth, 0); // 対象月末日
+        return nyuen <= targetLast;
+      });
+
+      if (enrolledChildren.length > 0) {
         const isNyuji = age <= 2;
         const recType = isNyuji ? 'kobetsu' : 'kansatsu';
         const recData = isNyuji ? kobData : kanData;
@@ -1246,7 +1262,7 @@ async function loadMyTasks() {
 
         let done = 0;
         let detailHtml = '<div style="display:flex;flex-wrap:wrap;gap:6px;">';
-        children.forEach(c => {
+        enrolledChildren.forEach(c => {
           const row = recData.find(r =>
             String(r['対象クラス']) === cls.name &&
             String(r['対象月']) === String(dispMonth) &&
@@ -1269,8 +1285,8 @@ async function loadMyTasks() {
         });
         detailHtml += '</div>';
 
-        const summary = statusBadge(done===children.length?'承認済':done>0?'申請中':'未作成') +
-          ' <span style="font-size:11px;color:var(--text-mid);">'+done+'/'+children.length+'名完了</span>';
+        const summary = statusBadge(done===enrolledChildren.length?'承認済':done>0?'申請中':'未作成') +
+          ' <span style="font-size:11px;color:var(--text-mid);">'+done+'/'+enrolledChildren.length+'名完了</span>';
 
         html += buildTaskSection(id+'_rec', recIcon, recLabel, recDl, summary, detailHtml);
       }
@@ -1337,12 +1353,14 @@ async function loadMasterFromDB(){
       const cls=c['class']||c['クラス']||c['クラス名']||'';
       if(!MASTER.children[cls])MASTER.children[cls]=[];
       MASTER.children[cls].push({
-        name:c['name']||c['氏名']||'',
-        hira:c['hira']||c['ひらがな']||'',
-        hiraSei:c['hiraSei']||'',
-        hiraMei:c['hiraMei']||'',
-        birth:c['birth']||c['生年月日']||'',
-        sex:c['sex']||c['性別']||'',
+        name:     c['name']     || c['氏名']     || '',
+        hira:     c['hira']     || c['ひらがな'] || '',
+        hiraSei:  c['hiraSei']  || '',
+        hiraMei:  c['hiraMei']  || '',
+        birth:    c['birth']    || c['生年月日'] || '',
+        sex:      c['sex']      || c['性別']     || '',
+        nyuenDate: c['nyuenDate'] || c['入園日'] || '',
+        taienDate: c['taienDate'] || c['退園日'] || '',
       });
     });
 
@@ -1566,8 +1584,11 @@ document.addEventListener('DOMContentLoaded',()=>{
   });
   buildNensyuuPeriods();
   if(!GAS_URL){showGasSetup();return;}
-  if(SESSION&&SESSION.token){applySession();loadAllDbLists();loadNotifications();loadPending();}
-  else showLoginOverlay();
+  if(SESSION&&SESSION.token){
+    applySession();
+    loadMasterFromDB().then(()=>loadMyTasks());
+    loadAllDbLists();loadNotifications();loadPending();
+  } else showLoginOverlay();
 });
 
 function showLoginOverlay(){document.getElementById('loginOverlay').style.display='flex';}
