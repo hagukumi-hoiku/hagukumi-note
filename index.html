@@ -1610,14 +1610,20 @@ async function doLogin(){
   showLoading('認証中…');
   try{
     const r=await fetch(GAS_URL,{method:'POST',body:JSON.stringify({action:'login',username,password,gardenId})});
-    const d=await r.json();
+    let d;
+    try{ d=await r.json(); }
+    catch(je){ hideLoading(); errEl.textContent='GASの応答が不正です（JSONエラー）。再デプロイが必要な可能性があります。'; errEl.style.display='block'; console.error('JSON parse error',je); return; }
     hideLoading();
+    console.log('GAS応答:', JSON.stringify(d));
     if(d.ok){
       SESSION={token:d.token,username:d.username,role:d.role,email:d.email||'',expiry:d.expiry,gardenId:d.gardenId||gardenId,gardenName:d.gardenName||''};
       localStorage.setItem(SESSION_KEY,JSON.stringify(SESSION));
       hideLoginOverlay();applySession();loadMasterFromDB().then(()=>loadMyTasks());loadAllDbLists();loadNotifications();loadPending();
       showToast('✅ ようこそ、'+d.username+' さん（'+SESSION.gardenName+'）');
-    }else{errEl.textContent=d.error||'ログイン失敗';errEl.style.display='block';}
+    }else{
+      errEl.textContent=(d.error||'ログイン失敗')+'（GAS応答：'+JSON.stringify(d)+'）';
+      errEl.style.display='block';
+    }
   }catch(e){hideLoading();errEl.textContent='接続エラー：'+e.message;errEl.style.display='block';console.error('Login error:',e);}
 }
 
