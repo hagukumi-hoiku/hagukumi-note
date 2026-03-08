@@ -1936,29 +1936,89 @@ async function importChildrenCsvFile(file) {
   const resultEl = document.getElementById('csvImportResult');
   resultEl.innerHTML = '読み込み中…';
 
-  const readFile = (encoding) => new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = e => resolve(e.target.result);
-    reader.onerror = reject;
-    reader.readAsText(file, encoding);
-  });
+  const CLASS_CODE_MAP = {
+    '100':'ひよこ','101':'りす','102':'うさぎ',
+    '103':'こぐま','104':'ぱんだ','105':'とら','999':'職員'
+  };
+
+  const readFile = function(encoding) {
+    return new Promise(function(resolve, reject) {
+      const reader = new FileReader();
+      reader.onload = function(e) { resolve(e.target.result); };
+      reader.onerror = reject;
+      reader.readAsText(file, encoding);
+    });
+  };
 
   let text = await readFile('UTF-8');
-  if (text.includes('\uFFFD')) text = await readFile('Shift-JIS');
+  if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
+  if (text.includes('�')) text = await readFile('Shift-JIS');
 
-  const lines = text.split(/\r?\n/).filter(l => l.trim());
-  if (lines.length < 2) { resultEl.innerHTML = '<span style="color:#e74c3c;">データが空です</span>'; return; }
-
-  const headers = lines[0].split(',').map(h => h.replace(/^"|"$/g, '').trim());
-  const rows = [];
-  for (let i = 1; i < lines.length; i++) {
-    const vals = lines[i].match(/".*?"|[^,]*/g) || lines[i].split(',');
-    const obj = {};
-    headers.forEach((h, j) => { obj[h] = (vals[j] || '').replace(/^"|"$/g, '').trim(); });
-    if (obj.name || obj.sei) rows.push(obj);
+  function parseCsvLine(line) {
+    const result = []; let cur = '', inQ = false;
+    for (let i = 0; i < line.length; i++) {
+      const c = line[i];
+      if (c === '"') {
+        if (inQ && line[i+1] === '"') { cur += '"'; i++; }
+        else inQ = !inQ;
+      } else if (c === ',' && !inQ) {
+        result.push(cur.replace(/^['"]+|['"]+$/g, '').trim()); cur = '';
+      } else { cur += c; }
+    }
+    result.push(cur.replace(/^['"]+|['"]+$/g, '').trim());
+    return result;
   }
 
-  if (!rows.length) { resultEl.innerHTML = '<span style="color:#e74c3c;">有効なデータがありません</span>'; return; }
+  const lines = text.replace(/\r\n/g,'\n').split('\n').filter(function(l){ return l.trim(); });
+  if (lines.length < 2) {
+    resultEl.innerHTML = '<span style="color:#e74c3c;">データが空です</span>'; return;
+  }
+
+  const headers = parseCsvLine(lines[0]);
+  const isExternal = headers.includes('氏名 姓') || headers.includes('所属クラスコード');
+
+  const rows = [];
+  for (let i = 1; i < lines.length; i++) {
+    const vals = parseCsvLine(lines[i]);
+    const obj = {};
+    headers.forEach(function(h, j){ obj[h] = (vals[j]||'').trim(); });
+
+    let row = null;
+    if (isExternal) {
+      const sei = obj['氏名 姓'] || '';
+      const mei = obj['氏名 名'] || '';
+      if (!sei && !mei) continue;
+      if (obj['退園日'] && obj['退園日'].trim()) continue;
+      const rawCode = (obj['所属クラスコード'] || '').replace(/['"]/g, '').trim();
+      const className = CLASS_CODE_MAP[rawCode] || rawCode;
+      if (className === '職員') continue;
+      const sexRaw = obj['性別'] || '';
+      const sex = sexRaw === 'female' ? '女' : sexRaw === 'male' ? '男' : sexRaw;
+      row = {
+        sei, mei, name: sei + mei,
+        hiraSei: obj['氏名(姓かな)'] || '',
+        hiraMei: obj['氏名(名かな)'] || '',
+        hira: (obj['氏名(姓かな)'] || '') + (obj['氏名(名かな)'] || ''),
+        birth: obj['生年月日'] || '',
+        sex: sex,
+        class: className,
+      };
+    } else {
+      if (!obj.name && !obj.sei) continue;
+      row = {
+        name: obj.name || (obj.sei + obj.mei),
+        sei: obj.sei || '', mei: obj.mei || '',
+        hira: obj.hira || '',
+        hiraSei: obj.hiraSei || '', hiraMei: obj.hiraMei || '',
+        birth: obj.birth || '', sex: obj.sex || '', class: obj.class || '',
+      };
+    }
+    if (row) rows.push(row);
+  }
+
+  if (!rows.length) {
+    resultEl.innerHTML = '<span style="color:#e74c3c;">有効なデータがありません（退園済みを除外した結果0名）</span>'; return;
+  }
 
   showLoading('園児データを保存中…(' + rows.length + '名)');
   try {
@@ -1977,7 +2037,6 @@ async function importChildrenCsvFile(file) {
     resultEl.innerHTML = '<span style="color:#e74c3c;">❌ エラー: ' + e.message + '</span>';
   }
 }
-
 // 既存のimportChildrenCsvをラッパーに変更
 async function importChildrenCsv() {
   const fileInput = document.getElementById('csvFileInput');
