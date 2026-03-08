@@ -855,7 +855,7 @@ textarea.form-control.tall{min-height:120px;}
     </div>
   </div>
 
-  <!-- 職員・承認者マスタ（編集可） -->
+  <!-- 職員マスタ（編集可） -->
   <div class="card" style="margin-top:16px;">
     <div class="card-header">
       <div class="icon" style="background:#fce4ec;">👤</div>職員・承認者マスタ
@@ -963,11 +963,11 @@ textarea.form-control.tall{min-height:120px;}
     <div class="form-group" style="margin-bottom:12px;">
       <label class="form-label">権限 <span style="color:#e53935;">*</span></label>
       <select id="staffModalRole" class="form-control">
-        <option value="staff">一般職員（staff）</option>
-        <option value="syunin">主任（syunin）</option>
-        <option value="tokkatsu">統括リーダー（tokkatsu）</option>
-        <option value="encho">園長（encho）</option>
-        <option value="admin">管理者（admin）</option>
+        <option value="admin">管理者</option>
+        <option value="encho">園長</option>
+        <option value="syunin">主任</option>
+        <option value="tokkatsu">統括リーダー</option>
+        <option value="staff">職員</option>
       </select>
     </div>
     <div class="form-group" style="margin-bottom:16px;">
@@ -1367,6 +1367,7 @@ async function loadMasterFromDB(){
     // 承認者・スタッフ
     MASTER.approvers={encho:[],syunin:[],tokkatsu:[],admin:[]};
     MASTER.staff = res.staff||[];
+    MASTER.staffList = res.staff||[];  // staffListも同期
     (res.approvers||[]).forEach(a=>{
       const role=a['役割']||'';
       const name=a['氏名']||'';
@@ -2000,13 +2001,16 @@ async function importChildrenCsvFile(file) {
       const sexRaw = obj['性別'] || '';
       const sex = sexRaw === 'female' ? '女' : sexRaw === 'male' ? '男' : sexRaw;
       row = {
-        sei, mei, name: sei + mei,
+        sei, mei,
+        name: sei + mei,
         hiraSei: obj['氏名(姓かな)'] || '',
         hiraMei: obj['氏名(名かな)'] || '',
         hira: (obj['氏名(姓かな)'] || '') + (obj['氏名(名かな)'] || ''),
         birth: obj['生年月日'] || '',
         sex: sex,
         class: className,
+        nyuenDate: obj['入園日'] || '',
+        taienDate: obj['退園日'] || '',
       };
     } else {
       if (!obj.name && !obj.sei) continue;
@@ -3343,11 +3347,22 @@ function gotoFormWithData(type, cls, nendo, month, child){
 function showSection(id){
   document.querySelectorAll('.section').forEach(function(s){s.classList.remove('active');});
   document.querySelectorAll('.nav-tab').forEach(function(t){t.classList.remove('active');});
-  document.getElementById(id).classList.add('active');
-  const m={home:0,nensyuu:1,getsuan:2,shuuan:3,nisshi:4,kobetsu:5,kansatsu:6,print:7,approval:8};
-  if(m[id]!==undefined)document.querySelectorAll('.nav-tab')[m[id]].classList.add('active');
+  const sec = document.getElementById(id);
+  if(sec) sec.classList.add('active');
+  // アクティブなタブにクラスを付ける（非表示タブを除く表示中のタブで判定）
+  const visibleTabs = Array.from(document.querySelectorAll('.nav-tab')).filter(function(t){ return t.style.display !== 'none'; });
+  const tabMap = {home:0,nensyuu:1,getsuan:2,shuuan:3,nisshi:4,kobetsu:5,kansatsu:6,print:7,approval:8,master:9};
+  // masterNavTabは動的非表示なので直接IDで制御
+  if(id === 'master') {
+    const mt = document.getElementById('masterNavTab');
+    if(mt) mt.classList.add('active');
+  } else {
+    const m={home:0,nensyuu:1,getsuan:2,shuuan:3,nisshi:4,kobetsu:5,kansatsu:6,print:7,approval:8};
+    if(m[id]!==undefined && visibleTabs[m[id]]) visibleTabs[m[id]].classList.add('active');
+  }
   window.scrollTo(0,0);
   if(id==='approval'){loadNotifications();loadPending();}
+  if(id==='master'){showMasterSection();}
   // セクション移動時に全バナーをリセット
   document.querySelectorAll('[id$="_existBanner"]').forEach(function(b){
     b.style.display='none';
