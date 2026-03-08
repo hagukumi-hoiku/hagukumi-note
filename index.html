@@ -787,54 +787,60 @@ textarea.form-control.tall{min-height:120px;}
   <div class="card">
     <div class="card-header"><div class="icon" style="background:#e8f0fe;">👶</div>園児名簿 CSVインポート</div>
     <div class="card-body">
-
-      <!-- 説明ボックス -->
+      <!-- 説明テーブル -->
       <div style="background:#f0f7ff;border:1px solid #b3d4f5;border-radius:10px;padding:14px 16px;margin-bottom:14px;">
-        <div style="font-weight:700;font-size:13px;color:#1a5276;margin-bottom:8px;">📋 CSVファイルの形式について</div>
+        <div style="font-weight:700;font-size:13px;color:#1a5276;margin-bottom:8px;">📋 CSVファイルの形式</div>
         <table style="width:100%;border-collapse:collapse;font-size:12px;">
-          <thead>
-            <tr style="background:#d6eaf8;">
-              <th style="padding:5px 10px;border:1px solid #aed6f1;text-align:center;">列名</th>
-              <th style="padding:5px 10px;border:1px solid #aed6f1;text-align:left;">内容</th>
-              <th style="padding:5px 10px;border:1px solid #aed6f1;text-align:center;">必須</th>
-              <th style="padding:5px 10px;border:1px solid #aed6f1;text-align:left;">例</th>
-            </tr>
-          </thead>
+          <thead><tr style="background:#d6eaf8;">
+            <th style="padding:5px 10px;border:1px solid #aed6f1;text-align:center;">列名</th>
+            <th style="padding:5px 10px;border:1px solid #aed6f1;">内容</th>
+            <th style="padding:5px 10px;border:1px solid #aed6f1;text-align:center;">必須</th>
+            <th style="padding:5px 10px;border:1px solid #aed6f1;">例</th>
+          </tr></thead>
           <tbody>
-            <tr><td style="padding:4px 10px;border:1px solid #aed6f1;text-align:center;font-family:monospace;">name</td><td style="padding:4px 10px;border:1px solid #aed6f1;">氏名（フルネーム）</td><td style="padding:4px 10px;border:1px solid #aed6f1;text-align:center;color:#e74c3c;">必須</td><td style="padding:4px 10px;border:1px solid #aed6f1;color:#555;">山田 太郎</td></tr>
+            <tr><td style="padding:4px 10px;border:1px solid #aed6f1;text-align:center;font-family:monospace;font-weight:700;">name</td><td style="padding:4px 10px;border:1px solid #aed6f1;">氏名（フルネーム）</td><td style="padding:4px 10px;border:1px solid #aed6f1;text-align:center;color:#e74c3c;font-weight:700;">必須</td><td style="padding:4px 10px;border:1px solid #aed6f1;color:#555;">山田 太郎</td></tr>
             <tr style="background:#f8f9fa;"><td style="padding:4px 10px;border:1px solid #aed6f1;text-align:center;font-family:monospace;">sei</td><td style="padding:4px 10px;border:1px solid #aed6f1;">姓</td><td style="padding:4px 10px;border:1px solid #aed6f1;text-align:center;color:#888;">任意</td><td style="padding:4px 10px;border:1px solid #aed6f1;color:#555;">山田</td></tr>
             <tr><td style="padding:4px 10px;border:1px solid #aed6f1;text-align:center;font-family:monospace;">mei</td><td style="padding:4px 10px;border:1px solid #aed6f1;">名</td><td style="padding:4px 10px;border:1px solid #aed6f1;text-align:center;color:#888;">任意</td><td style="padding:4px 10px;border:1px solid #aed6f1;color:#555;">太郎</td></tr>
             <tr style="background:#f8f9fa;"><td style="padding:4px 10px;border:1px solid #aed6f1;text-align:center;font-family:monospace;">hira</td><td style="padding:4px 10px;border:1px solid #aed6f1;">ひらがな（フルネーム）</td><td style="padding:4px 10px;border:1px solid #aed6f1;text-align:center;color:#888;">任意</td><td style="padding:4px 10px;border:1px solid #aed6f1;color:#555;">やまだ たろう</td></tr>
             <tr><td style="padding:4px 10px;border:1px solid #aed6f1;text-align:center;font-family:monospace;">hiraSei</td><td style="padding:4px 10px;border:1px solid #aed6f1;">ひらがな（姓）</td><td style="padding:4px 10px;border:1px solid #aed6f1;text-align:center;color:#888;">任意</td><td style="padding:4px 10px;border:1px solid #aed6f1;color:#555;">やまだ</td></tr>
             <tr style="background:#f8f9fa;"><td style="padding:4px 10px;border:1px solid #aed6f1;text-align:center;font-family:monospace;">hiraMei</td><td style="padding:4px 10px;border:1px solid #aed6f1;">ひらがな（名）</td><td style="padding:4px 10px;border:1px solid #aed6f1;text-align:center;color:#888;">任意</td><td style="padding:4px 10px;border:1px solid #aed6f1;color:#555;">たろう</td></tr>
-            <tr><td style="padding:4px 10px;border:1px solid #aed6f1;text-align:center;font-family:monospace;">birth</td><td style="padding:4px 10px;border:1px solid #aed6f1;">生年月日</td><td style="padding:4px 10px;border:1px solid #aed6f1;text-align:center;color:#e67e22;">推奨</td><td style="padding:4px 10px;border:1px solid #aed6f1;color:#555;">2022-04-01</td></tr>
+            <tr><td style="padding:4px 10px;border:1px solid #aed6f1;text-align:center;font-family:monospace;">birth</td><td style="padding:4px 10px;border:1px solid #aed6f1;">生年月日</td><td style="padding:4px 10px;border:1px solid #aed6f1;text-align:center;color:#e67e22;font-weight:700;">推奨</td><td style="padding:4px 10px;border:1px solid #aed6f1;color:#555;">2022-04-01</td></tr>
             <tr style="background:#f8f9fa;"><td style="padding:4px 10px;border:1px solid #aed6f1;text-align:center;font-family:monospace;">sex</td><td style="padding:4px 10px;border:1px solid #aed6f1;">性別</td><td style="padding:4px 10px;border:1px solid #aed6f1;text-align:center;color:#888;">任意</td><td style="padding:4px 10px;border:1px solid #aed6f1;color:#555;">男 または 女</td></tr>
-            <tr><td style="padding:4px 10px;border:1px solid #aed6f1;text-align:center;font-family:monospace;">class</td><td style="padding:4px 10px;border:1px solid #aed6f1;">クラス名（クラス・担任マスタの名前と一致させること）</td><td style="padding:4px 10px;border:1px solid #aed6f1;text-align:center;color:#e74c3c;">必須</td><td style="padding:4px 10px;border:1px solid #aed6f1;color:#555;">とら</td></tr>
+            <tr><td style="padding:4px 10px;border:1px solid #aed6f1;text-align:center;font-family:monospace;font-weight:700;">class</td><td style="padding:4px 10px;border:1px solid #aed6f1;">クラス名（下のクラスマスタの名前と完全一致）</td><td style="padding:4px 10px;border:1px solid #aed6f1;text-align:center;color:#e74c3c;font-weight:700;">必須</td><td style="padding:4px 10px;border:1px solid #aed6f1;color:#555;">とら</td></tr>
           </tbody>
         </table>
-        <div style="margin-top:8px;font-size:11px;color:#555;">
-          ⚠️ 1行目はヘッダー行として読み飛ばします　／　文字コード：UTF-8またはShift-JIS対応
-        </div>
+        <div style="margin-top:8px;font-size:11px;color:#555;">⚠️ 1行目はヘッダー行として読み飛ばします　／　文字コード：UTF-8またはShift-JIS対応</div>
       </div>
 
-      <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:12px;">
-        <label style="font-size:13px;font-weight:600;color:var(--text-mid);">CSVファイルを選択：</label>
-        <input type="file" id="csvFileInput" accept=".csv" style="font-size:13px;">
+      <!-- ドラッグ&ドロップエリア -->
+      <div id="csvDropZone" style="border:2px dashed #4d7252;border-radius:12px;padding:24px;text-align:center;background:#f9fbf9;cursor:pointer;transition:all .2s;margin-bottom:12px;"
+           onclick="document.getElementById('csvFileInput').click()"
+           ondragover="event.preventDefault();this.style.background='#e8f5e9';this.style.borderColor='#2e7d32';"
+           ondragleave="this.style.background='#f9fbf9';this.style.borderColor='#4d7252';"
+           ondrop="handleCsvDrop(event)">
+        <div style="font-size:28px;margin-bottom:6px;">📂</div>
+        <div style="font-size:13px;font-weight:700;color:#4d7252;">CSVファイルをここにドラッグ＆ドロップ</div>
+        <div style="font-size:12px;color:#888;margin-top:4px;">または クリックしてファイルを選択</div>
+        <input type="file" id="csvFileInput" accept=".csv" style="display:none;" onchange="importChildrenCsv()">
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
         <button class="btn btn-primary" onclick="importChildrenCsv()">📥 CSVを取り込む</button>
         <button class="btn btn-check" onclick="downloadChildrenCsv()">📤 現在のデータをCSV出力</button>
       </div>
-      <div id="csvImportResult" style="font-size:13px;margin-top:8px;"></div>
+      <div id="csvImportResult" style="font-size:13px;margin-top:10px;"></div>
     </div>
   </div>
 
-  <!-- クラス・担任マスタ -->
+  <!-- クラス・担任マスタ（編集可） -->
   <div class="card" style="margin-top:16px;">
-    <div class="card-header"><div class="icon" style="background:#fff9e0;">🏷️</div>クラス・担任マスタ</div>
+    <div class="card-header">
+      <div class="icon" style="background:#fff9e0;">🏷️</div>クラス・担任マスタ
+      <button class="btn btn-primary" style="margin-left:auto;padding:5px 14px;font-size:12px;" onclick="openClassEditModal()">＋ クラス追加</button>
+    </div>
     <div class="card-body">
-      <div style="background:#fffde7;border:1px solid #f9e076;border-radius:8px;padding:10px 14px;margin-bottom:12px;font-size:12px;color:#7d6608;">
-        ℹ️ このマスタはGoogleスプレッドシートの <strong>マスタ_クラス</strong> シートで管理されています。<br>
-        クラス名・年齢・担任を変更する場合はスプレッドシートを直接編集してください。<br>
-        変更後はアプリを再読み込みすると反映されます。
+      <div style="background:#fffde7;border:1px solid #f9e076;border-radius:8px;padding:8px 14px;margin-bottom:12px;font-size:12px;color:#7d6608;">
+        ℹ️ クラス名はスプレッドシートの <strong>マスタ_クラス</strong> と連動しています。変更後は自動保存されます。<br>
+        <strong>年齢</strong>：0歳=ひよこ相当、1歳=りす相当…乳児(0〜2歳)と幼児(3〜5歳)でタスク種別が変わります。
       </div>
       <table style="width:100%;border-collapse:collapse;font-size:13px;">
         <thead><tr style="background:var(--cream);">
@@ -842,46 +848,50 @@ textarea.form-control.tall{min-height:120px;}
           <th style="padding:8px 12px;text-align:center;border-bottom:2px solid var(--border);">年齢</th>
           <th style="padding:8px 12px;text-align:left;border-bottom:2px solid var(--border);">担任</th>
           <th style="padding:8px 12px;text-align:center;border-bottom:2px solid var(--border);">園児数</th>
+          <th style="padding:8px 12px;text-align:center;border-bottom:2px solid var(--border);">操作</th>
         </tr></thead>
         <tbody id="masterClassTable"></tbody>
       </table>
     </div>
   </div>
 
-  <!-- 職員・承認者マスタ -->
+  <!-- 職員・承認者マスタ（編集可） -->
   <div class="card" style="margin-top:16px;">
-    <div class="card-header"><div class="icon" style="background:#fce4ec;">👤</div>職員・承認者マスタ</div>
+    <div class="card-header">
+      <div class="icon" style="background:#fce4ec;">👤</div>職員・承認者マスタ
+      <button class="btn btn-primary" style="margin-left:auto;padding:5px 14px;font-size:12px;" onclick="openStaffEditModal()">＋ 職員追加</button>
+    </div>
     <div class="card-body">
       <div style="background:#fce4ec;border:1px solid #f8bbd9;border-radius:8px;padding:10px 14px;margin-bottom:12px;font-size:12px;color:#880e4f;">
-        ℹ️ このマスタはGoogleスプレッドシートの <strong>認証DB</strong> シートで管理されています。<br>
-        <strong>権限の入力例：</strong>
-        <span style="display:inline-flex;gap:6px;flex-wrap:wrap;margin-top:4px;">
-          <code style="background:#fff;padding:1px 6px;border-radius:4px;border:1px solid #f8bbd9;">staff</code>または<code style="background:#fff;padding:1px 6px;border-radius:4px;border:1px solid #f8bbd9;">職員</code>（一般）　
-          <code style="background:#fff;padding:1px 6px;border-radius:4px;border:1px solid #f8bbd9;">syunin</code>または<code style="background:#fff;padding:1px 6px;border-radius:4px;border:1px solid #f8bbd9;">主任</code>　
-          <code style="background:#fff;padding:1px 6px;border-radius:4px;border:1px solid #f8bbd9;">tokkatsu</code>または<code style="background:#fff;padding:1px 6px;border-radius:4px;border:1px solid #f8bbd9;">統括</code>　
-          <code style="background:#fff;padding:1px 6px;border-radius:4px;border:1px solid #f8bbd9;">encho</code>または<code style="background:#fff;padding:1px 6px;border-radius:4px;border:1px solid #f8bbd9;">園長</code>　
-          <code style="background:#fff;padding:1px 6px;border-radius:4px;border:1px solid #f8bbd9;">admin</code>または<code style="background:#fff;padding:1px 6px;border-radius:4px;border:1px solid #f8bbd9;">管理者</code>
+        ℹ️ スプレッドシートの <strong>認証DB</strong> と連動しています。<br>
+        <strong>権限の入力値（日本語・英語どちらでも可）：</strong><br>
+        <span style="display:flex;gap:6px;flex-wrap:wrap;margin-top:5px;">
+          <span style="padding:2px 8px;background:#fff;border:1px solid #f8bbd9;border-radius:12px;"><code>staff</code> / <code>職員</code>（一般）</span>
+          <span style="padding:2px 8px;background:#fff;border:1px solid #f8bbd9;border-radius:12px;"><code>syunin</code> / <code>主任</code></span>
+          <span style="padding:2px 8px;background:#fff;border:1px solid #f8bbd9;border-radius:12px;"><code>tokkatsu</code> / <code>統括</code></span>
+          <span style="padding:2px 8px;background:#fff;border:1px solid #f8bbd9;border-radius:12px;"><code>encho</code> / <code>園長</code></span>
+          <span style="padding:2px 8px;background:#fff;border:1px solid #f8bbd9;border-radius:12px;"><code>admin</code> / <code>管理者</code></span>
         </span><br>
-        <strong>有効欄：</strong>在職中は <code style="background:#fff;padding:1px 4px;border-radius:4px;border:1px solid #f8bbd9;">○</code>、退職者は <code style="background:#fff;padding:1px 4px;border-radius:4px;border:1px solid #f8bbd9;">×</code> に変更してください。
+        <strong>有効欄：</strong>在職中 <code>○</code>、退職者は <code>×</code> に変更（データは残ります）
       </div>
       <table style="width:100%;border-collapse:collapse;font-size:13px;">
         <thead><tr style="background:var(--cream);">
-          <th style="padding:8px 12px;text-align:left;border-bottom:2px solid var(--border);">氏名</th>
-          <th style="padding:8px 12px;text-align:left;border-bottom:2px solid var(--border);">役割</th>
-          <th style="padding:8px 12px;text-align:center;border-bottom:2px solid var(--border);">権限コード</th>
+          <th style="padding:8px 12px;text-align:left;border-bottom:2px solid var(--border);">氏名（ユーザー名）</th>
+          <th style="padding:8px 12px;text-align:center;border-bottom:2px solid var(--border);">役割</th>
+          <th style="padding:8px 12px;text-align:center;border-bottom:2px solid var(--border);">有効</th>
+          <th style="padding:8px 12px;text-align:center;border-bottom:2px solid var(--border);">操作</th>
         </tr></thead>
         <tbody id="masterApproverTable"></tbody>
       </table>
     </div>
   </div>
 
-  <!-- 様式承認設定カード -->
+  <!-- 様式承認設定 -->
   <div class="card" style="margin-top:16px;">
     <div class="card-header"><div class="icon" style="background:#e8f5e9;">✅</div>様式ごとの承認者設定</div>
     <div class="card-body">
       <div style="background:#e8f5e9;border:1px solid #a5d6a7;border-radius:8px;padding:10px 14px;margin-bottom:12px;font-size:12px;color:#1b5e20;">
-        ℹ️ 各様式の第1承認者（主任 または 統括リーダー）を設定します。<br>
-        最終承認は常に <strong>園長</strong> です。設定後は必ず「保存する」ボタンを押してください。
+        ℹ️ 各様式の第1承認者（主任 または 統括リーダー）を設定します。最終承認は常に <strong>園長</strong> です。
       </div>
       <table style="width:100%;border-collapse:collapse;font-size:13px;">
         <thead><tr style="background:var(--cream);">
@@ -897,6 +907,81 @@ textarea.form-control.tall{min-height:120px;}
   </div>
 </section>
 
+
+
+<!-- クラス編集モーダル -->
+<div id="classEditModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:8500;align-items:center;justify-content:center;padding:20px;">
+  <div style="background:white;border-radius:14px;padding:28px;width:100%;max-width:440px;box-shadow:0 20px 60px rgba(0,0,0,.3);">
+    <div style="font-weight:700;font-size:16px;margin-bottom:16px;">🏷️ クラス<span id="classModalMode">追加</span></div>
+    <input type="hidden" id="classModalIdx" value="-1">
+    <div class="form-group" style="margin-bottom:12px;">
+      <label class="form-label">クラス名 <span style="color:#e53935;">*</span></label>
+      <input type="text" id="classModalName" class="form-control" placeholder="例：とら、ぱんだ">
+    </div>
+    <div class="form-group" style="margin-bottom:12px;">
+      <label class="form-label">年齢 <span style="color:#e53935;">*</span></label>
+      <select id="classModalAge" class="form-control">
+        <option value="0">0歳</option><option value="1">1歳</option><option value="2">2歳</option>
+        <option value="3">3歳</option><option value="4">4歳</option><option value="5">5歳</option>
+      </select>
+    </div>
+    <div class="form-group" style="margin-bottom:12px;">
+      <label class="form-label">担任1</label>
+      <input type="text" id="classModalT1" class="form-control" placeholder="担任の名前">
+    </div>
+    <div class="form-group" style="margin-bottom:16px;">
+      <label class="form-label">担任2（副担任）</label>
+      <input type="text" id="classModalT2" class="form-control" placeholder="副担任の名前（任意）">
+    </div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;">
+      <button onclick="closeClassEditModal()" style="padding:9px 20px;background:var(--cream);border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:'Noto Sans JP',sans-serif;cursor:pointer;">キャンセル</button>
+      <button id="classModalDelBtn" style="display:none;padding:9px 20px;background:#c0392b;color:white;border:none;border-radius:8px;font-size:13px;font-family:'Noto Sans JP',sans-serif;font-weight:700;cursor:pointer;" onclick="deleteClass()">🗑️ 削除</button>
+      <button style="padding:9px 20px;background:#4d7252;color:white;border:none;border-radius:8px;font-size:13px;font-family:'Noto Sans JP',sans-serif;font-weight:700;cursor:pointer;" onclick="saveClassEdit()">💾 保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- 職員編集モーダル -->
+<div id="staffEditModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:8500;align-items:center;justify-content:center;padding:20px;">
+  <div style="background:white;border-radius:14px;padding:28px;width:100%;max-width:440px;box-shadow:0 20px 60px rgba(0,0,0,.3);">
+    <div style="font-weight:700;font-size:16px;margin-bottom:16px;">👤 職員<span id="staffModalMode">追加</span></div>
+    <input type="hidden" id="staffModalUsername" value="">
+    <div class="form-group" style="margin-bottom:12px;">
+      <label class="form-label">ユーザー名（ログインID） <span style="color:#e53935;">*</span></label>
+      <input type="text" id="staffModalUser" class="form-control" placeholder="例：tanaka">
+      <div style="font-size:11px;color:#888;margin-top:3px;">半角英数・スペースなし。ログイン時に使用します。</div>
+    </div>
+    <div class="form-group" style="margin-bottom:12px;">
+      <label class="form-label">パスワード</label>
+      <input type="text" id="staffModalPass" class="form-control" placeholder="新規追加時は必須。変更しない場合は空欄">
+    </div>
+    <div class="form-group" style="margin-bottom:12px;">
+      <label class="form-label">氏名</label>
+      <input type="text" id="staffModalName" class="form-control" placeholder="例：田中 花子">
+    </div>
+    <div class="form-group" style="margin-bottom:12px;">
+      <label class="form-label">権限 <span style="color:#e53935;">*</span></label>
+      <select id="staffModalRole" class="form-control">
+        <option value="staff">一般職員（staff）</option>
+        <option value="syunin">主任（syunin）</option>
+        <option value="tokkatsu">統括リーダー（tokkatsu）</option>
+        <option value="encho">園長（encho）</option>
+        <option value="admin">管理者（admin）</option>
+      </select>
+    </div>
+    <div class="form-group" style="margin-bottom:16px;">
+      <label class="form-label">有効</label>
+      <select id="staffModalActive" class="form-control">
+        <option value="○">○ 在職中</option>
+        <option value="×">× 退職・無効</option>
+      </select>
+    </div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;">
+      <button onclick="closeStaffEditModal()" style="padding:9px 20px;background:var(--cream);border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:'Noto Sans JP',sans-serif;cursor:pointer;">キャンセル</button>
+      <button style="padding:9px 20px;background:#4d7252;color:white;border:none;border-radius:8px;font-size:13px;font-family:'Noto Sans JP',sans-serif;font-weight:700;cursor:pointer;" onclick="saveStaffEdit()">💾 保存</button>
+    </div>
+  </div>
+</div>
 
 <!-- 差し戻しモーダル -->
 <div id="rejectModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:8500;align-items:center;justify-content:center;padding:20px;">
@@ -1579,69 +1664,330 @@ function updateCount(el, max) {
 }
 
 
-// ========== マスタ管理 ==========
 
-function showMasterSection(){
-  renderMasterClassTable();
-  renderMasterApproverTable();
+
+// ============================================================
+// マスタ管理 - クラス編集
+// ============================================================
+function openClassEditModal(idx) {
+  const modal = document.getElementById('classEditModal');
+  const modeEl = document.getElementById('classModalMode');
+  const delBtn = document.getElementById('classModalDelBtn');
+  if (idx === undefined || idx < 0) {
+    // 新規追加
+    modeEl.textContent = '追加';
+    document.getElementById('classModalIdx').value = '-1';
+    document.getElementById('classModalName').value = '';
+    document.getElementById('classModalAge').value = '0';
+    document.getElementById('classModalT1').value = '';
+    document.getElementById('classModalT2').value = '';
+    delBtn.style.display = 'none';
+  } else {
+    // 編集
+    const cls = MASTER.classes[idx];
+    if (!cls) return;
+    modeEl.textContent = '編集';
+    document.getElementById('classModalIdx').value = String(idx);
+    document.getElementById('classModalName').value = cls.name;
+    document.getElementById('classModalAge').value = String(cls.age);
+    document.getElementById('classModalT1').value = cls.tanin[0] || '';
+    document.getElementById('classModalT2').value = cls.tanin[1] || '';
+    delBtn.style.display = 'inline-block';
+  }
+  modal.style.display = 'flex';
+}
+function closeClassEditModal() {
+  document.getElementById('classEditModal').style.display = 'none';
 }
 
-function renderMasterClassTable(){
+async function saveClassEdit() {
+  const name = document.getElementById('classModalName').value.trim();
+  const age  = parseInt(document.getElementById('classModalAge').value);
+  const t1   = document.getElementById('classModalT1').value.trim();
+  const t2   = document.getElementById('classModalT2').value.trim();
+  const idx  = parseInt(document.getElementById('classModalIdx').value);
+  if (!name) { showToast('⚠️ クラス名を入力してください', 'error'); return; }
+
+  const newCls = { name, age, tanin: [t1, t2].filter(t => t) };
+
+  if (idx < 0) {
+    // 追加
+    MASTER.classes.push(newCls);
+  } else {
+    // 更新
+    MASTER.classes[idx] = { ...MASTER.classes[idx], ...newCls };
+  }
+  closeClassEditModal();
+  await saveMasterClasses();
+}
+
+async function deleteClass() {
+  const idx = parseInt(document.getElementById('classModalIdx').value);
+  if (idx < 0) return;
+  const cls = MASTER.classes[idx];
+  const childCount = (MASTER.children[cls.name] || []).length;
+  const msg = childCount > 0
+    ? `「${cls.name}」クラスには${childCount}名の園児が登録されています。
+本当に削除しますか？（園児データは残ります）`
+    : `「${cls.name}」クラスを削除しますか？`;
+  if (!confirm(msg)) return;
+  MASTER.classes.splice(idx, 1);
+  closeClassEditModal();
+  await saveMasterClasses();
+}
+
+async function saveMasterClasses() {
+  showLoading('クラスマスタを保存中…');
+  try {
+    const classData = MASTER.classes.map(c => ({
+      name: c.name, age: c.age,
+      t1: c.tanin[0] || '', t2: c.tanin[1] || '', t3: '', t4: '',
+    }));
+    const res = await gasPost({ action: 'saveMaster', classes: classData });
+    hideLoading();
+    if (res && res.ok) {
+      showToast('✅ クラスマスタを保存しました');
+      renderMasterClassTable();
+      applyMasterToUI();
+    } else {
+      showToast('❌ 保存失敗: ' + (res ? res.error : ''), 'error');
+    }
+  } catch(e) { hideLoading(); showToast('❌ エラー: ' + e.message, 'error'); }
+}
+
+function renderMasterClassTable() {
   const tbody = document.getElementById('masterClassTable');
-  if(!tbody) return;
+  if (!tbody) return;
   tbody.innerHTML = '';
-  MASTER.classes.forEach(c=>{
-    const childCount = (MASTER.children[c.name]||[]).length;
+  if (!MASTER.classes.length) {
+    tbody.innerHTML = '<tr><td colspan="5" style="padding:14px;text-align:center;color:var(--text-light);font-size:13px;">クラスが登録されていません</td></tr>';
+    return;
+  }
+  MASTER.classes.forEach((c, i) => {
+    const childCount = (MASTER.children[c.name] || []).length;
+    const ageBadgeColor = c.age <= 2 ? '#e3f2fd' : '#e8f5e9';
+    const ageBadgeText  = c.age <= 2 ? '#0d47a1'  : '#1b5e20';
     const tr = document.createElement('tr');
-    tr.innerHTML = '<td style="padding:8px 12px;border-bottom:1px solid var(--border);">'+c.name+'</td>'
-      +'<td style="padding:8px 12px;text-align:center;border-bottom:1px solid var(--border);">'+c.age+'歳</td>'
-      +'<td style="padding:8px 12px;border-bottom:1px solid var(--border);">'+(c.tanin.join('・')||'未設定')+'</td>'
-      +'<td style="padding:8px 12px;text-align:center;border-bottom:1px solid var(--border);">'+childCount+'名</td>';
+    tr.innerHTML =
+      '<td style="padding:8px 12px;border-bottom:1px solid var(--border);font-weight:600;">' + esc(c.name) + '</td>'
+      + '<td style="padding:8px 12px;border-bottom:1px solid var(--border);text-align:center;">'
+      + '<span style="padding:2px 8px;border-radius:12px;font-size:11px;font-weight:700;background:' + ageBadgeColor + ';color:' + ageBadgeText + ';">' + c.age + '歳</span></td>'
+      + '<td style="padding:8px 12px;border-bottom:1px solid var(--border);">' + esc(c.tanin.join('・') || '未設定') + '</td>'
+      + '<td style="padding:8px 12px;border-bottom:1px solid var(--border);text-align:center;">' + childCount + '名</td>'
+      + '<td style="padding:8px 12px;border-bottom:1px solid var(--border);text-align:center;">'
+      + '<button onclick="openClassEditModal(' + i + ')" style="padding:4px 12px;font-size:11px;border:1px solid var(--border);background:var(--cream);border-radius:6px;cursor:pointer;">✏️ 編集</button></td>';
     tbody.appendChild(tr);
   });
 }
 
-function renderMasterApproverTable(){
+// ============================================================
+// マスタ管理 - 職員編集
+// ============================================================
+// 全職員リストをローカルに保持
+if (!MASTER.staffList) MASTER.staffList = [];
+
+async function loadStaffList() {
+  if (!SESSION || !GAS_URL) return;
+  try {
+    const res = await gasGet({ action: 'getStaff' });
+    if (res && res.ok && res.data) {
+      MASTER.staffList = res.data;
+      renderMasterApproverTable();
+    }
+  } catch(e) { console.warn('loadStaffList error:', e); }
+}
+
+function openStaffEditModal(username) {
+  const modal = document.getElementById('staffEditModal');
+  document.getElementById('staffModalMode').textContent = username ? '編集' : '追加';
+  if (username) {
+    const s = (MASTER.staffList || []).find(x => x['ユーザー名'] === username);
+    if (!s) return;
+    document.getElementById('staffModalUsername').value = username;
+    document.getElementById('staffModalUser').value  = s['ユーザー名'] || '';
+    document.getElementById('staffModalUser').readOnly = true;
+    document.getElementById('staffModalUser').style.background = '#f5f5f5';
+    document.getElementById('staffModalPass').value  = '';
+    document.getElementById('staffModalName').value  = s['氏名'] || '';
+    document.getElementById('staffModalRole').value  = s['権限'] || 'staff';
+    document.getElementById('staffModalActive').value = s['有効'] || '○';
+  } else {
+    document.getElementById('staffModalUsername').value = '';
+    document.getElementById('staffModalUser').value  = '';
+    document.getElementById('staffModalUser').readOnly = false;
+    document.getElementById('staffModalUser').style.background = '';
+    document.getElementById('staffModalPass').value  = '';
+    document.getElementById('staffModalName').value  = '';
+    document.getElementById('staffModalRole').value  = 'staff';
+    document.getElementById('staffModalActive').value = '○';
+  }
+  modal.style.display = 'flex';
+}
+function closeStaffEditModal() {
+  document.getElementById('staffEditModal').style.display = 'none';
+}
+
+async function saveStaffEdit() {
+  const username = document.getElementById('staffModalUser').value.trim();
+  const pass     = document.getElementById('staffModalPass').value;
+  const name     = document.getElementById('staffModalName').value.trim();
+  const role     = document.getElementById('staffModalRole').value;
+  const active   = document.getElementById('staffModalActive').value;
+  if (!username) { showToast('⚠️ ユーザー名を入力してください', 'error'); return; }
+  const isNew = !document.getElementById('staffModalUsername').value;
+  if (isNew && !pass) { showToast('⚠️ 新規追加時はパスワードが必要です', 'error'); return; }
+
+  const rowData = { 'ユーザー名': username, '氏名': name || username, '権限': role, '有効': active };
+  if (pass) rowData['パスワード'] = pass;
+
+  showLoading('職員情報を保存中…');
+  try {
+    const res = await gasPost({ action: 'saveMaster', masterType: 'staff', data: [rowData] });
+    hideLoading();
+    if (res && res.ok) {
+      showToast('✅ ' + (isNew ? '職員を追加しました' : '職員情報を更新しました'));
+      closeStaffEditModal();
+      await loadStaffList();
+    } else {
+      showToast('❌ 保存失敗: ' + (res ? res.error : ''), 'error');
+    }
+  } catch(e) { hideLoading(); showToast('❌ エラー: ' + e.message, 'error'); }
+}
+
+function renderMasterApproverTable() {
   const tbody = document.getElementById('masterApproverTable');
-  if(!tbody) return;
+  if (!tbody) return;
   tbody.innerHTML = '';
-  const roleInfo = [
-    {key:'encho',   label:'園長',         code:'encho / 園長',     bg:'#e8f5e9', color:'#1b5e20'},
-    {key:'syunin',  label:'主任',         code:'syunin / 主任',    bg:'#e3f2fd', color:'#0d47a1'},
-    {key:'tokkatsu',label:'統括リーダー', code:'tokkatsu / 統括',  bg:'#f3e5f5', color:'#4a148c'},
-    {key:'admin',   label:'管理者',       code:'admin / 管理者',   bg:'#fff3e0', color:'#e65100'},
-  ];
-  let hasAny = false;
-  roleInfo.forEach(r=>{
-    const names = MASTER.approvers[r.key]||[];
-    names.forEach(n=>{
-      if(!n) return;
-      hasAny = true;
-      const tr=document.createElement('tr');
-      tr.innerHTML='<td style="padding:8px 12px;border-bottom:1px solid var(--border);">'+n+'</td>'
-        +'<td style="padding:8px 12px;border-bottom:1px solid var(--border);">'
-        +'<span style="padding:3px 10px;border-radius:12px;font-size:11px;font-weight:700;background:'+r.bg+';color:'+r.color+';">'+r.label+'</span></td>'
-        +'<td style="padding:8px 12px;border-bottom:1px solid var(--border);text-align:center;"><code style="font-size:11px;background:#f5f5f5;padding:2px 6px;border-radius:4px;border:1px solid #e0e0e0;">'+r.code+'</code></td>';
-      tbody.appendChild(tr);
-    });
+  const list = MASTER.staffList || [];
+  if (!list.length) {
+    tbody.innerHTML = '<tr><td colspan="4" style="padding:14px;text-align:center;color:var(--text-light);font-size:13px;">データがありません</td></tr>';
+    return;
+  }
+  const roleMap = {
+    admin:    { label: '管理者',       bg: '#fff3e0', color: '#e65100' },
+    encho:    { label: '園長',         bg: '#e8f5e9', color: '#1b5e20' },
+    tokkatsu: { label: '統括リーダー', bg: '#f3e5f5', color: '#4a148c' },
+    syunin:   { label: '主任',         bg: '#e3f2fd', color: '#0d47a1' },
+    staff:    { label: '一般職員',     bg: '#f5f5f5', color: '#555'    },
+  };
+  // ロール順でソート
+  const order = ['admin','encho','tokkatsu','syunin','staff'];
+  const sorted = [...list].sort((a, b) => {
+    const ia = order.indexOf(a['権限'] || 'staff');
+    const ib = order.indexOf(b['権限'] || 'staff');
+    return (ia < 0 ? 99 : ia) - (ib < 0 ? 99 : ib);
   });
-  // staff/一般職員はMASTER.staffから取得
-  (MASTER.staff||[]).forEach(s=>{
-    if(['encho','syunin','tokkatsu','admin'].includes(s.role)) return;
-    hasAny = true;
-    const tr=document.createElement('tr');
-    tr.innerHTML='<td style="padding:8px 12px;border-bottom:1px solid var(--border);">'+s.name+'</td>'
-      +'<td style="padding:8px 12px;border-bottom:1px solid var(--border);">'
-      +'<span style="padding:3px 10px;border-radius:12px;font-size:11px;font-weight:700;background:#f5f5f5;color:#555;">一般職員</span></td>'
-      +'<td style="padding:8px 12px;border-bottom:1px solid var(--border);text-align:center;"><code style="font-size:11px;background:#f5f5f5;padding:2px 6px;border-radius:4px;border:1px solid #e0e0e0;">staff / 職員</code></td>';
+  sorted.forEach(s => {
+    const uname  = s['ユーザー名'] || '';
+    const name   = s['氏名'] || uname;
+    const role   = s['権限'] || 'staff';
+    const active = s['有効'] || '○';
+    const r = roleMap[role] || roleMap.staff;
+    const activeColor = active === '○' ? '#4d7252' : '#aaa';
+    const tr = document.createElement('tr');
+    tr.style.opacity = active === '○' ? '1' : '0.5';
+    tr.innerHTML =
+      '<td style="padding:8px 12px;border-bottom:1px solid var(--border);">'
+      + '<span style="font-weight:600;">' + esc(name) + '</span>'
+      + '<span style="font-size:11px;color:#888;margin-left:6px;">@' + esc(uname) + '</span></td>'
+      + '<td style="padding:8px 12px;border-bottom:1px solid var(--border);text-align:center;">'
+      + '<span style="padding:3px 10px;border-radius:12px;font-size:11px;font-weight:700;background:' + r.bg + ';color:' + r.color + ';">' + r.label + '</span></td>'
+      + '<td style="padding:8px 12px;border-bottom:1px solid var(--border);text-align:center;">'
+      + '<span style="font-weight:700;color:' + activeColor + ';">' + active + '</span></td>'
+      + '<td style="padding:8px 12px;border-bottom:1px solid var(--border);text-align:center;">'
+      + '<button onclick="openStaffEditModal('' + esc(uname) + '')" style="padding:4px 12px;font-size:11px;border:1px solid var(--border);background:var(--cream);border-radius:6px;cursor:pointer;">✏️ 編集</button></td>';
     tbody.appendChild(tr);
   });
-  if(!hasAny){
-    const tr=document.createElement('tr');
-    tr.innerHTML='<td colspan="3" style="padding:12px;text-align:center;color:var(--text-light);font-size:13px;">データがありません</td>';
-    tbody.appendChild(tr);
+}
+
+// showMasterSection でスタッフリストも読み込む
+function showMasterSection() {
+  renderMasterClassTable();
+  loadStaffList();
+}
+
+// CSVドラッグ&ドロップ
+function handleCsvDrop(event) {
+  event.preventDefault();
+  const zone = document.getElementById('csvDropZone');
+  zone.style.background = '#f9fbf9';
+  zone.style.borderColor = '#4d7252';
+  const file = event.dataTransfer.files[0];
+  if (!file || !file.name.endsWith('.csv')) {
+    showToast('⚠️ CSVファイルをドロップしてください', 'error');
+    return;
+  }
+  // FileListはreadonlyなのでinputには直接代入できない
+  // 直接処理関数に渡す
+  importChildrenCsvFile(file);
+}
+
+// CSVインポート（ファイルオブジェクト直接受け取り版）
+async function importChildrenCsvFile(file) {
+  const resultEl = document.getElementById('csvImportResult');
+  resultEl.innerHTML = '読み込み中…';
+
+  const readFile = (encoding) => new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = e => resolve(e.target.result);
+    reader.onerror = reject;
+    reader.readAsText(file, encoding);
+  });
+
+  let text = await readFile('UTF-8');
+  if (text.includes('\uFFFD')) text = await readFile('Shift-JIS');
+
+  const lines = text.split(/\r?\n/).filter(l => l.trim());
+  if (lines.length < 2) { resultEl.innerHTML = '<span style="color:#e74c3c;">データが空です</span>'; return; }
+
+  const headers = lines[0].split(',').map(h => h.replace(/^"|"$/g, '').trim());
+  const rows = [];
+  for (let i = 1; i < lines.length; i++) {
+    const vals = lines[i].match(/".*?"|[^,]*/g) || lines[i].split(',');
+    const obj = {};
+    headers.forEach((h, j) => { obj[h] = (vals[j] || '').replace(/^"|"$/g, '').trim(); });
+    if (obj.name || obj.sei) rows.push(obj);
+  }
+
+  if (!rows.length) { resultEl.innerHTML = '<span style="color:#e74c3c;">有効なデータがありません</span>'; return; }
+
+  showLoading('園児データを保存中…(' + rows.length + '名)');
+  try {
+    const res = await gasPost({ action: 'saveMaster', masterType: 'children', data: rows });
+    hideLoading();
+    if (res && res.ok) {
+      resultEl.innerHTML = '<span style="color:#4d7252;">✅ ' + rows.length + '名のデータを取り込みました</span>';
+      showToast('✅ 園児データを ' + rows.length + ' 名取り込みました');
+      await loadMasterFromDB();
+      renderMasterClassTable();
+    } else {
+      resultEl.innerHTML = '<span style="color:#e74c3c;">❌ ' + (res ? res.error : '保存失敗') + '</span>';
+    }
+  } catch(e) {
+    hideLoading();
+    resultEl.innerHTML = '<span style="color:#e74c3c;">❌ エラー: ' + e.message + '</span>';
   }
 }
+
+// 既存のimportChildrenCsvをラッパーに変更
+async function importChildrenCsv() {
+  const fileInput = document.getElementById('csvFileInput');
+  const resultEl  = document.getElementById('csvImportResult');
+  if (!fileInput.files || !fileInput.files[0]) {
+    resultEl.innerHTML = '<span style="color:#e74c3c;">ファイルを選択してください</span>';
+    return;
+  }
+  await importChildrenCsvFile(fileInput.files[0]);
+}
+
+
+// ========== マスタ管理 ==========
+
+// showMasterSection -> 後で定義
+
+// renderMasterClassTable -> 後で定義
+
+// renderMasterApproverTable -> 後で定義
 
 // CSVインポート（Shift-JIS/UTF-8対応）
 async function importChildrenCsv(){
