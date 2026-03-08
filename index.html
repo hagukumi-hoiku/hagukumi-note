@@ -859,7 +859,7 @@ textarea.form-control.tall{min-height:120px;}
   <div class="card" style="margin-top:16px;">
     <div class="card-header">
       <div class="icon" style="background:#fce4ec;">👤</div>職員・承認者マスタ
-      <button class="btn btn-primary" style="margin-left:auto;padding:5px 14px;font-size:12px;" onclick="openStaffEditModal()">＋ 職員追加</button>
+      <button id="staffAddBtn" class="btn btn-primary" style="margin-left:auto;padding:5px 14px;font-size:12px;display:none;" onclick="openStaffEditModal()">＋ 職員追加</button>
     </div>
     <div class="card-body">
       <div style="background:#fce4ec;border:1px solid #f8bbd9;border-radius:8px;padding:10px 14px;margin-bottom:12px;font-size:12px;color:#880e4f;">
@@ -911,27 +911,28 @@ textarea.form-control.tall{min-height:120px;}
 
 <!-- クラス編集モーダル -->
 <div id="classEditModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:8500;align-items:center;justify-content:center;padding:20px;">
-  <div style="background:white;border-radius:14px;padding:28px;width:100%;max-width:440px;box-shadow:0 20px 60px rgba(0,0,0,.3);">
+  <div style="background:white;border-radius:14px;padding:28px;width:100%;max-width:480px;box-shadow:0 20px 60px rgba(0,0,0,.3);max-height:90vh;overflow-y:auto;">
     <div style="font-weight:700;font-size:16px;margin-bottom:16px;">🏷️ クラス<span id="classModalMode">追加</span></div>
     <input type="hidden" id="classModalIdx" value="-1">
     <div class="form-group" style="margin-bottom:12px;">
       <label class="form-label">クラス名 <span style="color:#e53935;">*</span></label>
       <input type="text" id="classModalName" class="form-control" placeholder="例：とら、ぱんだ">
     </div>
-    <div class="form-group" style="margin-bottom:12px;">
+    <div class="form-group" style="margin-bottom:14px;">
       <label class="form-label">年齢 <span style="color:#e53935;">*</span></label>
       <select id="classModalAge" class="form-control">
-        <option value="0">0歳</option><option value="1">1歳</option><option value="2">2歳</option>
-        <option value="3">3歳</option><option value="4">4歳</option><option value="5">5歳</option>
+        <option value="0">0歳（乳児）</option><option value="1">1歳（乳児）</option><option value="2">2歳（乳児）</option>
+        <option value="3">3歳（幼児）</option><option value="4">4歳（幼児）</option><option value="5">5歳（幼児）</option>
       </select>
     </div>
-    <div class="form-group" style="margin-bottom:12px;">
-      <label class="form-label">担任1</label>
-      <input type="text" id="classModalT1" class="form-control" placeholder="担任の名前">
-    </div>
-    <div class="form-group" style="margin-bottom:16px;">
-      <label class="form-label">担任2（副担任）</label>
-      <input type="text" id="classModalT2" class="form-control" placeholder="副担任の名前（任意）">
+    <div style="background:#f5f5f5;border-radius:8px;padding:12px;margin-bottom:14px;">
+      <div style="font-size:12px;font-weight:700;color:var(--text-mid);margin-bottom:8px;">担任（最大4名）</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+        <div><label style="font-size:11px;color:#888;">担任1</label><select id="classModalT1" class="form-control" style="font-size:13px;margin-top:2px;"><option value="">-- 未設定 --</option></select></div>
+        <div><label style="font-size:11px;color:#888;">担任2</label><select id="classModalT2" class="form-control" style="font-size:13px;margin-top:2px;"><option value="">-- 未設定 --</option></select></div>
+        <div><label style="font-size:11px;color:#888;">担任3</label><select id="classModalT3" class="form-control" style="font-size:13px;margin-top:2px;"><option value="">-- 未設定 --</option></select></div>
+        <div><label style="font-size:11px;color:#888;">担任4</label><select id="classModalT4" class="form-control" style="font-size:13px;margin-top:2px;"><option value="">-- 未設定 --</option></select></div>
+      </div>
     </div>
     <div style="display:flex;gap:10px;justify-content:flex-end;">
       <button onclick="closeClassEditModal()" style="padding:9px 20px;background:var(--cream);border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:'Noto Sans JP',sans-serif;cursor:pointer;">キャンセル</button>
@@ -1745,10 +1746,11 @@ async function deleteClass() {
 async function saveMasterClasses() {
   showLoading('クラスマスタを保存中…');
   try {
-    const classData = MASTER.classes.map(c => ({
+    const classData = MASTER.classes.map(function(c) { return {
       name: c.name, age: c.age,
-      t1: c.tanin[0] || '', t2: c.tanin[1] || '', t3: '', t4: '',
-    }));
+      t1: c.tanin[0] || '', t2: c.tanin[1] || '',
+      t3: c.tanin[2] || '', t4: c.tanin[3] || '',
+    }; });
     const res = await gasPost({ action: 'saveMaster', classes: classData });
     hideLoading();
     if (res && res.ok) {
@@ -1887,6 +1889,10 @@ function renderMasterApproverTable() {
     btn.textContent = '✏️ 編集';
     btn.dataset.uname = uname;
     btn.onclick = function() { openStaffEditModal(this.dataset.uname); };
+    // admin/encho以外は編集ボタンを隠す
+    if (!SESSION || (SESSION.role !== 'admin' && SESSION.role !== 'encho')) {
+      btn.style.display = 'none';
+    }
     td4.appendChild(btn);
 
     tr.appendChild(td1);
@@ -1899,6 +1905,12 @@ function renderMasterApproverTable() {
 
 // showMasterSection でスタッフリストも読み込む
 function showMasterSection() {
+  // admin/enchoのみ職員追加ボタンを表示
+  const addBtn = document.getElementById('staffAddBtn');
+  if (addBtn) {
+    addBtn.style.display = (SESSION && (SESSION.role==='admin' || SESSION.role==='encho')) ? 'inline-flex' : 'none';
+  }
+  // admin/enchoのみ職員編集ボタンを有効化
   renderMasterClassTable();
   loadStaffList();
 }
@@ -1980,11 +1992,96 @@ async function importChildrenCsv() {
 
 // ========== マスタ管理 ==========
 
-// showMasterSection -> 後で定義
 
-// renderMasterClassTable -> 後で定義
+// ============================================================
+// マスタ管理 - クラス編集
+// ============================================================
 
-// renderMasterApproverTable -> 後で定義
+
+
+
+
+
+
+
+// ============================================================
+// マスタ管理 - 職員編集
+// ============================================================
+if (!MASTER.staffList) MASTER.staffList = [];
+
+async function loadStaffList() {
+  if (!SESSION || !GAS_URL) return;
+  try {
+    const res = await gasGet({ action: 'getStaff' });
+    if (res && res.ok && res.data) {
+      MASTER.staffList = res.data;
+      renderMasterApproverTable();
+    }
+  } catch(e) { console.warn('loadStaffList error:', e); }
+}
+
+function openStaffEditModal(username) {
+  const modal = document.getElementById('staffEditModal');
+  document.getElementById('staffModalMode').textContent = username ? '編集' : '追加';
+  if (username) {
+    const s = (MASTER.staffList || []).find(function(x){ return x['ユーザー名'] === username; });
+    if (!s) return;
+    document.getElementById('staffModalUsername').value = username;
+    document.getElementById('staffModalUser').value    = s['ユーザー名'] || '';
+    document.getElementById('staffModalUser').readOnly = true;
+    document.getElementById('staffModalUser').style.background = '#f5f5f5';
+    document.getElementById('staffModalPass').value    = '';
+    document.getElementById('staffModalName').value    = s['氏名'] || '';
+    document.getElementById('staffModalRole').value    = s['権限'] || 'staff';
+    document.getElementById('staffModalActive').value  = s['有効'] || '○';
+  } else {
+    document.getElementById('staffModalUsername').value = '';
+    document.getElementById('staffModalUser').value    = '';
+    document.getElementById('staffModalUser').readOnly = false;
+    document.getElementById('staffModalUser').style.background = '';
+    document.getElementById('staffModalPass').value    = '';
+    document.getElementById('staffModalName').value    = '';
+    document.getElementById('staffModalRole').value    = 'staff';
+    document.getElementById('staffModalActive').value  = '○';
+  }
+  modal.style.display = 'flex';
+}
+function closeStaffEditModal() {
+  document.getElementById('staffEditModal').style.display = 'none';
+}
+async function saveStaffEdit() {
+  const username = document.getElementById('staffModalUser').value.trim();
+  const pass     = document.getElementById('staffModalPass').value;
+  const name     = document.getElementById('staffModalName').value.trim();
+  const role     = document.getElementById('staffModalRole').value;
+  const active   = document.getElementById('staffModalActive').value;
+  if (!username) { showToast('⚠️ ユーザー名を入力してください', 'error'); return; }
+  const isNew = !document.getElementById('staffModalUsername').value;
+  if (isNew && !pass) { showToast('⚠️ 新規追加時はパスワードが必要です', 'error'); return; }
+  const rowData = { 'ユーザー名': username, '氏名': name || username, '権限': role, '有効': active };
+  if (pass) rowData['パスワード'] = pass;
+  showLoading('職員情報を保存中…');
+  try {
+    const res = await gasPost({ action: 'saveMaster', masterType: 'staff', data: [rowData] });
+    hideLoading();
+    if (res && res.ok) {
+      showToast('✅ ' + (isNew ? '職員を追加しました' : '職員情報を更新しました'));
+      closeStaffEditModal();
+      await loadStaffList();
+    } else {
+      showToast('❌ 保存失敗: ' + (res ? res.error : ''), 'error');
+    }
+  } catch(e) { hideLoading(); showToast('❌ エラー: ' + e.message, 'error'); }
+}
+
+
+
+
+
+// CSVドラッグ&ドロップ
+
+
+
 
 // CSVインポート（Shift-JIS/UTF-8対応）
 async function importChildrenCsv(){
