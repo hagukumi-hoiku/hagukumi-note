@@ -860,7 +860,7 @@ textarea.form-control.tall{min-height:120px;}
           <th style="padding:8px 12px;text-align:left;border-bottom:2px solid var(--border);">クラス名</th>
           <th style="padding:8px 12px;text-align:center;border-bottom:2px solid var(--border);">年齢</th>
           <th style="padding:8px 12px;text-align:left;border-bottom:2px solid var(--border);">担任</th>
-          <th style="padding:8px 12px;text-align:center;border-bottom:2px solid var(--border);">園児数</th>
+          <th style="padding:8px 12px;text-align:center;border-bottom:2px solid var(--border);">在籍数</th>
           <th style="padding:8px 12px;text-align:center;border-bottom:2px solid var(--border);">操作</th>
         </tr></thead>
         <tbody id="masterClassTable"></tbody>
@@ -928,7 +928,14 @@ textarea.form-control.tall{min-height:120px;}
 <!-- 職員編集モーダル -->
 <div id="staffEditModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:8500;align-items:center;justify-content:center;padding:20px;">
   <div style="background:white;border-radius:14px;padding:28px;width:100%;max-width:440px;box-shadow:0 20px 60px rgba(0,0,0,.3);">
-    <div style="font-weight:700;font-size:16px;margin-bottom:16px;">👤 職員<span id="staffModalMode">追加</span></div>
+    <div style="font-weight:700;font-size:16px;margin-bottom:4px;">👤 職員<span id="staffModalMode">追加</span></div>
+    <div style="font-size:11px;color:#888;margin-bottom:14px;background:#f9f9f9;padding:8px 10px;border-radius:6px;line-height:1.7;">
+      ・ユーザー名：半角英数字のみ（例：kasugai）<br>
+      ・パスワード：半角英数字のみ（例：pass1234）<br>
+      ・氏名：苗字＋（名前の頭文字ひらがな1文字）（例：春日井（た））<br>
+      ・権限：管理者／園長／主任／統括リーダー／職員から選択<br>
+      ・担任クラスの設定は「クラス・担任マスタ」で行います
+    </div>
     <input type="hidden" id="staffModalUsername" value="">
     <div class="form-group" style="margin-bottom:12px;">
       <label class="form-label">ユーザー名（ログインID） <span style="color:#e53935;">*</span></label>
@@ -953,10 +960,7 @@ textarea.form-control.tall{min-height:120px;}
         <option value="staff">職員</option>
       </select>
     </div>
-    <div class="form-group" style="margin-bottom:12px;">
-      <label class="form-label">担任クラス <span style="font-size:11px;color:#888;">（職員のみ。複数はカンマ区切り例：とら,ぱんだ）</span></label>
-      <input type="text" id="staffModalClass" class="form-control" placeholder="例：とら">
-    </div>
+
     <div class="form-group" style="margin-bottom:16px;">
       <label class="form-label">有効</label>
       <select id="staffModalActive" class="form-control">
@@ -1075,24 +1079,33 @@ function getDeadline(type, nendo, month, weekStart, targetDate, dispYear) {
 
   function calcFromSetting(setting, yr, mo) {
     if (!setting) return null;
-    if (setting === '当月5日')  return new Date(yr, mo-1, 5);
-    if (setting === '当月7日')  return new Date(yr, mo-1, 7);
-    if (setting === '当月末')   return new Date(yr, mo, 0);
-    if (setting === '翌月7日')  return new Date(yr, mo, 7);
-    if (setting === '翌月末')   return new Date(yr, mo+1, 0);
-    if (setting === '3月末')    return new Date(yr, 2, 31);
-    if (setting === '期末翌月7日') {
-      // 四半期末（6,9,12,3月）の翌月7日
-      const quarterEnd = mo <= 6 ? 6 : mo <= 9 ? 9 : mo <= 12 ? 12 : 3;
-      return new Date(yr, quarterEnd, 7);
+    // 汎用パース: 基準(当月/翌月/各期末翌月/3月) + 数字 + 単位(日/週目月曜/末)
+    const baseMap = {'当月':0, '翌月':1, '各期末翌月':1, '3月':null};
+    let baseMo = mo - 1; // 0-indexed
+    if (setting.startsWith('各期末翌月')) {
+      // 四半期末の翌月: Q1=4-6→7月, Q2=7-9→10月, Q3=10-12→1月, Q4=1-3→4月
+      const qEnd = mo <= 6 ? 6 : mo <= 9 ? 9 : mo <= 12 ? 12 : 3;
+      baseMo = qEnd; // 翌月なのでqEnd月（0-indexedではqEnd）
+    } else if (setting.startsWith('翌月')) {
+      baseMo = mo; // 翌月
+    } else if (setting.startsWith('3月')) {
+      baseMo = 2; yr = yr; // 3月固定
     }
-    if (setting === '翌月第1月曜') {
-      const d = new Date(yr, mo, 1);
-      const dow = d.getDay();
-      const diff = dow === 1 ? 0 : dow === 0 ? 1 : 8 - dow;
-      d.setDate(d.getDate() + diff);
-      return d;
+    // 末
+    if (setting.endsWith('末')) return new Date(yr, baseMo+1, 0);
+    // 第N週月曜
+    const weekMatch = setting.match(/第(\d+)週月曜/);
+    if (weekMatch) {
+      const n = parseInt(weekMatch[1]);
+      const firstMon = new Date(yr, baseMo, 1);
+      const dow = firstMon.getDay();
+      const toMon = dow === 1 ? 0 : dow === 0 ? 1 : 8 - dow;
+      firstMon.setDate(firstMon.getDate() + toMon + (n-1)*7);
+      return firstMon;
     }
+    // N日
+    const dayMatch = setting.match(/(\d+)日/);
+    if (dayMatch) return new Date(yr, baseMo, parseInt(dayMatch[1]));
     return null;
   }
 
@@ -1229,11 +1242,13 @@ async function loadMyTasks() {
   area.innerHTML = '<div style="color:var(--text-light);font-size:13px;text-align:center;padding:20px;">読み込み中…</div>';
 
   try {
-    const [kobRes, kanRes, getRes, nsRes] = await Promise.all([
+    const [kobRes, kanRes, getRes, nsRes, suRes, niRes] = await Promise.all([
       gasGet({action:'get', type:'kobetsu'}),
       gasGet({action:'get', type:'kansatsu'}),
       gasGet({action:'get', type:'getsuan'}),
       gasGet({action:'get', type:'nensyuu'}),
+      gasGet({action:'get', type:'shuuan'}),
+      gasGet({action:'get', type:'nisshi'}),
     ]);
 
     const kobData = kobRes && kobRes.data || [];
@@ -1324,26 +1339,68 @@ async function loadMyTasks() {
       }
     });
 
-    // 年間指導計画タスク（クラスごと・年度単位）
-    if (nsRes && nsRes.data) {
-      targetClasses.forEach(function(cls) {
-        const nsRow = nsRes.data.find(r =>
+    // クラスごとの年間・週案・日誌タスク
+    targetClasses.forEach(function(cls) {
+      let extraHtml = '';
+
+      // 年間指導計画（年度単位・未作成のみ）
+      const nsRow = nsRes && nsRes.data ? nsRes.data.find(r =>
+        String(r['対象クラス']) === cls.name && String(r['対象年度']) === String(dispNendo)
+      ) : null;
+      const nsSt = nsRow ? (nsRow['承認状態'] || '未申請') : '未作成';
+      if (nsSt === '未作成') {
+        const nsDl = getDeadline('nensyuu', dispNendo, dispMonth, null, null, dispYear);
+        extraHtml += buildTaskSection('task_ns_'+cls.name, '📋', '年間指導計画',
+          nsDl, statusBadge(nsSt),
+          '<div style="display:flex;gap:8px;align-items:center;">'
+          +'<button class="btn btn-primary task-goto-btn" style="padding:3px 12px;font-size:11px;"'
+          +' data-type="nensyuu" data-cls="'+cls.name+'" data-nendo="'+dispNendo+'" data-month="" data-child="">✏️ 作成→</button></div>');
+      }
+
+      // 週案（当該月の週ごと・未作成のみ）
+      const suRes_data = (typeof suRes !== 'undefined' && suRes && suRes.data) ? suRes.data : [];
+      // 当月の週を生成（第1〜5週）
+      for (let week = 1; week <= 5; week++) {
+        const suRow = suRes_data.find(r =>
           String(r['対象クラス']) === cls.name &&
-          String(r['対象年度']) === String(dispNendo)
+          String(r['対象月']) === String(dispMonth) &&
+          String(r['対象年度']) === String(dispNendo) &&
+          String(r['対象週']) === String(week)
         );
-        const nsSt = nsRow ? (nsRow['承認状態'] || '未申請') : '未作成';
-        if (nsSt === '未作成') {
-          html += '<div style="margin-bottom:8px;">'
-            + buildTaskSection('task_ns_'+cls.name, '📋', '年間指導計画（'+cls.name+'）',
-                new Date(dispYear, 2, 31), // 3月末
-                statusBadge(nsSt),
-                '<div style="display:flex;gap:8px;align-items:center;"><span style="font-size:12px;color:#e0776a;">未作成</span>'
-                +'<button class="btn btn-primary task-goto-btn" style="padding:3px 12px;font-size:11px;"'
-                +' data-type="nensyuu" data-cls="'+cls.name+'" data-nendo="'+dispNendo+'" data-month="" data-child="">✏️ 作成→</button></div>')
-            + '</div>';
+        const suSt = suRow ? (suRow['承認状態'] || '未申請') : '未作成';
+        if (suSt === '未作成') {
+          extraHtml += buildTaskSection('task_su_'+cls.name+'_'+week, '📅', dispMonth+'月 第'+week+'週 週案',
+            null, statusBadge(suSt),
+            '<div style="display:flex;gap:8px;align-items:center;">'
+            +'<button class="btn btn-primary task-goto-btn" style="padding:3px 12px;font-size:11px;"'
+            +' data-type="shuuan" data-cls="'+cls.name+'" data-nendo="'+dispNendo+'" data-month="'+dispMonth+'" data-child="" data-week="'+week+'">✏️ 作成→</button></div>');
         }
-      });
-    }
+      }
+
+      // 日誌（当月の日ごとは多すぎるので月単位で未作成件数表示）
+      const niRes_data = (typeof niRes !== 'undefined' && niRes && niRes.data) ? niRes.data : [];
+      const niCount = niRes_data.filter(r =>
+        String(r['クラス名']) === cls.name &&
+        String(r['対象日付'] || '').slice(0,7) === dispYear+'-'+String(dispMonth).padStart(2,'0')
+      ).length;
+      // 日誌は日数が多いので「今月の作成数」のみ表示
+      if (niCount === 0) {
+        extraHtml += buildTaskSection('task_ni_'+cls.name, '📓', '日誌（'+dispMonth+'月）',
+          null, '<span style="font-size:11px;color:#e0776a;">未作成</span>',
+          '<div style="display:flex;gap:8px;align-items:center;">'
+          +'<button class="btn btn-primary task-goto-btn" style="padding:3px 12px;font-size:11px;"'
+          +' data-type="nisshi" data-cls="'+cls.name+'" data-nendo="'+dispNendo+'" data-month="'+dispMonth+'" data-child="">✏️ 作成→</button></div>');
+      } else {
+        extraHtml += buildTaskSection('task_ni_'+cls.name, '📓', '日誌（'+dispMonth+'月）',
+          null, '<span style="font-size:11px;color:#4d7252;">'+niCount+'件作成済</span>', '');
+      }
+
+      if (extraHtml) {
+        html += '<div style="margin-bottom:12px;">';
+        html += '<div style="font-weight:700;font-size:13px;color:var(--sage-dark);padding:6px 10px;background:var(--cream);border-radius:8px;margin-bottom:8px;">🏷️ ' + cls.name + 'クラス（その他）</div>';
+        html += extraHtml + '</div>';
+      }
+    });
 
     area.innerHTML = html || '<div style="color:var(--text-light);font-size:13px;text-align:center;padding:20px);">担当クラスのデータがありません</div>';
     // 未作成ボタンのイベント設定
@@ -1544,17 +1601,45 @@ function applyMasterToUI(){
         +`<option value="tokkatsu"${current==='tokkatsu'?' selected':''}>統括リーダー</option>`
         +`</select></td>`
         +`<td style="padding:8px 12px;text-align:center;border-bottom:1px solid var(--border);">`
-        +`<select id="apvDeadline_${t.key}" style="font-size:12px;padding:4px 6px;border:1px solid var(--border);border-radius:6px;width:130px;">`
-        +`<option value=""${!currentDeadline?' selected':''}>-- 設定なし --</option>`
-        +`<option value="当月5日"${currentDeadline==='当月5日'?' selected':''}>当月5日</option>`
-        +`<option value="当月7日"${currentDeadline==='当月7日'?' selected':''}>当月7日</option>`
-        +`<option value="当月末"${currentDeadline==='当月末'?' selected':''}>当月末</option>`
-        +`<option value="翌月第1月曜"${currentDeadline==='翌月第1月曜'?' selected':''}>翌月第1月曜</option>`
-        +`<option value="翌月7日"${currentDeadline==='翌月7日'?' selected':''}>翌月7日</option>`
-        +`<option value="翌月末"${currentDeadline==='翌月末'?' selected':''}>翌月末</option>`
-        +`<option value="3月末"${currentDeadline==='3月末'?' selected':''}>3月末（年度末）</option>`
-        +`<option value="期末翌月7日"${currentDeadline==='期末翌月7日'?' selected':''}>各期末の翌月7日</option>`
-        +`</select>`
+        +(function(){
+          // 保存値から各パーツを復元
+          const dl = currentDeadline || '';
+          let base='', num='', unit='日';
+          if (dl) {
+            if (dl.startsWith('各期末翌月')) { base='各期末翌月'; }
+            else if (dl.startsWith('翌月'))  { base='翌月'; }
+            else if (dl.startsWith('当月'))  { base='当月'; }
+            else if (dl.startsWith('3月'))   { base='3月'; }
+            const nm = dl.match(/(\d+)/);
+            num = nm ? nm[1] : '';
+            if (dl.includes('週目月曜')) unit='週目月曜';
+            else if (dl.endsWith('末'))   unit='末';
+            else                          unit='日';
+          }
+          const sid = t.key;
+          return `<div style="display:flex;gap:4px;align-items:center;flex-wrap:wrap;">`
+            // ① 基準選択
+            +`<select id="apvDeadlineBase_${sid}" style="font-size:11px;padding:3px 5px;border:1px solid var(--border);border-radius:5px;background:#fff;" onchange="updateDeadlinePreview('${sid}')">`
+            +`<option value="">--基準--</option>`
+            +`<option value="当月"${base==='当月'?' selected':''}>当月</option>`
+            +`<option value="翌月"${base==='翌月'?' selected':''}>翌月</option>`
+            +`<option value="各期末翌月"${base==='各期末翌月'?' selected':''}>各期末の翌月</option>`
+            +`<option value="3月"${base==='3月'?' selected':''}>3月（年度末）</option>`
+            +`</select>`
+            // ② 数字入力（末 選択時は非表示にしたいがhiddenにはできないのでoptional扱い）
+            +`<input id="apvDeadlineNum_${sid}" type="number" min="1" max="31" value="${num}" placeholder="数字" `
+            +`style="width:46px;font-size:11px;padding:3px 4px;border:1px solid var(--border);border-radius:5px;text-align:center;" onchange="updateDeadlinePreview('${sid}')">`
+            // ③ 単位選択
+            +`<select id="apvDeadlineUnit_${sid}" style="font-size:11px;padding:3px 5px;border:1px solid var(--border);border-radius:5px;background:#fff;" onchange="updateDeadlinePreview('${sid}')">`
+            +`<option value="日"${unit==='日'?' selected':''}>日まで</option>`
+            +`<option value="週目月曜"${unit==='週目月曜'?' selected':''}>週目の月曜まで</option>`
+            +`<option value="末"${unit==='末'?' selected':''}>月末まで</option>`
+            +`</select>`
+            // プレビュー + hidden保存
+            +`<span id="apvDeadlinePreview_${sid}" style="font-size:10px;color:#4d7252;font-weight:600;">${dl?'→ '+dl:''}</span>`
+            +`<input type="hidden" id="apvDeadline_${sid}" value="${dl}">`
+            +`</div>`;
+        })()
         +`</td>`;
       approvalTb.appendChild(tr);
     });
@@ -1593,6 +1678,28 @@ function updateApprovalLabels(){
     if(labelEl) labelEl.textContent = label;
     // セレクトのoption値も更新（統括名をMASTERから取得する想定）
   });
+}
+
+
+function updateDeadlinePreview(key) {
+  const base    = document.getElementById('apvDeadlineBase_'+key);
+  const numEl   = document.getElementById('apvDeadlineNum_'+key);
+  const unit    = document.getElementById('apvDeadlineUnit_'+key);
+  const hidden  = document.getElementById('apvDeadline_'+key);
+  const preview = document.getElementById('apvDeadlinePreview_'+key);
+  if (!base || !numEl || !unit || !hidden) return;
+  const bv = base.value, nv = numEl.value.trim(), uv = unit.value;
+  let val = '';
+  if (!bv) { hidden.value=''; if(preview) preview.textContent=''; return; }
+  if (uv === '末') {
+    val = bv + '末';
+  } else if (uv === '週目月曜' && nv) {
+    val = bv + '第' + nv + '週月曜';
+  } else if (uv === '日' && nv) {
+    val = bv + nv + '日';
+  }
+  hidden.value = val;
+  if (preview) preview.textContent = val ? '→ ' + val : '';
 }
 
 async function saveApprovalSettings(){
@@ -1901,6 +2008,16 @@ function renderMasterClassTable() {
     ageBadge.style.cssText = 'padding:2px 8px;border-radius:12px;font-size:11px;font-weight:700;background:' + ageBg + ';color:' + ageCol + ';';
     ageBadge.textContent = c.age + '歳';
     td2.appendChild(ageBadge);
+
+    const tdCount = document.createElement('td');
+    tdCount.style.cssText = 'padding:8px 12px;border-bottom:1px solid var(--border);text-align:center;font-weight:700;color:var(--sage-dark);';
+    // 在籍中のみカウント（退園者を除外）
+    const today = new Date();
+    const activeCount = (MASTER.children[c.name] || []).filter(function(ch){
+      if (!ch.taienDate) return true;
+      return new Date(ch.taienDate) >= today;
+    }).length;
+    tdCount.textContent = activeCount + '名';
 
     const td3 = document.createElement('td');
     td3.style.cssText = 'padding:8px 12px;border-bottom:1px solid var(--border);';
@@ -2231,7 +2348,6 @@ async function saveStaffEdit() {
   if (!username) { showToast('⚠️ ユーザー名を入力してください', 'error'); return; }
   const isNew = !document.getElementById('staffModalUsername').value;
   if (isNew && !pass) { showToast('⚠️ 新規追加時はパスワードが必要です', 'error'); return; }
-  const tanninClass = document.getElementById('staffModalClass') ? document.getElementById('staffModalClass').value.trim() : '';
   const rowData = { 'ユーザー名': username, '氏名': name || username, '権限': role, '有効': active, '担任クラス': tanninClass };
   if (pass) rowData['パスワード'] = pass;
   console.log('[saveStaffEdit] gasPost送信:', JSON.stringify({action:'saveMaster',masterType:'staff',gardenId:SESSION&&SESSION.gardenId,token:tok()&&tok().substring(0,8)+'...'}));
@@ -2527,15 +2643,19 @@ async function loadPending(){
 
 // 承認待ち書類の内容を確認（該当書類セクションに移動して読み込み）
 function viewPendingDoc(type, key) {
-  const sectionMap = {
-    nensyuu:'nensyuu', getsuan:'getsuan', shuuan:'shuuan',
-    nisshi:'nisshi', kobetsu:'kobetsu', kansatsu:'kansatsu'
+  // typeからDB_CFGSのprefixとsectionIDにマッピング
+  const typeMap = {
+    nensyuu: {prefix:'ns', sec:'nensyuu'},
+    getsuan: {prefix:'gu', sec:'getsuan'},
+    shuuan:  {prefix:'su', sec:'shuuan'},
+    nisshi:  {prefix:'ni', sec:'nisshi'},
+    kobetsu: {prefix:'ko', sec:'kobetsu'},
+    kansatsu:{prefix:'ka', sec:'kansatsu'},
   };
-  const sec = sectionMap[type];
-  if (!sec) { showToast('書類種別不明: '+type,'error'); return; }
-  showSection(sec);
-  // 少し待ってからレコードをロード
-  setTimeout(function(){ loadRecord(type+'_view', key); }, 300);
+  const m = typeMap[type];
+  if (!m) { showToast('書類種別不明: '+type,'error'); return; }
+  showSection(m.sec);
+  setTimeout(function(){ loadRecord(m.prefix, key); }, 400);
 }
 
 async function doApprove(flowId,title){
@@ -2543,7 +2663,7 @@ async function doApprove(flowId,title){
   showLoading('承認処理中…');
   const res=await gasPost({action:'approve',flowId});
   hideLoading();
-  if(res&&res.ok){showToast('✅ '+res.message);loadPending();loadNotifications();}
+  if(res&&res.ok){showToast('✅ '+res.message);loadPending();loadNotifications();setTimeout(loadMyTasks,800);}
   else if(res)showToast('❌ '+(res.error||'エラー'),'error');
 }
 
