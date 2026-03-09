@@ -879,6 +879,7 @@ textarea.form-control.tall{min-height:120px;}
         <thead><tr style="background:var(--cream);">
           <th style="padding:8px 12px;text-align:left;border-bottom:2px solid var(--border);">様式</th>
           <th style="padding:8px 12px;text-align:center;border-bottom:2px solid var(--border);">第1承認者</th>
+          <th style="padding:8px 12px;text-align:center;border-bottom:2px solid var(--border);">提出期限</th>
         </tr></thead>
         <tbody id="approvalSettingTable"></tbody>
       </table>
@@ -951,6 +952,10 @@ textarea.form-control.tall{min-height:120px;}
         <option value="tokkatsu">統括リーダー</option>
         <option value="staff">職員</option>
       </select>
+    </div>
+    <div class="form-group" style="margin-bottom:12px;">
+      <label class="form-label">担任クラス <span style="font-size:11px;color:#888;">（職員のみ。複数はカンマ区切り例：とら,ぱんだ）</span></label>
+      <input type="text" id="staffModalClass" class="form-control" placeholder="例：とら">
     </div>
     <div class="form-group" style="margin-bottom:16px;">
       <label class="form-label">有効</label>
@@ -1055,33 +1060,31 @@ const MASTER={
 // ========== ノルマダッシュボード ==========
 
 // 期限計算ユーティリティ
-function getDeadline(type, nendo, month, weekStart, targetDate) {
+function getDeadline(type, nendo, month, weekStart, targetDate, dispYear) {
   const now = new Date();
   const year = nendo || now.getFullYear();
-  
+  // 実際の西暦年（個別・観察記録の期限計算用）
+  const actualYear = dispYear || now.getFullYear();
+
   if (type === 'getsuan') {
-    // 月案：該当月の月末-7日
-    const lastDay = new Date(year, month, 0); // 月末
-    lastDay.setDate(lastDay.getDate() - 6);
-    return lastDay;
+    // 月案：該当月の7日（前月末ではなく当月7日を期限に）
+    return new Date(actualYear, month - 1, 7);
   }
   if (type === 'shuuan') {
-    // 週案：対象週月曜-2日（土曜）
     if (!weekStart) return null;
     const d = new Date(weekStart);
     d.setDate(d.getDate() - 2);
     return d;
   }
   if (type === 'nisshi') {
-    // 日誌：該当日の翌日
     if (!targetDate) return null;
     const d = new Date(targetDate);
     d.setDate(d.getDate() + 1);
     return d;
   }
   if (type === 'kobetsu' || type === 'kansatsu') {
-    // 個別・観察：翌月第1月曜
-    const d = new Date(year, month, 1); // 翌月1日
+    // 個別・観察：翌月第1月曜（actualYearを使用）
+    const d = new Date(actualYear, month, 1); // 翌月1日
     const dow = d.getDay();
     const diff = dow === 1 ? 0 : dow === 0 ? 1 : 8 - dow;
     d.setDate(d.getDate() + diff);
@@ -1151,15 +1154,21 @@ async function loadMyTasks() {
   // 権限でクラスを決定
   // admin/encho/syunin → 全クラス
   // クラス名（例：とら、とら,ぱんだ） → 該当クラスのみ
-  const allRoles = ['admin','encho','syunin','管理者','園長','主任'];
+  const adminRoles = ['admin','encho','syunin','tokkatsu','管理者','園長','主任','統括'];
   let targetClasses;
-  if (allRoles.includes(SESSION.role)) {
-    targetClasses = MASTER.classes;
+  if (adminRoles.includes(SESSION.role)) {
+    targetClasses = MASTER.classes; // 管理者系は全クラス表示
   } else {
-    // roleをカンマ区切りで分割してクラス名リストとして扱う
-    const myClassNames = (SESSION.role || '').split(/[,、]/).map(s => s.trim()).filter(Boolean);
+    // 担任クラスで絞る（tanninClass優先、次にroleをクラス名として解釈）
+    const tanninStr = SESSION.tanninClass || SESSION.role || '';
+    const myClassNames = tanninStr.split(/[,、]/).map(s => s.trim()).filter(Boolean);
     targetClasses = MASTER.classes.filter(c => myClassNames.includes(c.name));
-    if (targetClasses.length === 0) targetClasses = MASTER.classes; // フォールバック
+    // tanninClassが未設定の場合は担任列から自分の名前で検索
+    if (targetClasses.length === 0) {
+      const myName = SESSION.staffName || SESSION.username;
+      targetClasses = MASTER.classes.filter(c => (c.tanin||[]).includes(myName));
+    }
+    if (targetClasses.length === 0) targetClasses = MASTER.classes; // 最終フォールバック
   }
 
   // 月セレクト初期化（初回のみ）
@@ -1211,87 +1220,81 @@ async function loadMyTasks() {
       const age = cls.age;
       const id = 'task_' + ci;
 
-      html += '<div style="margin-bottom:12px;">';
-      html += '<div style="font-weight:700;font-size:13px;color:var(--sage-dark);padding:6px 10px;background:var(--cream);border-radius:8px;margin-bottom:8px;">🏷️ ' + cls.name + 'クラス（' + cls.tanin.join('・') + '）</div>';
+      let clsHtml = '';
 
-      // 月案
+      // 月案（承認済は非表示）
       const getRow = getData.find(r =>
         String(r['対象クラス']) === cls.name &&
-        String(r['対象月']) === String(month) &&
-        String(r['対象年度']) === String(nendo)
+        String(r['対象月']) === String(dispMonth) &&
+        String(r['対象年度']) === String(dispNendo)
       );
       const getSt = getRow ? (getRow['承認状態'] || '未申請') : '未作成';
-      const getDl = getDeadline('getsuan', nendo, month);
-      html += buildTaskSection(
-        id+'_get', '📅', '月案',
-        getDl,
-        statusBadge(getSt),
-        getRow
-          ? '<div style="font-size:12px;color:var(--text-mid);">保存日時：'+String(getRow['保存日時']||'').slice(0,10)+'　記録者：'+(getRow['記録者']||'')+'</div>'
-          : '<div style="display:flex;align-items:center;gap:8px;">'
-            + '<span style="font-size:12px;color:#e0776a;">まだ作成されていません</span>'
-            + '<button class="btn btn-primary task-goto-btn" style="padding:3px 12px;font-size:11px;"'
-            + ' data-type="getsuan" data-cls="'+cls.name+'" data-nendo="'+nendo+'" data-month="'+month+'" data-child="">✏️ 作成する→</button>'
-            + '</div>'
-      );
+      const getDl = getDeadline('getsuan', dispNendo, dispMonth, null, null, dispYear);
+      if (getSt === '未作成') { // 未作成のみタスク表示（申請中・承認済はタスクから除外）
+        clsHtml += buildTaskSection(
+          id+'_get', '📅', '月案', getDl, statusBadge(getSt),
+          getRow
+            ? '<div style="font-size:12px;color:var(--text-mid);">保存：'+String(getRow['保存日時']||'').slice(0,10)+'　'+(getRow['記録者']||'')+'</div>'
+            : '<div style="display:flex;align-items:center;gap:8px;"><span style="font-size:12px;color:#e0776a;">未作成</span>'
+              + '<button class="btn btn-primary task-goto-btn" style="padding:3px 12px;font-size:11px;"'
+              + ' data-type="getsuan" data-cls="'+cls.name+'" data-nendo="'+dispNendo+'" data-month="'+dispMonth+'" data-child="">✏️ 作成→</button></div>'
+        );
+      }
 
-      // 個別記録（乳児）or 観察記録（幼児）
-      // 退園済み園児を除外（対象月より前に退園している場合はスキップ）
+      // 個別・観察記録（退園者除外・承認済除外）
       const activeChildren = children.filter(function(c) {
-        if (!c.taienDate) return true; // 退園日なし＝在園中
-        const taien = new Date(c.taienDate);
-        // 対象月の1日より前に退園していたら除外
-        const targetFirst = new Date(dispYear, dispMonth - 1, 1);
-        return taien >= targetFirst;
-      });
-      // 未入園の園児も除外（入園日が対象月より後）
-      const enrolledChildren = activeChildren.filter(function(c) {
-        if (!c.nyuenDate) return true; // 入園日なし＝対象外にしない
-        const nyuen = new Date(c.nyuenDate);
-        const targetLast = new Date(dispYear, dispMonth, 0); // 対象月末日
-        return nyuen <= targetLast;
+        if (!c.taienDate) return true;
+        return new Date(c.taienDate) >= new Date(dispYear, dispMonth - 1, 1);
+      }).filter(function(c) {
+        if (!c.nyuenDate) return true;
+        return new Date(c.nyuenDate) <= new Date(dispYear, dispMonth, 0);
       });
 
-      if (enrolledChildren.length > 0) {
+      if (activeChildren.length > 0) {
         const isNyuji = age <= 2;
         const recType = isNyuji ? 'kobetsu' : 'kansatsu';
         const recData = isNyuji ? kobData : kanData;
         const recIcon = isNyuji ? '👶' : '🔍';
         const recLabel = isNyuji ? '個別記録' : '観察記録';
-        const recDl = getDeadline(recType, dispNendo, dispMonth);
+        const recDl = getDeadline(recType, dispNendo, dispMonth, null, null, dispYear);
 
-        let done = 0;
+        let done = 0, total = 0;
         let detailHtml = '<div style="display:flex;flex-wrap:wrap;gap:6px;">';
-        enrolledChildren.forEach(c => {
+        activeChildren.forEach(c => {
           const row = recData.find(r =>
             String(r['対象クラス']) === cls.name &&
             String(r['対象月']) === String(dispMonth) &&
             (r['園児名'] === c.name || r['氏名'] === c.name)
           );
           const st = row ? (row['承認状態'] || '未申請') : '未作成';
-          if (st === '承認済') done++;
-          const bg = st==='承認済'?'#4d7252':st==='申請中'?'#c9a84c':st==='未申請'?'#888':'#e0776a';
-          const shortName = c.name.split('　')[0] || c.name;
-          if(st === '未作成'){
+          total++;
+          if (st === '承認済') { done++; return; } // 承認済はスキップ
+          const bg = st==='申請中'?'#c9a84c':st==='未申請'?'#888':'#e0776a';
+          const shortName = c.name.slice(0, c.name.indexOf('　') > 0 ? c.name.indexOf('　') : 3);
+          if (st === '未作成') {
             detailHtml += '<button class="btn btn-primary task-goto-btn" style="padding:3px 10px;font-size:11px;"'
-              + ' data-type="'+recType+'" data-cls="'+cls.name+'" data-nendo="'+nendo+'" data-month="'+month+'" data-child="'+c.name+'">';
-            detailHtml += shortName + ' ✏️作成→';
-            detailHtml += '</button>';
+              + ' data-type="'+recType+'" data-cls="'+cls.name+'" data-nendo="'+dispNendo+'" data-month="'+dispMonth+'" data-child="'+c.name+'">'
+              + shortName + ' ✏️→</button>';
           } else {
-            detailHtml += '<div style="padding:5px 10px;border-radius:20px;font-size:11px;color:white;background:'+bg+';white-space:nowrap;">';
-            detailHtml += shortName + ' ' + statusBadge(st);
-            detailHtml += '</div>';
+            detailHtml += '<div style="padding:5px 10px;border-radius:20px;font-size:11px;color:white;background:'+bg+';white-space:nowrap;">'
+              + shortName + ' ' + statusBadge(st) + '</div>';
           }
         });
         detailHtml += '</div>';
 
-        const summary = statusBadge(done===enrolledChildren.length?'承認済':done>0?'申請中':'未作成') +
-          ' <span style="font-size:11px;color:var(--text-mid);">'+done+'/'+enrolledChildren.length+'名完了</span>';
-
-        html += buildTaskSection(id+'_rec', recIcon, recLabel, recDl, summary, detailHtml);
+        const remaining = total - done;
+        if (remaining > 0) {
+          const summary = statusBadge(done===total?'承認済':done>0?'申請中':'未作成')
+            + ' <span style="font-size:11px;color:var(--text-mid);">'+done+'/'+total+'名完了</span>';
+          clsHtml += buildTaskSection(id+'_rec', recIcon, recLabel, recDl, summary, detailHtml);
+        }
       }
 
-      html += '</div>';
+      if (clsHtml) {
+        html += '<div style="margin-bottom:12px;">';
+        html += '<div style="font-weight:700;font-size:13px;color:var(--sage-dark);padding:6px 10px;background:var(--cream);border-radius:8px;margin-bottom:8px;">🏷️ ' + cls.name + 'クラス（' + (cls.tanin||[]).join('・') + '）</div>';
+        html += clsHtml + '</div>';
+      }
     });
 
     area.innerHTML = html || '<div style="color:var(--text-light);font-size:13px;text-align:center;padding:20px);">担当クラスのデータがありません</div>';
@@ -1484,13 +1487,17 @@ function applyMasterToUI(){
     approvalTb.innerHTML='';
     TYPE_LIST.forEach(t=>{
       const current = settingMap[t.key] || 'syunin';
+      const currentDeadline = settingMap[t.key+'_deadline'] || '';
       const tr = document.createElement('tr');
-      tr.innerHTML=`<td style="padding:8px 12px;border-bottom:1px solid var(--border);">${t.label}</td>`
+      tr.innerHTML=`<td style="padding:8px 12px;border-bottom:1px solid var(--border);font-size:13px;">${t.label}</td>`
         +`<td style="padding:8px 12px;text-align:center;border-bottom:1px solid var(--border);">`
         +`<select id="apvSetting_${t.key}" style="font-size:13px;padding:4px 8px;border:1px solid var(--border);border-radius:6px;">`
         +`<option value="syunin"${current==='syunin'?' selected':''}>主任</option>`
         +`<option value="tokkatsu"${current==='tokkatsu'?' selected':''}>統括リーダー</option>`
-        +`</select></td>`;
+        +`</select></td>`
+        +`<td style="padding:8px 12px;text-align:center;border-bottom:1px solid var(--border);">`
+        +`<input id="apvDeadline_${t.key}" type="text" value="${currentDeadline}" placeholder="例: 毎月7日" style="font-size:12px;padding:4px 6px;border:1px solid var(--border);border-radius:6px;width:100px;">`
+        +`</td>`;
       approvalTb.appendChild(tr);
     });
   }
@@ -1530,18 +1537,27 @@ function updateApprovalLabels(){
 
 async function saveApprovalSettings(){
   const TYPE_LIST = ['nensyuu','getsuan','shuuan','nisshi','kobetsu','kansatsu'];
+  // 承認者設定
   const parts = TYPE_LIST.map(k=>{
     const el = document.getElementById('apvSetting_'+k);
     return k + ':' + (el ? el.value : 'syunin');
   });
   const settingStr = parts.join(',');
+  // 期限設定
+  const deadlineParts = TYPE_LIST.map(k=>{
+    const el = document.getElementById('apvDeadline_'+k);
+    const v = el ? el.value.trim() : '';
+    return v ? k+'_deadline:'+v : '';
+  }).filter(Boolean);
+  const deadlineStr = deadlineParts.join(',');
+  const fullSetting = deadlineStr ? settingStr + ',' + deadlineStr : settingStr;
   showLoading('保存中…');
   try{
-    const res = await gasGet({action:'saveMasterSetting', key:'様式承認設定', value:settingStr});
+    const res = await gasPost({action:'saveMasterSetting', key:'様式承認設定', value:fullSetting});
     hideLoading();
     if(res&&res.ok){
-      MASTER.kihon['様式承認設定'] = settingStr;
-      showToast('✅ 承認設定を保存しました');
+      MASTER.kihon['様式承認設定'] = fullSetting;
+      showToast('✅ 承認設定と提出期限を保存しました');
     } else {
       showToast('❌ 保存失敗: '+(res?res.error:''),'error');
     }
@@ -1621,7 +1637,7 @@ async function doLogin(){
     hideLoading();
     console.log('GAS応答:', JSON.stringify(d));
     if(d.ok){
-      SESSION={token:d.token,username:d.username,role:d.role,email:d.email||'',expiry:d.expiry,gardenId:d.gardenId||gardenId,gardenName:d.gardenName||''};
+      SESSION={token:d.token,username:d.username,role:d.role,email:d.email||'',expiry:d.expiry,gardenId:d.gardenId||gardenId,gardenName:d.gardenName||'',staffName:d.staffName||d.username,tanninClass:d.tanninClass||''};
       localStorage.setItem(SESSION_KEY,JSON.stringify(SESSION));
       hideLoginOverlay();applySession();loadMasterFromDB().then(()=>loadMyTasks());loadAllDbLists();loadNotifications();loadPending();
       showToast('✅ ようこそ、'+d.username+' さん（'+SESSION.gardenName+'）');
@@ -1691,7 +1707,9 @@ function openClassEditModal(idx) {
   const delBtn = document.getElementById('classModalDelBtn');
 
   // 担任selectのoptionを職員リストから生成
-  const staffList = (MASTER.staffList || []).filter(function(s){ return s['有効'] !== '×'; });
+  // 担任に設定できるのはstaffロールのみ（admin/encho/syunin/tokkatsuは除外）
+  // 担任に設定できるのはstaffロールのみ（管理職を除外）
+  const staffList = (MASTER.staffList || []).filter(function(s){ return s['有効'] !== '×' && s['権限'] === 'staff'; });
   ['classModalT1','classModalT2','classModalT3','classModalT4'].forEach(function(fid) {
     const sel = document.getElementById(fid);
     if (!sel) return;
@@ -1982,7 +2000,7 @@ async function importChildrenCsvFile(file) {
 
   let text = await readFile('UTF-8');
   if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
-  if (text.includes('�')) text = await readFile('Shift-JIS');
+  if (text.includes(' ')) text = await readFile('Shift-JIS');
 
   function parseCsvLine(line) {
     const result = []; let cur = '', inQ = false;
@@ -2154,7 +2172,8 @@ async function saveStaffEdit() {
   if (!username) { showToast('⚠️ ユーザー名を入力してください', 'error'); return; }
   const isNew = !document.getElementById('staffModalUsername').value;
   if (isNew && !pass) { showToast('⚠️ 新規追加時はパスワードが必要です', 'error'); return; }
-  const rowData = { 'ユーザー名': username, '氏名': name || username, '権限': role, '有効': active };
+  const tanninClass = document.getElementById('staffModalClass') ? document.getElementById('staffModalClass').value.trim() : '';
+  const rowData = { 'ユーザー名': username, '氏名': name || username, '権限': role, '有効': active, '担任クラス': tanninClass };
   if (pass) rowData['パスワード'] = pass;
   console.log('[saveStaffEdit] gasPost送信:', JSON.stringify({action:'saveMaster',masterType:'staff',gardenId:SESSION&&SESSION.gardenId,token:tok()&&tok().substring(0,8)+'...'}));
   showLoading('職員情報を保存中…');
@@ -2206,7 +2225,7 @@ async function importChildrenCsv(){
 
   let text = await readFile('UTF-8');
   // 文字化けしてたらShift-JISで再試行
-  if(text.includes('�')) text = await readFile('Shift-JIS');
+  if(text.includes(' ')) text = await readFile('Shift-JIS');
 
   const lines = text.split(/\r?\n/).filter(l=>l.trim());
   if(lines.length < 2){ resultEl.innerHTML='<span style="color:#e74c3c;">データが空です</span>'; return; }
