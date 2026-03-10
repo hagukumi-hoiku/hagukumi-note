@@ -883,6 +883,45 @@ textarea.form-control.tall{min-height:120px;}
       </div>
     </div>
   </div>
+
+  <!-- 年間指導計画 期設定 -->
+  <div class="card" style="margin-top:16px;">
+    <div class="card-header"><div class="icon" style="background:#fff3e0;">📅</div>年間指導計画 期の設定</div>
+    <div class="card-body">
+      <div style="background:#fff8e1;border:1px solid #ffe082;border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:12px;color:#5d4037;">
+        ℹ️ 年間指導計画の各期（第1期〜第4期）の月範囲を設定します。年案入力画面のタイトルに反映されます。
+      </div>
+      <table style="width:100%;border-collapse:collapse;font-size:13px;margin-bottom:12px;">
+        <thead><tr style="background:var(--cream);">
+          <th style="padding:8px 12px;text-align:left;border-bottom:2px solid var(--border);">期</th>
+          <th style="padding:8px 12px;text-align:center;border-bottom:2px solid var(--border);">開始月</th>
+          <th style="padding:8px 12px;text-align:center;border-bottom:2px solid var(--border);">終了月</th>
+          <th style="padding:8px 12px;text-align:left;border-bottom:2px solid var(--border);">表示例</th>
+        </tr></thead>
+        <tbody>
+          <tr id="kiRow1"><td style="padding:8px 12px;font-weight:700;">第1期</td>
+            <td style="padding:4px 8px;text-align:center;"><select id="ki1_start" class="form-control" style="width:80px;" onchange="updateKiLabel(1)"><option value="4">4月</option><option value="5">5月</option><option value="6">6月</option><option value="7">7月</option><option value="8">8月</option><option value="9">9月</option><option value="10">10月</option><option value="11">11月</option><option value="12">12月</option><option value="1">1月</option><option value="2">2月</option><option value="3">3月</option></select></td>
+            <td style="padding:4px 8px;text-align:center;"><select id="ki1_end" class="form-control" style="width:80px;" onchange="updateKiLabel(1)"><option value="4">4月</option><option value="5">5月</option><option value="6">6月</option><option value="7">7月</option><option value="8">8月</option><option value="9">9月</option><option value="10">10月</option><option value="11">11月</option><option value="12">12月</option><option value="1">1月</option><option value="2">2月</option><option value="3">3月</option></select></td>
+            <td style="padding:8px 12px;font-size:12px;color:#4d7252;" id="ki1_label">4月〜7月</td></tr>
+          <tr id="kiRow2"><td style="padding:8px 12px;font-weight:700;">第2期</td>
+            <td style="padding:4px 8px;text-align:center;"><select id="ki2_start" class="form-control" style="width:80px;" onchange="updateKiLabel(2)"><option value="4">4月</option><option value="5">5月</option><option value="6">6月</option><option value="7">7月</option><option value="8">8月</option><option value="9">9月</option><option value="10">10月</option><option value="11">11月</option><option value="12">12月</option><option value="1">1月</option><option value="2">2月</option><option value="3">3月</option></select></td>
+            <td style="padding:4px 8px;text-align:center;"><select id="ki2_end" class="form-control" style="width:80px;" onchange="updateKiLabel(2)"><option value="4">4月</option><option value="5">5月</option><option value="6">6月</option><option value="7">7月</option><option value="8">8月</option><option value="9">9月</option><option value="10">10月</option><option value="11">11月</option><option value="12">12月</option><option value="1">1月</option><option value="2">2月</option><option value="3">3月</option></select></td>
+            <td style="padding:8px 12px;font-size:12px;color:#4d7252;" id="ki2_label">8月〜11月</td></tr>
+          <tr id="kiRow3"><td style="padding:8px 12px;font-weight:700;">第3期</td>
+            <td style="padding:4px 8px;text-align:center;"><select id="ki3_start" class="form-control" style="width:80px;" onchange="updateKiLabel(3)"><option value="4">4月</option><option value="5">5月</option><option value="6">6月</option><option value="7">7月</option><option value="8">8月</option><option value="9">9月</option><option value="10">10月</option><option value="11">11月</option><option value="12">12月</option><option value="1">1月</option><option value="2">2月</option><option value="3">3月</option></select></td>
+            <td style="padding:4px 8px;text-align:center;"><select id="ki3_end" class="form-control" style="width:80px;" onchange="updateKiLabel(3)"><option value="4">4月</option><option value="5">5月</option><option value="6">6月</option><option value="7">7月</option><option value="8">8月</option><option value="9">9月</option><option value="10">10月</option><option value="11">11月</option><option value="12">12月</option><option value="1">1月</option><option value="2">2月</option><option value="3">3月</option></select></td>
+            <td style="padding:8px 12px;font-size:12px;color:#4d7252;" id="ki3_label">12月〜2月</td></tr>
+          <tr id="kiRow4"><td style="padding:8px 12px;font-weight:700;">第4期</td>
+            <td style="padding:4px 8px;text-align:center;"><select id="ki4_start" class="form-control" style="width:80px;" onchange="updateKiLabel(4)"><option value="4">4月</option><option value="5">5月</option><option value="6">6月</option><option value="7">7月</option><option value="8">8月</option><option value="9">9月</option><option value="10">10月</option><option value="11">11月</option><option value="12">12月</option><option value="1">1月</option><option value="2">2月</option><option value="3">3月</option></select></td>
+            <td style="padding:4px 8px;text-align:center;"><select id="ki4_end" class="form-control" style="width:80px;" onchange="updateKiLabel(4)"><option value="4">4月</option><option value="5">5月</option><option value="6">6月</option><option value="7">7月</option><option value="8">8月</option><option value="9">9月</option><option value="10">10月</option><option value="11">11月</option><option value="12">12月</option><option value="1">1月</option><option value="2">2月</option><option value="3">3月</option></select></td>
+            <td style="padding:8px 12px;font-size:12px;color:#4d7252;" id="ki4_label">3月</td></tr>
+        </tbody>
+      </table>
+      <div style="text-align:right;">
+        <button class="btn btn-primary" onclick="saveKiSettings()">💾 期の設定を保存</button>
+      </div>
+    </div>
+  </div>
 </section>
 
 
@@ -975,11 +1014,40 @@ textarea.form-control.tall{min-height:120px;}
   <div style="background:white;border-radius:14px;padding:28px;width:100%;max-width:480px;">
     <div style="font-weight:700;font-size:16px;margin-bottom:6px;">⚠️ 差し戻し</div>
     <div id="rejectTarget" style="font-size:13px;color:var(--text-mid);margin-bottom:14px;"></div>
-    <label style="font-size:12px;font-weight:700;display:block;margin-bottom:6px;">差し戻し理由 <span style="color:#e53935;">*</span></label>
-    <textarea id="rejectComment" style="width:100%;height:100px;padding:10px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:'Noto Sans JP',sans-serif;resize:vertical;" placeholder="修正してほしい内容を具体的に…"></textarea>
+    <label style="font-size:12px;font-weight:700;display:block;margin-bottom:6px;">差し戻し理由（任意）</label>
+    <textarea id="rejectComment" style="width:100%;height:100px;padding:10px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:'Noto Sans JP',sans-serif;resize:vertical;" placeholder="修正してほしい内容（任意）"></textarea>
     <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:14px;">
       <button onclick="closeRejectModal()" style="padding:9px 20px;background:var(--cream);border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:'Noto Sans JP',sans-serif;cursor:pointer;">キャンセル</button>
       <button onclick="submitReject()" style="padding:9px 20px;background:#c0392b;color:white;border:none;border-radius:8px;font-size:13px;font-family:'Noto Sans JP',sans-serif;font-weight:700;cursor:pointer;">差し戻す</button>
+    </div>
+  </div>
+</div>
+
+<!-- 個別・観察記録 園児選択モーダル -->
+<div id="childSelectModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:8500;align-items:center;justify-content:center;padding:20px;">
+  <div style="background:white;border-radius:14px;padding:28px;width:100%;max-width:440px;">
+    <div style="font-weight:700;font-size:16px;margin-bottom:14px;" id="childSelectTitle">👶 園児を選択して印刷</div>
+    <div style="margin-bottom:12px;">
+      <label style="font-size:12px;font-weight:700;display:block;margin-bottom:4px;">クラス</label>
+      <select id="csPrClass" class="form-control" onchange="updateChildSelectList()" style="width:100%;"></select>
+    </div>
+    <div style="margin-bottom:12px;">
+      <label style="font-size:12px;font-weight:700;display:block;margin-bottom:4px;">月</label>
+      <select id="csPrMonth" class="form-control" style="width:100%;">
+        <option value="">-- 選択 --</option>
+        <option value="4">4月</option><option value="5">5月</option><option value="6">6月</option>
+        <option value="7">7月</option><option value="8">8月</option><option value="9">9月</option>
+        <option value="10">10月</option><option value="11">11月</option><option value="12">12月</option>
+        <option value="1">1月</option><option value="2">2月</option><option value="3">3月</option>
+      </select>
+    </div>
+    <div style="margin-bottom:16px;">
+      <label style="font-size:12px;font-weight:700;display:block;margin-bottom:4px;">園児</label>
+      <select id="csPrChild" class="form-control" style="width:100%;"><option value="">-- クラスを先に選択 --</option></select>
+    </div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;">
+      <button onclick="closeChildSelectModal()" style="padding:9px 20px;background:var(--cream);border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:'Noto Sans JP',sans-serif;cursor:pointer;">キャンセル</button>
+      <button onclick="execChildPrintPreview()" style="padding:9px 20px;background:var(--sage-dark);color:white;border:none;border-radius:8px;font-size:13px;font-family:'Noto Sans JP',sans-serif;font-weight:700;cursor:pointer;">🖨️ プレビュー</button>
     </div>
   </div>
 </div>
@@ -1418,6 +1486,8 @@ async function loadMasterFromDB(){
       nendo:Number(kihon['nendo']||kihon['年度']||new Date().getFullYear()),
       encho:kihon['encho']||kihon['園長']||'',
       syunin:kihon['syunin']||kihon['主任']||'',
+      '様式承認設定':kihon['様式承認設定']||'',
+      '期設定':kihon['期設定']||'',
     };
 
     // 年度セレクトを自動設定
@@ -1636,6 +1706,8 @@ function applyMasterToUI(){
   }
   // 職員マスタテーブルも更新
   if (typeof renderMasterApproverTable === 'function') renderMasterApproverTable();
+  // 期設定を年案様式に反映
+  if (typeof applyKiLabelsToNensyuu === 'function') applyKiLabelsToNensyuu();
 }
 
 // 様式の第1承認ロールラベルを返す
@@ -1719,6 +1791,63 @@ async function saveApprovalSettings(){
       showToast('❌ 保存失敗: '+(res?res.error:''),'error');
     }
   }catch(e){hideLoading();showToast('❌ エラー: '+e.message,'error');}
+}
+
+// 期の設定
+const KI_DEFAULTS = [{s:4,e:7},{s:8,e:11},{s:12,e:2},{s:3,e:3}];
+function updateKiLabel(num){
+  const s=document.getElementById('ki'+num+'_start')?.value;
+  const e=document.getElementById('ki'+num+'_end')?.value;
+  const el=document.getElementById('ki'+num+'_label');
+  if(el)el.textContent=(s&&e)?(s===e?s+'月':s+'月〜'+e+'月'):'';
+}
+function loadKiSettings(){
+  const str=MASTER.kihon&&MASTER.kihon['期設定']||'';
+  let settings=null;
+  if(str){try{settings=JSON.parse(str);}catch(e){}}
+  for(let i=1;i<=4;i++){
+    const s=settings?settings[i-1]?.s:KI_DEFAULTS[i-1].s;
+    const e=settings?settings[i-1]?.e:KI_DEFAULTS[i-1].e;
+    const sel_s=document.getElementById('ki'+i+'_start');
+    const sel_e=document.getElementById('ki'+i+'_end');
+    if(sel_s)sel_s.value=String(s);
+    if(sel_e)sel_e.value=String(e);
+    updateKiLabel(i);
+  }
+}
+async function saveKiSettings(){
+  const data=[];
+  for(let i=1;i<=4;i++){
+    const s=parseInt(document.getElementById('ki'+i+'_start')?.value)||KI_DEFAULTS[i-1].s;
+    const e=parseInt(document.getElementById('ki'+i+'_end')?.value)||KI_DEFAULTS[i-1].e;
+    data.push({s,e});
+  }
+  const val=JSON.stringify(data);
+  showLoading('保存中…');
+  try{
+    const res=await gasPost({action:'saveMasterSetting',key:'期設定',value:val});
+    hideLoading();
+    if(res&&res.ok){
+      if(!MASTER.kihon)MASTER.kihon={};
+      MASTER.kihon['期設定']=val;
+      // 年案様式の期ラベルも更新
+      applyKiLabelsToNensyuu();
+      showToast('✅ 期の設定を保存しました');
+    } else showToast('❌ 保存失敗: '+(res?res.error:''),'error');
+  }catch(e){hideLoading();showToast('❌ エラー: '+e.message,'error');}
+}
+function applyKiLabelsToNensyuu(){
+  const str=MASTER.kihon&&MASTER.kihon['期設定']||'';
+  let settings=null;
+  if(str){try{settings=JSON.parse(str);}catch(e){}}
+  for(let i=1;i<=4;i++){
+    const s=settings?settings[i-1]?.s:KI_DEFAULTS[i-1].s;
+    const e=settings?settings[i-1]?.e:KI_DEFAULTS[i-1].e;
+    const label=s===e?s+'月':s+'月〜'+e+'月';
+    // 年案の期ヘッダーラベルを更新（id: ns_ki1_label等があれば）
+    const el=document.getElementById('ns_ki'+i+'_label');
+    if(el)el.textContent='第'+i+'期（'+label+'）';
+  }
 }
 
 const PERIODS=[{num:1,label:'第1期',months:'4月-5月',emoji:'🌸',bg:'#e8f5e9'},{num:2,label:'第2期',months:'6月-8月',emoji:'☀️',bg:'#fdeee6'},{num:3,label:'第3期',months:'9月-12月',emoji:'🍂',bg:'#dceefb'},{num:4,label:'第4期',months:'1月-3月',emoji:'❄️',bg:'#fff9e0'}];
@@ -2177,7 +2306,7 @@ async function importChildrenCsvFile(file) {
 
   let text = await readFile('UTF-8');
   if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
-  if (text.includes(' ')) text = await readFile('Shift-JIS');
+  if (text.includes('�')) text = await readFile('Shift-JIS');
 
   function parseCsvLine(line) {
     const result = []; let cur = '', inQ = false;
@@ -2400,7 +2529,7 @@ async function importChildrenCsv(){
 
   let text = await readFile('UTF-8');
   // 文字化けしてたらShift-JISで再試行
-  if(text.includes(' ')) text = await readFile('Shift-JIS');
+  if(text.includes('�')) text = await readFile('Shift-JIS');
 
   const lines = text.split(/\r?\n/).filter(l=>l.trim());
   if(lines.length < 2){ resultEl.innerHTML='<span style="color:#e74c3c;">データが空です</span>'; return; }
@@ -2601,6 +2730,7 @@ async function applyApproval(type,prefix,label){
     const firstLabel = getFirstApprovalLabel(type);
     showToast('📤 申請しました。'+firstLabel+'に通知を送りました。');
     setTimeout(loadNotifications,1000);
+    setTimeout(loadMyTasks,1500); // タスク一覧を更新
   }
   else if(res){
     showToast('❌ 申請失敗: '+(res.error||'不明'),'error');
@@ -2629,7 +2759,7 @@ function updateApprovalBadge(prefix,status){
 
 async function loadPending(){
   if(!SESSION||!GAS_URL)return;
-  if(!['syunin','encho','admin'].includes(SESSION.role))return;
+  if(!['syunin','encho','admin','tokkatsu'].includes(SESSION.role))return;
   try{
     const res=await gasGet({action:'getPending'});
     const list=document.getElementById('pendingList');
@@ -2695,7 +2825,7 @@ async function doApprove(flowId,title){
   showLoading('承認処理中…');
   const res=await gasPost({action:'approve',flowId});
   hideLoading();
-  if(res&&res.ok){showToast('✅ '+res.message);loadPending();loadNotifications();}
+  if(res&&res.ok){showToast('✅ '+res.message);loadPending();loadNotifications();setTimeout(loadMyTasks,1000);closeApproveBar();}
   else if(res)showToast('❌ '+(res.error||'エラー'),'error');
 }
 
@@ -2708,11 +2838,11 @@ function openRejectModal(flowId,title){
 function closeRejectModal(){document.getElementById('rejectModal').style.display='none';_rejectFlowId='';}
 async function submitReject(){
   const comment=document.getElementById('rejectComment').value.trim();
-  if(!comment){showToast('⚠️ 差し戻し理由を入力してください','error');return;}
+  // コメントは任意（必須チェックなし）
   showLoading('差し戻し処理中…');
   const res=await gasPost({action:'reject',flowId:_rejectFlowId,comment});
   hideLoading();
-  if(res&&res.ok){showToast('⚠️ 差し戻しました');closeRejectModal();loadPending();loadNotifications();}
+  if(res&&res.ok){showToast('⚠️ 差し戻しました');closeRejectModal();closeApproveBar();loadPending();loadNotifications();setTimeout(loadMyTasks,1000);}
   else if(res)showToast('❌ '+(res.error||'エラー'),'error');
 }
 
@@ -2776,6 +2906,12 @@ async function loadRecord(prefix,key){
     const res=await gasGet({action:'get',type:DB_CFGS[prefix].type,key});
     hideLoading();
     if(!res||!res.ok||!res.data){showToast('⚠️ データが見つかりません','error');return;}
+    // クラスを先にセット → 園児プルダウンを更新してから残フィールドをセット
+    const clsEl=document.getElementById(prefix+'_class');
+    if(clsEl&&res.data['対象クラス']!==undefined){
+      clsEl.value=res.data['対象クラス'];
+      if(typeof updateChildList==='function')updateChildList(prefix);
+    }
     Object.entries(FMAPS[prefix]).forEach(function(e){const el=document.getElementById(e[1]);if(el&&res.data[e[0]]!==undefined)el.value=res.data[e[0]];});
     if(prefix==='ns')PERIODS.forEach(function(p){NS_FIELDS.forEach(function(f){const el=document.getElementById('ns_'+p.num+'_'+f.id);const dk='第'+p.num+'期_'+f.label;if(el&&res.data[dk]!==undefined)el.value=res.data[dk];});});
     if(res.data['承認状態'])updateApprovalBadge(prefix,res.data['承認状態']);
@@ -2818,41 +2954,101 @@ async function openPrintPreview(type){
     document.getElementById('printModal').style.display='flex';
     return;
   }
+
+  // 個別・観察記録は園児選択ダイアログを先に表示
+  if(type==='kobetsu'||type==='kansatsu'){
+    openChildSelectModal(type);
+    return;
+  }
+
   const cls=document.getElementById('pr_class').value;
   const nendo=document.getElementById('pr_nendo').value;
   const month=document.getElementById('pr_month').value;
   if(!cls){showToast('⚠️ クラスを選択してください','error');return;}
 
-  // 検索キー生成
   const keyMap={
     nensyuu: nendo+cls,
     getsuan: nendo+cls+month,
     shuuan:  nendo+cls+month+(document.getElementById('pr_week')?.value||''),
     nisshi:  (document.getElementById('pr_date')?.value||'')+cls,
-    kobetsu: cls+month+(document.getElementById('pr_child')?.value||''),
-    kansatsu:cls+month+(document.getElementById('pr_child')?.value||''),
   };
   const key=keyMap[type]||'';
   if(!key||key===nendo||key===cls){showToast('⚠️ クラス・年度・月などの条件を選択してください','error');return;}
 
-  showLoading('様式を生成中…（数秒かかります）');
+  showLoading('データを取得中…');
   try{
-    const res=await gasGet({action:'exportExcel',type,key});
+    const res=await gasGet({action:'get',type,key});
     hideLoading();
-    if(!res||!res.ok){showToast('❌ '+(res?res.error:'エラー'),'error');return;}
-
-    // PDFをiframeで表示
-    const modal=document.getElementById('printModal');
+    if(!res||!res.ok||!res.data){showToast('❌ '+(res?res.error:'データが見つかりません'),'error');return;}
+    const rows=Array.isArray(res.data)?res.data:[res.data];
     document.getElementById('printModalTitle').textContent='🖨️ '+(PRINT_LABELS[type]||type);
     document.getElementById('printContent').innerHTML=
-      '<div style="text-align:right;margin-bottom:8px;">'
-      +'<a href="'+res.xlsxUrl+'" target="_blank" style="padding:7px 16px;background:#4d7252;color:white;border-radius:8px;font-size:13px;text-decoration:none;font-family:sans-serif;">📥 Excelダウンロード</a>'
-      +'</div>'
-      +'<iframe src="'+res.pdfUrl+'" style="width:100%;height:75vh;border:none;border-radius:8px;" title="印刷プレビュー"></iframe>';
-    modal.style.display='flex';
+      '<div style="text-align:right;margin-bottom:8px;">'+
+      '<button onclick="window.print()" style="padding:7px 16px;background:#4d7252;color:white;border:none;border-radius:8px;font-size:13px;cursor:pointer;font-family:sans-serif;">🖨️ 印刷</button></div>'+
+      buildPrintHtml(type,rows);
+    document.getElementById('printModal').style.display='flex';
   }catch(e){hideLoading();showToast('❌ エラー: '+e.message,'error');}
 }
 function closePrintModal(){document.getElementById('printModal').style.display='none';}
+
+// 個別・観察記録 園児選択モーダル
+let _childSelectType='';
+function openChildSelectModal(type){
+  _childSelectType=type;
+  const title=type==='kobetsu'?'👶 個別記録 - 園児を選択':'🔍 観察記録 - 園児を選択';
+  document.getElementById('childSelectTitle').textContent=title;
+  // クラスプルダウンを動的設定
+  const clsSel=document.getElementById('csPrClass');
+  clsSel.innerHTML='<option value="">-- 選択 --</option>';
+  const isNyuji=type==='kobetsu';
+  (MASTER.classes||[]).filter(c=>isNyuji?c.age<=2:c.age>=3).forEach(c=>{
+    const o=document.createElement('option');o.value=c.name;o.textContent=c.name;clsSel.appendChild(o);
+  });
+  // 現在の様式出力画面のクラス・月を引き継ぎ
+  const prCls=document.getElementById('pr_class')?.value;
+  const prMo=document.getElementById('pr_month')?.value;
+  if(prCls)clsSel.value=prCls;
+  if(prMo)document.getElementById('csPrMonth').value=prMo;
+  updateChildSelectList();
+  document.getElementById('childSelectModal').style.display='flex';
+}
+function closeChildSelectModal(){document.getElementById('childSelectModal').style.display='none';}
+function updateChildSelectList(){
+  const cls=document.getElementById('csPrClass').value;
+  const sel=document.getElementById('csPrChild');
+  sel.innerHTML='<option value="">-- 選択 --</option>';
+  if(!cls)return;
+  // 在籍中の園児のみ
+  const today=new Date();
+  (MASTER.children[cls]||[]).filter(function(c){
+    if(c.taienDate&&c.taienDate!==''){const td=String(c.taienDate).replace(/\//g,'-');if(new Date(td)<today)return false;}
+    return true;
+  }).forEach(function(c){const o=document.createElement('option');o.value=c.name;o.textContent=c.name;sel.appendChild(o);});
+}
+async function execChildPrintPreview(){
+  const cls=document.getElementById('csPrClass').value;
+  const month=document.getElementById('csPrMonth').value;
+  const child=document.getElementById('csPrChild').value;
+  if(!cls){showToast('⚠️ クラスを選択してください','error');return;}
+  if(!month){showToast('⚠️ 月を選択してください','error');return;}
+  if(!child){showToast('⚠️ 園児を選択してください','error');return;}
+  const key=cls+month+child;
+  closeChildSelectModal();
+  showLoading('データを取得中…');
+  try{
+    const res=await gasGet({action:'get',type:_childSelectType,key});
+    hideLoading();
+    if(!res||!res.ok||!res.data){showToast('❌ '+(res?res.error:'データが見つかりません'),'error');return;}
+    const rows=Array.isArray(res.data)?res.data:[res.data];
+    const label=_childSelectType==='kobetsu'?'個別記録':'観察記録';
+    document.getElementById('printModalTitle').textContent='🖨️ '+label+' - '+child;
+    document.getElementById('printContent').innerHTML=
+      '<div style="text-align:right;margin-bottom:8px;">'+
+      '<button onclick="window.print()" style="padding:7px 16px;background:#4d7252;color:white;border:none;border-radius:8px;font-size:13px;cursor:pointer;font-family:sans-serif;">🖨️ 印刷</button></div>'+
+      buildPrintHtml(_childSelectType,rows);
+    document.getElementById('printModal').style.display='flex';
+  }catch(e){hideLoading();showToast('❌ エラー: '+e.message,'error');}
+}
 
 function clearPrDate(){const e=document.getElementById('pr_shuuan_date');if(e)e.value='';}
 function clearPrWeek(){const e=document.getElementById('pr_shuuan_week');if(e)e.value='';}
@@ -2890,17 +3086,17 @@ async function openPrintPreviewShuuanNisshi(mode){
     return;
   }
 
-  showLoading('様式を生成中…');
+  showLoading('データを取得中…');
   try{
-    const res=await gasGet({action:'exportExcel',type:'shuuan',key});
+    const res=await gasGet({action:'get',type:'shuuan',key});
     hideLoading();
-    if(!res||!res.ok){showToast('❌ '+(res?res.error:'エラー'),'error');return;}
+    if(!res||!res.ok||!res.data){showToast('❌ '+(res?res.error:'データが見つかりません'),'error');return;}
+    const rows=Array.isArray(res.data)?res.data:[res.data];
     document.getElementById('printModalTitle').textContent='🖨️ 週案日誌';
     document.getElementById('printContent').innerHTML=
-      '<div style="text-align:right;margin-bottom:8px;">'
-      +'<a href="'+res.xlsxUrl+'" target="_blank" style="padding:7px 16px;background:#4d7252;color:white;border-radius:8px;font-size:13px;text-decoration:none;font-family:sans-serif;">📥 Excelダウンロード</a>'
-      +'</div>'
-      +'<iframe src="'+res.pdfUrl+'" style="width:100%;height:75vh;border:none;border-radius:8px;" title="印刷プレビュー"></iframe>';
+      '<div style="text-align:right;margin-bottom:8px;">'+
+      '<button onclick="window.print()" style="padding:7px 16px;background:#4d7252;color:white;border:none;border-radius:8px;font-size:13px;cursor:pointer;font-family:sans-serif;">🖨️ 印刷</button></div>'+
+      buildPrintHtml('shuuan',rows);
     document.getElementById('printModal').style.display='flex';
   }catch(e){hideLoading();showToast('❌ エラー: '+e.message,'error');}
 }
@@ -3061,10 +3257,10 @@ function updateKoMonthRange(){
   const el=document.getElementById('ko_monthRange');
   if(!el)return;
   if(!mo){el.textContent='';return;}
-  // 個別記録はA4 1枚で4ヶ月分 → 開始月から+3ヶ月
-  const endMo = mo + 3;
-  const endDisplay = endMo > 12 ? (endMo - 12) : endMo;
-  el.textContent = '（'+mo+'月〜'+endDisplay+'）';
+  // 個別記録はA4 1枚で4ヶ月分 → 開始月から+3ヶ月（例：4月→7月）
+  let endMo = mo + 3;
+  if(endMo > 12) endMo = endMo - 12;
+  el.textContent = '（'+mo+'月〜'+endMo+'月）';
 }
 
 function checkForm(prefix,ids){const ok=ids.every(function(id){const el=document.getElementById(id);return el&&el.value.trim()!=='';});const b=document.getElementById(prefix+'_check');b.textContent=ok?'✅ 入力完了':'⚠️ 未入力項目があります';b.className='status-badge '+(ok?'status-ok':'status-warn');showToast(ok?'✅ 入力チェックOK！':'⚠️ 必須項目が未入力です',ok?'':'error');}
@@ -3293,7 +3489,7 @@ function showSection(id){
   if(m[id]!==undefined)document.querySelectorAll('.nav-tab')[m[id]].classList.add('active');
   window.scrollTo(0,0);
   if(id==='approval'){loadNotifications();loadPending();}
-  if(id==='master'){if(typeof renderMasterClassTable==='function')renderMasterClassTable();if(typeof renderMasterApproverTable==='function')renderMasterApproverTable();}
+  if(id==='master'){if(typeof renderMasterClassTable==='function')renderMasterClassTable();if(typeof renderMasterApproverTable==='function')renderMasterApproverTable();if(typeof loadKiSettings==='function')loadKiSettings();}
   // 承認バーを消す（承認ページ以外に移動した場合）
   if(id!=='approval'){const bar=document.getElementById('approveActionBar');if(bar)bar.remove();}
 }
