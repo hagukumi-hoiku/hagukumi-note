@@ -2125,7 +2125,11 @@ function renderMasterClassTable() {
     return;
   }
   MASTER.classes.forEach(function(c, i) {
-    const childCount = (MASTER.children[c.name] || []).length;
+    const today0=new Date();today0.setHours(0,0,0,0);
+    const childCount = (MASTER.children[c.name] || []).filter(function(ch){
+      if(!ch.taienDate||ch.taienDate==='')return true;
+      const td=String(ch.taienDate).replace(/\//g,'-');return new Date(td)>=today0;
+    }).length;
     const ageBg   = c.age <= 2 ? '#e3f2fd' : '#e8f5e9';
     const ageCol  = c.age <= 2 ? '#0d47a1' : '#1b5e20';
     const tr = document.createElement('tr');
@@ -2311,7 +2315,7 @@ async function importChildrenCsvFile(file) {
 
   let text = await readFile('UTF-8');
   if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
-  if (text.includes('�')) text = await readFile('Shift-JIS');
+  if (text.includes(' ')) text = await readFile('Shift-JIS');
 
   function parseCsvLine(line) {
     const result = []; let cur = '', inQ = false;
@@ -2534,7 +2538,7 @@ async function importChildrenCsv(){
 
   let text = await readFile('UTF-8');
   // 文字化けしてたらShift-JISで再試行
-  if(text.includes('�')) text = await readFile('Shift-JIS');
+  if(text.includes(' ')) text = await readFile('Shift-JIS');
 
   const lines = text.split(/\r?\n/).filter(l=>l.trim());
   if(lines.length < 2){ resultEl.innerHTML='<span style="color:#e74c3c;">データが空です</span>'; return; }
@@ -2936,12 +2940,8 @@ async function loadDbList(prefix){
     if(!res||!res.ok||!res.data||res.data.length===0){cnt.innerHTML='<span class="db-empty">（保存データなし）</span>';return;}
     cnt.innerHTML='';
 
-    // 絞り込み条件
+    // 担当クラス絞り込み（staffのみ、管理者は全件）
     const isAdmin=['admin','encho','syunin','tokkatsu'].includes(SESSION.role);
-    const now=new Date();
-    const curMonth=now.getMonth()+1;
-    const curYear=now.getFullYear();
-    // 担当クラスの取得
     const myClasses=[];
     if(!isAdmin){
       const tanninStr=SESSION.tanninClass||'';
@@ -2951,32 +2951,20 @@ async function loadDbList(prefix){
       }
     }
 
+    // 保存日時の新しい順にソート
+    const rows=[...res.data].sort(function(a,b){
+      return String(b['保存日時']||'').localeCompare(String(a['保存日時']||''));
+    });
+
     let displayed=0;
-    res.data.forEach(function(row){
+    rows.forEach(function(row){
       // 個別・観察記録は園児名が空のデータを除外
       if((prefix==='ko'||prefix==='ka')&&!String(row['園児名']||'').trim()) return;
-
-      // 担当クラス絞り込み（管理者以外）
+      // 担当クラス絞り込み（staffのみ）
       if(!isAdmin&&myClasses.length>0){
         const rowCls=String(row['対象クラス']||row['クラス名']||'').trim();
         if(!myClasses.includes(rowCls)) return;
       }
-
-      // 当月絞り込み（管理者以外）※年案は年度で絞り
-      if(!isAdmin){
-        if(prefix==='ns'){
-          const rowNendo=parseInt(row['対象年度']||0);
-          const dispNendo=curMonth>=4?curYear:curYear-1;
-          if(rowNendo&&rowNendo!==dispNendo) return;
-        } else if(prefix==='ni'){
-          const rowDate=String(row['対象日付']||'');
-          if(rowDate){const d=new Date(rowDate);if(d.getMonth()+1!==curMonth||d.getFullYear()!==curYear) return;}
-        } else {
-          const rowMonth=parseInt(row['対象月']||0);
-          if(rowMonth&&rowMonth!==curMonth) return;
-        }
-      }
-
       const item=document.createElement('div');item.className='db-item';
       const st=row['承認状態']||'未申請';
       const stI=APPROVAL_STATUS[st]||{cls:'ab-draft',label:st};
@@ -3039,23 +3027,18 @@ async function openPrintPreview(type){
   if(SESSION.token==='demo'){
     const rows=getDemoRows(type);
     if(!rows.length){showToast('⚠️ このデモデータはありません','error');return;}
-    document.getElementById('printContent').innerHTML=buildPrintHtml(type,rows);
-    document.getElementById('printModalTitle').textContent='🖨️ '+(PRINT_LABELS[type]||type)+'（デモ '+rows.length+'件）';
-    document.getElementById('printModal').style.display='flex';
+    _showStyleModal(PRINT_LABELS[type]||type, type, rows);
     return;
   }
-
-  // 個別・観察記録は園児選択ダイアログを先に表示（クラス・月は上部から引き継ぎ）
+  // 個別・観察記録は園児選択ダイアログ
   if(type==='kobetsu'||type==='kansatsu'){
     openChildSelectModal(type);
     return;
   }
-
   const cls=document.getElementById('pr_class').value;
   const nendo=document.getElementById('pr_nendo').value;
   const month=document.getElementById('pr_month').value;
   if(!cls){showToast('⚠️ クラスを選択してください','error');return;}
-
   const keyMap={
     nensyuu: nendo+cls,
     getsuan: nendo+cls+month,
@@ -3064,15 +3047,44 @@ async function openPrintPreview(type){
   };
   const key=keyMap[type]||'';
   if(!key||key===nendo||key===cls){showToast('⚠️ クラス・年度・月などの条件を選択してください','error');return;}
-
-  showLoading('様式を生成中…（10〜20秒かかります）');
+  showLoading('データを取得中…');
   try{
-    const res=await gasPost({action:'exportExcel',type,key,nendo});
+    const res=await gasGet({action:'get',type,key});
     hideLoading();
-    if(!res||!res.ok){showToast('❌ '+(res?res.error:'様式の生成に失敗しました'),'error');return;}
-    _showPdfModal(PRINT_LABELS[type]||type, res.pdfUrl, res.xlsxUrl);
+    if(!res||!res.ok||!res.data){showToast('❌ '+(res?res.error:'データが見つかりません'),'error');return;}
+    const rows=Array.isArray(res.data)?res.data:[res.data];
+    _showStyleModal(PRINT_LABELS[type]||type, type, rows, key, nendo);
   }catch(e){hideLoading();showToast('❌ エラー: '+e.message,'error');}
 }
+
+// 様式HTMLプレビューをモーダル表示
+function _showStyleModal(label, type, rows, key, nendo){
+  document.getElementById('printModalTitle').textContent='🖨️ '+label;
+  const row=rows[0]||{};
+  // Excelダウンロードボタン（GAS経由、別操作）
+  const dlBtn=key
+    ?'<button onclick="downloadExcelFromModal(\''+type+'\',\''+esc(key||'')+'\',\''+esc(nendo||'')+'\',this)" style="padding:6px 14px;background:#217346;color:white;border:none;border-radius:7px;font-size:12px;cursor:pointer;font-family:sans-serif;">📥 Excelダウンロード</button>'
+    :'';
+  document.getElementById('printContent').innerHTML=
+    '<div style="display:flex;gap:8px;justify-content:flex-end;margin-bottom:10px;flex-wrap:wrap;">'
+    +dlBtn
+    +'<button onclick="window.print()" style="padding:6px 14px;background:#4d7252;color:white;border:none;border-radius:7px;font-size:12px;cursor:pointer;font-family:sans-serif;">🖨️ 印刷</button>'
+    +'</div>'
+    +buildStyleHtml(type, row);
+  document.getElementById('printModal').style.display='flex';
+}
+
+// GAS経由でExcelダウンロード（時間がかかるため別ボタン）
+async function downloadExcelFromModal(type, key, nendo, btn){
+  if(btn){btn.textContent='⏳ 生成中…';btn.disabled=true;}
+  try{
+    const res=await gasPost({action:'exportExcel',type,key,nendo});
+    if(btn){btn.textContent='📥 Excelダウンロード';btn.disabled=false;}
+    if(res&&res.ok&&res.xlsxUrl){window.open(res.xlsxUrl,'_blank');}
+    else showToast('❌ '+(res?res.error:'生成失敗'),'error');
+  }catch(e){if(btn){btn.textContent='📥 Excelダウンロード';btn.disabled=false;}showToast('❌ '+e.message,'error');}
+}
+
 function _showPdfModal(label, pdfUrl, xlsxUrl){
   document.getElementById('printModalTitle').textContent='🖨️ '+label;
   document.getElementById('printContent').innerHTML=
@@ -3126,15 +3138,16 @@ async function execChildPrintPreview(){
   if(!month){showToast('⚠️ 月を選択してください','error');return;}
   if(!child){showToast('⚠️ 園児を選択してください','error');return;}
   const key=cls+month+child;
-  closeChildSelectModal();
   const nendo=document.getElementById('pr_nendo')?.value||String(new Date().getFullYear());
-  showLoading('様式を生成中…（10〜20秒かかります）');
+  closeChildSelectModal();
+  showLoading('データを取得中…');
   try{
-    const res=await gasPost({action:'exportExcel',type:_childSelectType,key,nendo});
+    const res=await gasGet({action:'get',type:_childSelectType,key});
     hideLoading();
-    if(!res||!res.ok){showToast('❌ '+(res?res.error:'様式の生成に失敗しました'),'error');return;}
+    if(!res||!res.ok||!res.data){showToast('❌ '+(res?res.error:'データが見つかりません'),'error');return;}
+    const row=Array.isArray(res.data)?res.data[0]:res.data;
     const label=(_childSelectType==='kobetsu'?'個別記録':'観察記録')+' - '+child;
-    _showPdfModal(label,res.pdfUrl,res.xlsxUrl);
+    _showStyleModal(label, _childSelectType, [row], key, nendo);
   }catch(e){hideLoading();showToast('❌ エラー: '+e.message,'error');}
 }
 
@@ -3157,7 +3170,6 @@ async function openPrintPreviewShuuanNisshi(mode){
   } else {
     const date=document.getElementById('pr_shuuan_date')?.value||'';
     if(!date){showToast('⚠️ 日付を入力してください','error');return;}
-    // 日付から週番号を計算してキー生成（週案）
     const d=new Date(date);
     const mo=d.getMonth()+1;
     const firstOfMonth=new Date(d.getFullYear(),d.getMonth(),1);
@@ -3168,36 +3180,216 @@ async function openPrintPreviewShuuanNisshi(mode){
   if(SESSION.token==='demo'){
     const rows=getDemoRows('shuuan');
     if(!rows.length){showToast('⚠️ デモデータがありません','error');return;}
-    document.getElementById('printContent').innerHTML=buildPrintHtml('shuuan',rows);
-    document.getElementById('printModalTitle').textContent='🖨️ 週案日誌（デモ）';
-    document.getElementById('printModal').style.display='flex';
+    _showStyleModal('週案日誌（デモ）','shuuan',rows);
     return;
   }
 
-  showLoading('様式を生成中…（10〜20秒かかります）');
+  showLoading('データを取得中…');
   try{
-    const res=await gasPost({action:'exportExcel',type:'shuuan',key,nendo});
+    const res=await gasGet({action:'get',type:'shuuan',key});
     hideLoading();
-    if(!res||!res.ok){showToast('❌ '+(res?res.error:'様式の生成に失敗しました'),'error');return;}
-    _showPdfModal('週案日誌',res.pdfUrl,res.xlsxUrl);
+    if(!res||!res.ok||!res.data){showToast('❌ '+(res?res.error:'データが見つかりません'),'error');return;}
+    const rows=Array.isArray(res.data)?res.data:[res.data];
+    _showStyleModal('週案日誌','shuuan',rows,key,nendo);
   }catch(e){hideLoading();showToast('❌ エラー: '+e.message,'error');}
 }
 
+// 汎用データ確認HTML（フォールバック用）
 function buildPrintHtml(type,rows){
-  const skip=new Set(['検索キー','記録者','保存日時']);
-  return rows.map(function(row,i){
-    const fields=Object.entries(row).filter(function(e){return !skip.has(e[0])&&e[1]!==''&&e[1]!=null;}).map(function(e){
-      return '<tr><td style="padding:7px 12px;font-size:12px;font-weight:600;color:#555;background:#f9f9f9;border:1px solid #e0e0e0;white-space:nowrap;width:160px;">'+e[0]+'</td>'
-        +'<td style="padding:7px 12px;font-size:13px;border:1px solid #e0e0e0;white-space:pre-wrap;line-height:1.7;">'+String(e[1]).replace(/</g,'&lt;')+'</td></tr>';
+  const row=rows[0]||{};
+  return buildStyleHtml(type,row);
+}
+
+// ===== 様式HTML生成 =====
+function buildStyleHtml(type, d){
+  const V=function(k){return d[k]!==undefined&&d[k]!==null&&d[k]!==''?String(d[k]):'';};
+  const E=function(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');};
+  const S='font-family:"Noto Sans JP",sans-serif;font-size:12px;';
+  const TH='background:#e8f5e9;padding:5px 8px;font-weight:700;border:1px solid #b2dfdb;white-space:nowrap;font-size:11px;color:#1b5e20;vertical-align:top;';
+  const TD='padding:6px 10px;border:1px solid #ccc;white-space:pre-wrap;line-height:1.7;vertical-align:top;min-height:40px;';
+  const HDR=function(title,sub){return '<div style="background:linear-gradient(135deg,#4d7252,#6a9a72);color:white;padding:10px 16px;border-radius:8px 8px 0 0;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:4px;"><span style="font-weight:700;font-size:14px;">'+E(title)+'</span><span style="font-size:11px;opacity:.9;">'+E(sub)+'</span></div>';};
+  const WRAP=function(header,body){return '<div style="'+S+'border-radius:8px;overflow:hidden;border:1px solid #ccc;background:white;">'+header+'<div style="padding:0;">'+body+'</div></div>';};
+  const ROW2=function(label,val,labelW){labelW=labelW||'120px';return '<tr><th style="'+TH+'width:'+labelW+';">'+E(label)+'</th><td style="'+TD+'">'+E(val)+'</td></tr>';};
+  const ROW2W=function(label,val){return ROW2(label,val,'160px');};
+
+  // ヘッダー行（共通メタ情報）
+  function metaBlock(cls, nendo, month, extra, tanin, syunin, encho){
+    let cells='<td style="'+TD+'text-align:center;">'+E(nendo?nendo+'年度':'')+'</td>'
+      +'<td style="'+TD+'text-align:center;">'+E(cls||'')+'</td>'
+      +(month?'<td style="'+TD+'text-align:center;">'+E(month+'月')+'</td>':'')
+      +(extra?'<td style="'+TD+'">'+E(extra)+'</td>':'')
+      +'<td style="'+TD+'">'+E(tanin||'')+'</td>'
+      +'<td style="'+TD+'text-align:center;font-size:11px;">'+E(syunin||'')+'</td>'
+      +'<td style="'+TD+'text-align:center;font-size:11px;">'+E(encho||'')+'</td>';
+    let heads='<th style="'+TH+'">年度</th><th style="'+TH+'">クラス</th>'
+      +(month?'<th style="'+TH+'">月</th>':'')
+      +(extra?'<th style="'+TH+'">'+extra+'</th>':'')
+      +'<th style="'+TH+'">担任</th><th style="'+TH+'">主任</th><th style="'+TH+'">園長</th>';
+    return '<table style="width:100%;border-collapse:collapse;"><thead><tr>'+heads+'</tr></thead><tbody><tr>'+cells+'</tr></tbody></table>';
+  }
+
+  if(type==='getsuan'){
+    const evRows=[1,2,3,4,5].map(function(i){
+      const d2=V('ev'+i+'d'),c2=V('ev'+i+'c');
+      if(!d2&&!c2)return '';
+      return '<tr><th style="'+TH+'width:110px;">行事'+i+'</th><td style="'+TD+'width:140px;">'+E(d2)+'</td><td style="'+TD+'">'+E(c2)+'</td></tr>';
     }).join('');
-    const title=row['対象クラス']||row['クラス名']||'';
-    const sub=[row['対象年度']?row['対象年度']+'年度':'',row['対象月']?row['対象月']+'月':'',row['対象週']?'第'+row['対象週']+'週':'',row['対象日付']||'',row['園児名']||''].filter(Boolean).join(' ');
-    return '<div style="page-break-after:'+(i<rows.length-1?'always':'avoid')+';margin-bottom:32px;">'
-      +'<div style="background:#4d7252;color:white;padding:10px 16px;border-radius:8px 8px 0 0;display:flex;justify-content:space-between;align-items:center;">'
-      +'<span style="font-weight:700;font-size:15px;">'+(PRINT_LABELS[type]||type)+' '+title+'</span>'
-      +'<span style="font-size:12px;opacity:.85;">'+sub+'</span></div>'
-      +'<table style="width:100%;border-collapse:collapse;">'+fields+'</table></div>';
-  }).join('');
+    const head=HDR('月案　'+V('対象クラス')+'　'+V('対象月')+'月', V('対象年度')+'年度');
+    const body='<table style="width:100%;border-collapse:collapse;">'
+      +metaBlock(V('対象クラス'),V('対象年度'),V('対象月'),'',V('担任'),V('主任承認'),V('園長承認'))
+      +'</table>'
+      +'<table style="width:100%;border-collapse:collapse;margin-top:1px;">'
+      +ROW2W('養護 生命の保持',V('生命の保持'))
+      +ROW2W('養護 情緒の安定',V('情緒の安定'))
+      +ROW2W('教育 健康',V('健康'))
+      +ROW2W('教育 人間関係',V('人間関係'))
+      +ROW2W('教育 環境',V('環境'))
+      +ROW2W('教育 言葉',V('言葉'))
+      +ROW2W('教育 表現',V('表現'))
+      +'</table>'
+      +(evRows?'<div style="font-weight:700;font-size:11px;background:#f5f5f5;padding:5px 10px;border-top:1px solid #ccc;border-bottom:1px solid #ccc;color:#555;">行事</div><table style="width:100%;border-collapse:collapse;">'+evRows+'</table>':'')
+      +'<table style="width:100%;border-collapse:collapse;margin-top:1px;">'
+      +ROW2W('予想される姿',V('予想される姿'))
+      +ROW2W('環境構成',V('環境構成'))
+      +ROW2W('個別配慮',V('個別配慮'))
+      +ROW2W('家庭連携',V('家庭連携'))
+      +ROW2W('保護者支援',V('保護者支援'))
+      +ROW2W('月振り返り',V('月振り返り'))
+      +'</table>';
+    return WRAP(head,body);
+  }
+
+  if(type==='nensyuu'){
+    const kiStr=MASTER.kihon&&MASTER.kihon['期設定']||'';
+    let kiSettings=null;try{kiSettings=JSON.parse(kiStr);}catch(e){}
+    const KI_DEF=[{s:4,e:7},{s:8,e:11},{s:12,e:2},{s:3,e:3}];
+    const kiLabels=[1,2,3,4].map(function(i){
+      const ki=kiSettings?kiSettings[i-1]:KI_DEF[i-1];
+      const s=ki?ki.s:KI_DEF[i-1].s;const e=ki?ki.e:KI_DEF[i-1].e;
+      return '第'+i+'期（'+(s===e?s+'月':s+'〜'+e+'月')+'）';
+    });
+    const NS_F=[
+      {label:'養護 生命の保持',key:'養護（生命の保持）'},
+      {label:'養護 情緒の安定',key:'養護（情緒の安定）'},
+      {label:'教育 健康',key:'教育（健康）'},
+      {label:'教育 人間関係',key:'教育（人間関係）'},
+      {label:'教育 環境',key:'教育（環境）'},
+      {label:'教育 言葉',key:'教育（言葉）'},
+      {label:'教育 表現',key:'教育（表現）'},
+      {label:'環境構成・援助',key:'環境構成（援助・配慮）'},
+      {label:'子育て支援',key:'子育て支援（保護者支援）'},
+      {label:'期の振り返り',key:'期の振り返り'},
+    ];
+    const head=HDR('年間指導計画　'+V('対象クラス'), V('対象年度')+'年度');
+    let body='<table style="width:100%;border-collapse:collapse;">'
+      +metaBlock(V('対象クラス'),V('対象年度'),'','',V('担任'),V('主任承認'),V('園長承認'))
+      +'</table>'
+      +'<table style="width:100%;border-collapse:collapse;margin-top:1px;">'
+      +ROW2W('年間目標',V('年間目標'))
+      +'</table>'
+      +'<div style="font-weight:700;font-size:11px;background:#f5f5f5;padding:5px 10px;border-top:1px solid #ccc;border-bottom:1px solid #ccc;color:#555;">各期の計画</div>'
+      +'<table style="width:100%;border-collapse:collapse;"><thead><tr>'
+      +'<th style="'+TH+'width:130px;">項目</th>'
+      +kiLabels.map(function(l){return '<th style="'+TH+'">'+l+'</th>';}).join('')
+      +'</tr></thead><tbody>';
+    NS_F.forEach(function(f){
+      body+='<tr><th style="'+TH+'">'+E(f.label)+'</th>'
+        +[1,2,3,4].map(function(i){return '<td style="'+TD+'">'+E(V('第'+i+'期_'+f.key))+'</td>';}).join('')
+        +'</tr>';
+    });
+    body+='</tbody></table>'
+      +'<table style="width:100%;border-collapse:collapse;margin-top:1px;">'
+      +ROW2W('年間振り返り',V('年間振り返り'))
+      +'</table>';
+    return WRAP(head,body);
+  }
+
+  if(type==='shuuan'){
+    const DAYS=['月曜','火曜','水曜','木曜','金曜','土曜'];
+    const head=HDR('週案　'+V('対象クラス')+'　'+V('対象月')+'月 第'+V('対象週')+'週', V('対象年度')+'年度');
+    const body='<table style="width:100%;border-collapse:collapse;">'
+      +metaBlock(V('対象クラス'),V('対象年度'),V('対象月'),'第'+V('対象週')+'週',V('担任'),V('主任承認'),V('園長承認'))
+      +'</table>'
+      +'<table style="width:100%;border-collapse:collapse;margin-top:1px;">'
+      +ROW2W('前週の子どもの姿',V('前週の子どもの姿'))
+      +ROW2W('今週のねらい',V('今週のねらい'))
+      +ROW2W('環境構成',V('環境構成'))
+      +ROW2W('援助配慮',V('援助配慮'))
+      +ROW2W('保護者連携',V('保護者連携'))
+      +'</table>'
+      +'<div style="font-weight:700;font-size:11px;background:#f5f5f5;padding:5px 10px;border-top:1px solid #ccc;border-bottom:1px solid #ccc;color:#555;">曜日別保育内容</div>'
+      +'<table style="width:100%;border-collapse:collapse;">'
+      +DAYS.map(function(day){const v=V(day);return v?'<tr><th style="'+TH+'width:60px;">'+day+'</th><td style="'+TD+'">'+E(v)+'</td></tr>':'';}).join('')
+      +'</table>'
+      +'<table style="width:100%;border-collapse:collapse;margin-top:1px;">'
+      +ROW2W('週振り返り',V('週振り返り'))
+      +'</table>';
+    return WRAP(head,body);
+  }
+
+  if(type==='nisshi'){
+    const head=HDR('日誌　'+V('クラス名')+'　'+V('対象日付'), '');
+    const body='<table style="width:100%;border-collapse:collapse;">'
+      +'<tr><th style="'+TH+'">日付</th><td style="'+TD+'">'+E(V('対象日付'))+'</td>'
+      +'<th style="'+TH+'">クラス</th><td style="'+TD+'">'+E(V('クラス名'))+'</td>'
+      +'<th style="'+TH+'">記入者</th><td style="'+TD+'">'+E(V('記入者'))+'</td></tr>'
+      +'<tr><th style="'+TH+'">出席</th><td style="'+TD+'">'+E(V('出席数'))+'名</td>'
+      +'<th style="'+TH+'">欠席</th><td style="'+TD+'">'+E(V('欠席数'))+'名（'+E(V('欠席理由'))+'）</td>'
+      +'<th style="'+TH+'">主任確認</th><td style="'+TD+'">'+E(V('主任確認'))+'</td></tr>'
+      +'</table>'
+      +'<table style="width:100%;border-collapse:collapse;margin-top:1px;">'
+      +ROW2W('保育内容',V('保育内容'))
+      +ROW2W('健康管理',V('健康管理'))
+      +ROW2W('特記事項',V('特記事項'))
+      +ROW2W('評価・反省',V('評価反省'))
+      +'</table>';
+    return WRAP(head,body);
+  }
+
+  if(type==='kobetsu'){
+    const head=HDR('個別記録　'+V('対象クラス')+'　'+V('園児名'), V('対象年度')+'年度 '+V('対象月')+'月');
+    const body='<table style="width:100%;border-collapse:collapse;">'
+      +'<tr><th style="'+TH+'">クラス</th><td style="'+TD+'">'+E(V('対象クラス'))+'</td>'
+      +'<th style="'+TH+'">園児名</th><td style="'+TD+'font-weight:700;">'+E(V('園児名'))+'（'+E(V('ひらがな'))+'）</td>'
+      +'<th style="'+TH+'">性別</th><td style="'+TD+'">'+E(V('性別'))+'</td></tr>'
+      +'<tr><th style="'+TH+'">年度</th><td style="'+TD+'">'+E(V('対象年度'))+'年度</td>'
+      +'<th style="'+TH+'">対象月</th><td style="'+TD+'">'+E(V('対象月'))+'月</td>'
+      +'<th style="'+TH+'">担任</th><td style="'+TD+'">'+E(V('担任'))+'</td></tr>'
+      +'<tr><th style="'+TH+'">生年月日</th><td style="'+TD+'" colspan="3">'+E(V('生年月日'))+'</td>'
+      +'<th style="'+TH+'">主任承認</th><td style="'+TD+'">'+E(V('主任承認'))+'</td></tr>'
+      +'</table>'
+      +'<table style="width:100%;border-collapse:collapse;margin-top:1px;">'
+      +ROW2W('ねらい',V('ねらい'))
+      +ROW2W('内容',V('内容'))
+      +ROW2W('子どもの姿',V('子どもの姿'))
+      +ROW2W('保育者の配慮',V('保育者の配慮'))
+      +ROW2W('特記事項',V('特記事項'))
+      +ROW2W('評価・反省',V('評価反省'))
+      +'</table>';
+    return WRAP(head,body);
+  }
+
+  if(type==='kansatsu'){
+    const head=HDR('観察記録　'+V('対象クラス')+'　'+V('園児名'), V('対象年度')+'年度 '+V('対象月')+'月');
+    const body='<table style="width:100%;border-collapse:collapse;">'
+      +'<tr><th style="'+TH+'">クラス</th><td style="'+TD+'">'+E(V('対象クラス'))+'</td>'
+      +'<th style="'+TH+'">園児名</th><td style="'+TD+'font-weight:700;">'+E(V('園児名'))+'（'+E(V('ひらがな'))+'）</td>'
+      +'<th style="'+TH+'">性別</th><td style="'+TD+'">'+E(V('性別'))+'</td></tr>'
+      +'<tr><th style="'+TH+'">年度</th><td style="'+TD+'">'+E(V('対象年度'))+'年度</td>'
+      +'<th style="'+TH+'">対象月</th><td style="'+TD+'">'+E(V('対象月'))+'月</td>'
+      +'<th style="'+TH+'">担任</th><td style="'+TD+'">'+E(V('担任'))+'</td></tr>'
+      +'</table>'
+      +'<table style="width:100%;border-collapse:collapse;margin-top:1px;">'
+      +ROW2W('保育記録',V('保育記録'))
+      +'</table>';
+    return WRAP(head,body);
+  }
+
+  // フォールバック（未知のtype）
+  const skip=new Set(['検索キー','記録者','保存日時']);
+  let rows2='';
+  Object.entries(d).forEach(function(e){if(!skip.has(e[0])&&e[1]!==''&&e[1]!=null)rows2+=ROW2(e[0],String(e[1]));});
+  return WRAP(HDR(type,''),`<table style="width:100%;border-collapse:collapse;">${rows2}</table>`);
 }
 
 
