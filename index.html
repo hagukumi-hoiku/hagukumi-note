@@ -3205,6 +3205,7 @@ async function loadRecord(prefix,key){
         // MASTERから生年月日を優先取得（確実）、なければDBの値を使用
         const masterChild=(MASTER.children[cls2]||[]).find(function(c){return c.name===childName;});
         const birthStr=(masterChild?masterChild.birth:'')||data['生年月日']||'';
+        console.log('[月齢debug] cls2='+cls2+' childName='+childName+' masterChild='+JSON.stringify(masterChild)+' birthStr='+birthStr+' data生年月日='+data['生年月日']);
         const nendo2=parseInt(data['対象年度'])||new Date().getFullYear();
         const month2=parseInt(data['対象月'])||4;
         if(birthStr){
