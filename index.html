@@ -3206,6 +3206,7 @@ async function loadRecord(prefix,key){
         const masterChild=(MASTER.children[cls2]||[]).find(function(c){return c.name===childName;});
         const birthStr=(masterChild?masterChild.birth:'')||data['生年月日']||'';
         console.log('[月齢debug] cls2='+cls2+' childName='+childName+' masterChild='+JSON.stringify(masterChild)+' birthStr='+birthStr+' data生年月日='+data['生年月日']);
+        console.log('[月齢debug] MASTER.children[cls2]='+JSON.stringify((MASTER.children[cls2]||[]).map(function(x){return x.name;})));
         const nendo2=parseInt(data['対象年度'])||new Date().getFullYear();
         const month2=parseInt(data['対象月'])||4;
         if(birthStr){
