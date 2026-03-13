@@ -9,7 +9,7 @@
 <title>はぐくみノート Ver.4.23｜はぐくみ保育園</title>
 <script>
 // バージョン番号 - アップデート時はここを変える
-const APP_VERSION = '4.23';
+const APP_VERSION = '4.24';
 // URLにバージョンパラメータがなければ自動で付与してリロード（キャッシュ回避）
 (function(){
   const url = new URL(location.href);
@@ -1268,17 +1268,73 @@ function getDeadline(type, nendo, month, weekStart, targetDate, dispYear) {
   const fromSetting = calcFromSetting(deadlineSetting, actualYear, month);
   if (fromSetting) return fromSetting;
 
+  // ── 週案の設定値ベース計算 ──
+  if (type === 'shuuan') {
+    if (!weekStart) return null;
+    if (deadlineSetting) {
+      const ws = new Date(weekStart); // 週の月曜日
+      // 「週の開始N日以内」→ 月曜日 + N日
+      const withinMatch = deadlineSetting.match(/^週の開始(\d+)日以内$/);
+      if (withinMatch) {
+        const d = new Date(ws);
+        d.setDate(d.getDate() + parseInt(withinMatch[1]));
+        return d;
+      }
+      // 「週の前日」→ 月曜の前日（日曜）
+      if (deadlineSetting === '週の前日') {
+        const d = new Date(ws); d.setDate(d.getDate() - 1); return d;
+      }
+      // 「週の2日前」「週の3日前」→ 月曜のN日前
+      const beforeMatch = deadlineSetting.match(/^週の(\d+)日前$/);
+      if (beforeMatch) {
+        const d = new Date(ws);
+        d.setDate(d.getDate() - parseInt(beforeMatch[1]));
+        return d;
+      }
+    }
+    // デフォルト: 月曜日中（週開始当日）
+    return new Date(weekStart);
+  }
+
+  // ── 日誌の設定値ベース計算 ──
+  if (type === 'nisshi') {
+    if (!targetDate) return null;
+    if (deadlineSetting) {
+      const td = new Date(targetDate);
+      // 「当日」
+      if (deadlineSetting === '当日') { return td; }
+      // 「翌日」
+      if (deadlineSetting === '翌日') {
+        const d = new Date(td); d.setDate(d.getDate()+1); return d;
+      }
+      // 「N日以内」
+      const nMatch = deadlineSetting.match(/^(\d+)日以内$/);
+      if (nMatch) {
+        const d = new Date(td); d.setDate(d.getDate()+parseInt(nMatch[1])); return d;
+      }
+      // 「翌週〇曜」: その日が属する週（月〜日）の翌週の指定曜日
+      const youbiMap = {'月曜':1,'火曜':2,'水曜':3,'木曜':4,'金曜':5,'土曜':6,'日曜':0};
+      const tkMatch = deadlineSetting.match(/^翌週(.+)$/);
+      if (tkMatch && youbiMap[tkMatch[1]] !== undefined) {
+        const targetDow = youbiMap[tkMatch[1]];
+        const base = new Date(td);
+        // その週の月曜を求める
+        const dow = base.getDay(); // 0=日, 1=月
+        const toMon = dow === 0 ? -6 : 1 - dow; // 今週月曜へのオフセット
+        base.setDate(base.getDate() + toMon + 7); // 翌週月曜
+        // 翌週月曜から targetDow までのオフセット
+        const offset = targetDow === 0 ? 6 : targetDow - 1;
+        base.setDate(base.getDate() + offset);
+        return base;
+      }
+    }
+    // デフォルト: 翌日
+    const d = new Date(targetDate); d.setDate(d.getDate()+1); return d;
+  }
+
   // デフォルト
   if (type === 'getsuan') return new Date(actualYear, month-1, 7);
   if (type === 'nensyuu') return new Date(actualYear, 2, 31);
-  if (type === 'shuuan') {
-    if (!weekStart) return null;
-    const d = new Date(weekStart); d.setDate(d.getDate()-2); return d;
-  }
-  if (type === 'nisshi') {
-    if (!targetDate) return null;
-    const d = new Date(targetDate); d.setDate(d.getDate()+1); return d;
-  }
   if (type === 'kobetsu' || type === 'kansatsu') {
     const d = new Date(actualYear, month, 1);
     const dow = d.getDay();
@@ -1452,9 +1508,19 @@ async function loadMyTasks() {
           +'</div>');
       }
 
-      // ③ 週案（第1〜4週）
+      // ③ 週案（第1〜5週）
       const suData = suRes && suRes.data ? suRes.data : [];
-      for (let week = 1; week <= 4; week++) {
+      // その月の「第N週」の月曜日を計算するヘルパー
+      function getNthWeekMonday(yr, mo, n) {
+        // 月の第1月曜を起点に (n-1)*7日後
+        const first = new Date(yr, mo-1, 1);
+        const dow = first.getDay(); // 0=日,1=月
+        const toMon = dow === 0 ? 1 : dow === 1 ? 0 : 8 - dow;
+        const firstMon = new Date(yr, mo-1, 1 + toMon);
+        firstMon.setDate(firstMon.getDate() + (n-1)*7);
+        return firstMon;
+      }
+      for (let week = 1; week <= 5; week++) {
         const suRow = suData.find(r =>
           String(r['対象クラス']) === cls.name &&
           String(r['対象月']) === String(dispMonth) &&
@@ -1462,8 +1528,14 @@ async function loadMyTasks() {
           String(r['対象週']) === String(week)
         );
         const suSt = suRow ? (suRow['承認状態'] || '未申請') : '未作成';
+        // 第5週は土日のみの場合があるので、月曜が翌月になったら表示しない
+        if (week === 5) {
+          const mon5 = getNthWeekMonday(dispYear, dispMonth, 5);
+          if (mon5.getMonth() + 1 !== dispMonth) continue; // 第5週の月曜が翌月なら不要
+        }
         if (suSt === '未作成' || suSt === '未申請') {
-          const suDl = getDeadline('shuuan', dispNendo, dispMonth, new Date(dispYear, dispMonth-1, 1+(week-1)*7), null, dispYear);
+          const weekMon = getNthWeekMonday(dispYear, dispMonth, week);
+          const suDl = getDeadline('shuuan', dispNendo, dispMonth, weekMon, null, dispYear);
         clsHtml += buildTaskSection(id+'_su'+week, '📆', dispMonth+'月 第'+week+'週 週案', suDl, statusBadge(suSt),
             '<div style="display:flex;gap:8px;align-items:center;">'
             +'<button class="btn btn-primary task-goto-btn" style="padding:3px 12px;font-size:11px;"'
@@ -1471,21 +1543,58 @@ async function loadMyTasks() {
         }
       }
 
-      // ④ 日誌（月単位・件数表示）
+      // ④ 日誌（週単位でタスク表示。期限は設定値に基づき記入日基準で計算）
       const niData = niRes && niRes.data ? niRes.data : [];
-      const niDone = niData.filter(r =>
-        String(r['クラス名']) === cls.name &&
-        (String(r['対象日付']||'').slice(0,4)+'-'+String(r['対象日付']||'').slice(5,7)) === (dispYear+'-'+String(dispMonth).padStart(2,'0'))
-      ).length;
-      if (niDone === 0) {
-        const niDl = getDeadline('nisshi', dispNendo, dispMonth, null, null, dispYear);
-      clsHtml += buildTaskSection(id+'_ni', '📓', '日誌（'+dispMonth+'月）', niDl,
-          '<span style="font-size:11px;color:#e0776a;">未作成</span>',
-          '<button class="btn btn-primary task-goto-btn" style="padding:3px 12px;font-size:11px;"'
-          +' data-type="nisshi" data-cls="'+cls.name+'" data-nendo="'+dispNendo+'" data-month="'+dispMonth+'" data-child="">✏️ 作成→</button>');
-      } else {
-        clsHtml += buildTaskSection(id+'_ni', '📓', '日誌（'+dispMonth+'月）', null,
-          '<span style="font-size:11px;color:#4d7252;">✅ '+niDone+'件作成済</span>', '');
+      // その月の各週（第1〜5週）について未申請の日があればタスク表示
+      {
+        // その月に含まれる日付一覧を週単位でグループ化
+        const monthDays = [];
+        const daysInMonth = new Date(dispYear, dispMonth, 0).getDate();
+        for (let d = 1; d <= daysInMonth; d++) {
+          const dt = new Date(dispYear, dispMonth-1, d);
+          if (dt.getDay() !== 0 && dt.getDay() !== 6) { // 平日のみ
+            monthDays.push(dt);
+          }
+        }
+        // 週ごとにグループ化（月曜起算）
+        const weekGroups = {};
+        monthDays.forEach(dt => {
+          const dow = dt.getDay();
+          const toMon = dow === 0 ? -6 : 1 - dow;
+          const monDate = new Date(dt);
+          monDate.setDate(dt.getDate() + toMon);
+          const wkey = monDate.toISOString().slice(0,10);
+          if (!weekGroups[wkey]) weekGroups[wkey] = {mon: monDate, days: []};
+          weekGroups[wkey].days.push(dt);
+        });
+        const weekKeys = Object.keys(weekGroups).sort();
+        let niWeekIdx = 0;
+        weekKeys.forEach(wkey => {
+          niWeekIdx++;
+          const wg = weekGroups[wkey];
+          const weekLabel = dispMonth+'月 第'+niWeekIdx+'週';
+          // この週に申請済/保存済の日誌があるか確認
+          const weekDates = wg.days.map(d => {
+            const yy = d.getFullYear(), mm = String(d.getMonth()+1).padStart(2,'0'), dd = String(d.getDate()).padStart(2,'0');
+            return yy+'-'+mm+'-'+dd;
+          });
+          const weekDoneRows = niData.filter(r =>
+            String(r['クラス名']) === cls.name &&
+            weekDates.some(wd => String(r['対象日付']||'').slice(0,10) === wd)
+          );
+          const weekDoneCount = weekDoneRows.length;
+          const weekWorkdays = wg.days.length;
+          // 期限は週の最終平日（金曜or金曜前）を targetDate として渡す
+          const lastDay = wg.days[wg.days.length-1];
+          const niDl = getDeadline('nisshi', dispNendo, dispMonth, null, lastDay, dispYear);
+          if (weekDoneCount < weekWorkdays) {
+            const pending = weekWorkdays - weekDoneCount;
+            clsHtml += buildTaskSection(id+'_ni'+niWeekIdx, '📓', '日誌 '+weekLabel, niDl,
+              '<span style="font-size:11px;color:'+(weekDoneCount>0?'#c9a84c':'#e0776a')+';">'+(weekDoneCount>0?weekDoneCount+'/'+weekWorkdays+'件作成済':'未作成')+'</span>',
+              '<button class="btn btn-primary task-goto-btn" style="padding:3px 12px;font-size:11px;"'
+              +' data-type="nisshi" data-cls="'+cls.name+'" data-nendo="'+dispNendo+'" data-month="'+dispMonth+'" data-child="">✏️ '+(weekDoneCount>0?'追加作成':'作成')+'→</button>');
+          }
+        });
       }
 
       // ⑤ 個別・観察記録（0〜2歳=個別, 3歳以上=観察）
@@ -1821,8 +1930,54 @@ function applyMasterToUI(){
         +`</select></td>`
         +`<td style="padding:8px 12px;text-align:center;border-bottom:1px solid var(--border);">`
         +(function(){
-          // 保存値から各パーツを復元
           const dl = currentDeadline || '';
+          const sid = t.key;
+
+          // ── 週案専用プルダウン ──
+          if (t.key === 'shuuan') {
+            const SHUUAN_OPTS = [
+              {v:'',               l:'-- 設定なし（デフォルト：月曜当日）--'},
+              {v:'週の開始1日以内', l:'火曜日まで（月曜から1日後）'},
+              {v:'週の開始2日以内', l:'水曜日まで（月曜から2日後）'},
+              {v:'週の開始3日以内', l:'木曜日まで（月曜から3日後）'},
+              {v:'週の開始4日以内', l:'金曜日まで（月曜から4日後）'},
+              {v:'週の開始5日以内', l:'翌週月曜まで（月曜から5日後）'},
+              {v:'週の開始7日以内', l:'翌週水曜まで（月曜から7日後）'},
+              {v:'週の前日',        l:'前週日曜まで（週の前日）'},
+              {v:'週の2日前',       l:'前週土曜まで（2日前）'},
+              {v:'週の3日前',       l:'前週金曜まで（3日前）'},
+            ];
+            const opts = SHUUAN_OPTS.map(o=>`<option value="${o.v}"${dl===o.v?' selected':''}>${o.l}</option>`).join('');
+            return `<div style="display:flex;gap:4px;align-items:center;flex-wrap:wrap;">`
+              +`<select id="apvDeadlineSel_${sid}" style="font-size:11px;padding:3px 5px;border:1px solid var(--border);border-radius:5px;background:#fff;" onchange="updateDeadlineSelPreview('${sid}')">${opts}</select>`
+              +`<span id="apvDeadlinePreview_${sid}" style="font-size:10px;color:#4d7252;font-weight:600;">${dl?'→ '+dl:''}</span>`
+              +`<input type="hidden" id="apvDeadline_${sid}" value="${dl}">`
+              +`</div>`;
+          }
+
+          // ── 日誌専用プルダウン ──
+          if (t.key === 'nisshi') {
+            const NISSHI_OPTS = [
+              {v:'',       l:'-- 設定なし（デフォルト：翌日まで）--'},
+              {v:'当日',   l:'当日中まで'},
+              {v:'翌日',   l:'翌日まで'},
+              {v:'3日以内',l:'記入日から3日以内'},
+              {v:'7日以内',l:'記入日から7日以内'},
+              {v:'翌週月曜',l:'翌週の月曜日まで（週明け提出）'},
+              {v:'翌週火曜',l:'翌週の火曜日まで'},
+              {v:'翌週水曜',l:'翌週の水曜日まで'},
+              {v:'翌週木曜',l:'翌週の木曜日まで'},
+              {v:'翌週金曜',l:'翌週の金曜日まで（翌週中）'},
+            ];
+            const opts = NISSHI_OPTS.map(o=>`<option value="${o.v}"${dl===o.v?' selected':''}>${o.l}</option>`).join('');
+            return `<div style="display:flex;gap:4px;align-items:center;flex-wrap:wrap;">`
+              +`<select id="apvDeadlineSel_${sid}" style="font-size:11px;padding:3px 5px;border:1px solid var(--border);border-radius:5px;background:#fff;" onchange="updateDeadlineSelPreview('${sid}')">${opts}</select>`
+              +`<span id="apvDeadlinePreview_${sid}" style="font-size:10px;color:#4d7252;font-weight:600;">${dl?'→ '+dl:''}</span>`
+              +`<input type="hidden" id="apvDeadline_${sid}" value="${dl}">`
+              +`</div>`;
+          }
+
+          // ── その他（既存UI）──
           let base='', num='', unit='日';
           if (dl) {
             if (dl.startsWith('各期末翌月')) { base='各期末翌月'; }
@@ -1835,9 +1990,7 @@ function applyMasterToUI(){
             else if (dl.endsWith('末'))   unit='末';
             else                          unit='日';
           }
-          const sid = t.key;
           return `<div style="display:flex;gap:4px;align-items:center;flex-wrap:wrap;">`
-            // ① 基準選択
             +`<select id="apvDeadlineBase_${sid}" style="font-size:11px;padding:3px 5px;border:1px solid var(--border);border-radius:5px;background:#fff;" onchange="updateDeadlinePreview('${sid}')">`
             +`<option value="">--基準--</option>`
             +`<option value="前月"${base==='前月'?' selected':''}>前月</option>`
@@ -1846,16 +1999,13 @@ function applyMasterToUI(){
             +`<option value="各期末翌月"${base==='各期末翌月'?' selected':''}>各期末の翌月</option>`
             +`<option value="3月"${base==='3月'?' selected':''}>3月（年度末）</option>`
             +`</select>`
-            // ② 数字入力（末 選択時は非表示にしたいがhiddenにはできないのでoptional扱い）
             +`<input id="apvDeadlineNum_${sid}" type="number" min="1" max="31" value="${num}" placeholder="数字" `
             +`style="width:46px;font-size:11px;padding:3px 4px;border:1px solid var(--border);border-radius:5px;text-align:center;" onchange="updateDeadlinePreview('${sid}')">`
-            // ③ 単位選択
             +`<select id="apvDeadlineUnit_${sid}" style="font-size:11px;padding:3px 5px;border:1px solid var(--border);border-radius:5px;background:#fff;" onchange="updateDeadlinePreview('${sid}')">`
             +`<option value="日"${unit==='日'?' selected':''}>日まで</option>`
             +`<option value="週目月曜"${unit==='週目月曜'?' selected':''}>週目の月曜まで</option>`
             +`<option value="末"${unit==='末'?' selected':''}>月末まで</option>`
             +`</select>`
-            // プレビュー + hidden保存
             +`<span id="apvDeadlinePreview_${sid}" style="font-size:10px;color:#4d7252;font-weight:600;">${dl?'→ '+dl:''}</span>`
             +`<input type="hidden" id="apvDeadline_${sid}" value="${dl}">`
             +`</div>`;
@@ -1923,6 +2073,17 @@ function updateDeadlinePreview(key) {
   hidden.value = val;
   if (preview) preview.textContent = val ? '→ ' + val : '';
 }
+
+// 週案・日誌専用プルダウンのpreview更新（選択値をそのままhiddenに反映）
+function updateDeadlineSelPreview(key) {
+  const sel     = document.getElementById('apvDeadlineSel_'     + key);
+  const hidden  = document.getElementById('apvDeadline_'        + key);
+  const preview = document.getElementById('apvDeadlinePreview_' + key);
+  if (!sel || !hidden) return;
+  hidden.value = sel.value;
+  if (preview) preview.textContent = sel.value ? '→ ' + sel.value : '';
+}
+
 
 async function saveApprovalSettings(){
   const TYPE_LIST = ['nensyuu','getsuan','shuuan','nisshi','kobetsu','kansatsu'];
