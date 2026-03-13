@@ -9,7 +9,7 @@
 <title>はぐくみノート Ver.4.23｜はぐくみ保育園</title>
 <script>
 // バージョン番号 - アップデート時はここを変える
-const APP_VERSION = '4.24';
+const APP_VERSION = '4.26';
 // URLにバージョンパラメータがなければ自動で付与してリロード（キャッシュ回避）
 (function(){
   const url = new URL(location.href);
@@ -877,7 +877,7 @@ textarea.form-control.tall{min-height:120px;}
         ・<strong>氏名</strong>：苗字＋（名前の頭文字ひらがな1文字）<br>
         　例）春日井太郎 → <code>春日井（た）</code>、同姓がいる場合は区別できるよう入力<br>
         ・<strong>権限</strong>：管理者 / 園長 / 主任 / 統括リーダー / 職員 から選択<br>
-        ・<strong>有効</strong>：在職中は <code>○</code>、退職者は <code>×</code>（データは残ります）<br>
+        ・<strong>有効</strong>：在職中は <code>○</code>、育休・休職中は <code>▲</code>（ログイン可・グレー表示）、退職者は <code>×</code>（選択→保存でDBから削除）<br>
         ・<strong>担任クラス</strong>：職員の編集ボタンから設定。年度替わりの担任変更もここで行います
       </div>
       <table style="width:100%;border-collapse:collapse;font-size:13px;">
@@ -1068,8 +1068,10 @@ textarea.form-control.tall{min-height:120px;}
       <label class="form-label">有効</label>
       <select id="staffModalActive" class="form-control">
         <option value="○">○ 在職中</option>
-        <option value="×">× 退職・無効</option>
+        <option value="▲">▲ 休職中（育休・産休・長期休暇等）</option>
+        <option value="×">× 退職（DBから削除）</option>
       </select>
+      <div style="font-size:11px;color:#888;margin-top:3px;">▲ 休職中：ログイン可・承認フローから除外。× 退職：保存時にDBから削除されます（取消不可）</div>
     </div>
     <div class="form-group" style="margin-bottom:16px;">
       <label class="form-label">担任クラス <span style="font-size:11px;color:#888;">（職員のみ。複数はカンマ区切り）</span></label>
@@ -2578,7 +2580,8 @@ function renderMasterApproverTable() {
     const active = s['有効'] || '○';
     const r = roleMap[role] || roleMap.staff;
     const tr = document.createElement('tr');
-    tr.style.opacity = active === '○' ? '1' : '0.5';
+    // ○=通常 ▲=グレー(不透明度0.65・斜体) ×=薄く(不透明度0.35)
+    tr.style.opacity = active === '○' ? '1' : active === '▲' ? '0.65' : '0.35';
 
     // 氏名セル
     const td1 = document.createElement('td');
@@ -2603,8 +2606,14 @@ function renderMasterApproverTable() {
     // 有効セル
     const td3 = document.createElement('td');
     td3.style.cssText = 'padding:8px 12px;border-bottom:1px solid var(--border);text-align:center;';
-    td3.style.color = active === '○' ? '#4d7252' : '#aaa';
+    const activeColors = {'○':'#4d7252','▲':'#c17f5a','×':'#bbb'};
+    td3.style.color = activeColors[active] || '#aaa';
     td3.style.fontWeight = '700';
+    if (active === '▲') {
+      td3.title = '休職中（育休・産休・長期休暇等）';
+    } else if (active === '×') {
+      td3.title = '退職済み（ログイン不可）';
+    }
     td3.textContent = active;
 
     // 担任クラスセル
@@ -2716,7 +2725,7 @@ async function importChildrenCsvFile(file) {
 
   let text = await readFile('UTF-8');
   if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
-  if (text.includes(' ')) text = await readFile('Shift-JIS');
+  if (text.includes('�')) text = await readFile('Shift-JIS');
 
   function parseCsvLine(line) {
     const result = []; let cur = '', inQ = false;
@@ -3008,6 +3017,9 @@ async function saveStaffEdit() {
   const active   = document.getElementById('staffModalActive').value;
   console.log('[saveStaffEdit] 開始 username='+username+' role='+role);
   if (!username) { showToast('⚠️ ユーザー名を入力してください', 'error'); return; }
+  if (active === '×') {
+    if (!confirm('【退職処理】' + (name||username) + ' を認証DBから削除します。\nこの操作は取り消せません。\n\nよろしいですか？')) return;
+  }
   const isNew = !document.getElementById('staffModalUsername').value;
   if (isNew && !pass) { showToast('⚠️ 新規追加時はパスワードが必要です', 'error'); return; }
   const tanninClass = (document.getElementById('staffModalTannin')?.value || '').trim();
@@ -3780,9 +3792,18 @@ async function openPrintPreview(type){
 function _showStyleModal(label, type, rows, key, nendo){
   document.getElementById('printModalTitle').textContent='🖨️ '+label;
   const row=rows[0]||{};
-  // ヘッダーのExcelダウンロードボタンを更新
+  // ヘッダーのExcelダウンロードボタンを更新（全様式対応）
   const dlBtn=document.getElementById('printDownloadBtn');
-  if(dlBtn){dlBtn.style.display=key?'inline-block':'none';dlBtn.href='#';dlBtn.onclick=key?function(e){e.preventDefault();downloadExcelFromModal(type,key,nendo,dlBtn);}:null;}
+  if(dlBtn){
+    dlBtn.style.display=key?'inline-block':'none';
+    dlBtn.href='#';
+    dlBtn.textContent='📥 Excelダウンロード';
+    dlBtn.disabled=false;
+    dlBtn.onclick=key?function(e){
+      e.preventDefault();
+      downloadExcelFromModal(type,key,nendo,dlBtn);
+    }:null;
+  }
   // printContent内には様式HTMLのみ（ボタン類はヘッダーに統一）
   document.getElementById('printContent').innerHTML=buildStyleHtml(type, row, nendo);
   document.getElementById('printModal').style.display='flex';
@@ -3879,9 +3900,8 @@ async function execChildPrintPreview(){
   if(!month){showToast('⚠️ 月を選択してください','error');return;}
   if(!child){showToast('⚠️ 園児を選択してください','error');return;}
   const normN=function(s){return String(s||'').replace(/[\u0020\u3000]+/g,'');};
-  const nendoForKey=nendo||String(new Date().getFullYear());
-  const key=(_childSelectType==='kobetsu'||_childSelectType==='kansatsu') ? nendoForKey+cls+month+normN(child) : cls+month+normN(child);
   const nendo=document.getElementById('pr_nendo')?.value||document.getElementById('ko_nendo')?.value||String(new Date().getFullYear());
+  const key=(_childSelectType==='kobetsu'||_childSelectType==='kansatsu') ? nendo+cls+month+normN(child) : cls+month+normN(child);
   closeChildSelectModal();
   showLoading('データを取得中…');
   try{
