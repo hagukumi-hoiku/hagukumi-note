@@ -4154,9 +4154,11 @@ function closeApproveBar(){var b=document.getElementById('approveActionBar');if(
 async function viewPendingDoc(type, key, flowId, title) {
   if(!SESSION||!GAS_URL){showToast('⚠️ ログインしてください','error');return;}
   showLoading('書類を読み込み中…');
+  console.log('[viewPendingDoc] type='+type+' key='+key+' flowId='+flowId);
   try{
     // GASからデータ取得
     const res=await gasGet({action:'get',type,key});
+    console.log('[viewPendingDoc] res=',JSON.stringify(res&&res.data?{ok:res.ok,hasData:!!res.data}:res));
     let data=res&&res.ok?res.data:null;
     // keyで見つからない場合は全件から検索（空白正規化して照合）
     if(!data){
