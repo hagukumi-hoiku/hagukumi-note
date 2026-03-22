@@ -4158,7 +4158,7 @@ async function viewPendingDoc(type, key, flowId, title) {
   try{
     // GASからデータ取得
     const res=await gasGet({action:'get',type,key});
-    console.log('[viewPendingDoc] res=',JSON.stringify(res&&res.data?{ok:res.ok,hasData:!!res.data}:res));
+    console.log('[viewPendingDoc] res=',JSON.stringify(res&&res.data?{ok:res.ok,hasData:!!res.data,dataKeys:Object.keys(res.data||{}),sample:JSON.stringify(res.data).slice(0,200)}:res));
     let data=res&&res.ok?res.data:null;
     // keyで見つからない場合は全件から検索（空白正規化して照合）
     if(!data){
