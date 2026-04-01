@@ -2214,7 +2214,13 @@ function applyMasterToUI(){
     const cur = sel.value; // 既存の選択値を保持
     sel.innerHTML = '<option value="">-- 選択 --</option>';
     const activeStaff = (MASTER.staffList || []).filter(function(s){
-      return s['有効'] !== '×'; // 退職者を除く（休職中▲は表示）
+      // 退職者・adminロール・氏名が「管理者」のアカウントを除く
+      if(s['有効'] === '×') return false;
+      const role = (s['権限'] || '').trim();
+      if(role === 'admin') return false;
+      const name = (s['氏名'] || s['ユーザー名'] || '').trim();
+      if(name === '管理者') return false;
+      return true;
     });
     if(activeStaff.length === 0){
       // staffListがまだ読み込まれていない場合はそのまま
