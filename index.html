@@ -367,10 +367,7 @@ textarea.form-control.tall{min-height:120px;}
             <select id="gu_filterClass" onchange="renderDbList('gu')" style="font-size:11px;padding:2px 6px;border:1px solid var(--border);border-radius:6px;background:white;">
               <option value="">クラス：全て</option>
             </select>
-            <select id="gu_filterMonth" onchange="renderDbList('gu')" style="font-size:11px;padding:2px 6px;border:1px solid var(--border);border-radius:6px;background:white;">
-            <option value="recent">当月・前月</option>
-            <option value="all">全期間</option>
-          </select>
+            <select id="gu_filterMonth" onchange="renderDbList('gu')" style="font-size:11px;padding:2px 6px;border:1px solid var(--border);border-radius:6px;background:white;"><option value="all">月：全て</option></select>
             
           </div>
         </div>
@@ -480,10 +477,7 @@ textarea.form-control.tall{min-height:120px;}
             <select id="su_filterClass" onchange="renderDbList('su')" style="font-size:11px;padding:2px 6px;border:1px solid var(--border);border-radius:6px;background:white;">
               <option value="">クラス：全て</option>
             </select>
-            <select id="su_filterMonth" onchange="renderDbList('su')" style="font-size:11px;padding:2px 6px;border:1px solid var(--border);border-radius:6px;background:white;">
-            <option value="recent">当月・前月</option>
-            <option value="all">全期間</option>
-          </select>
+            <select id="su_filterMonth" onchange="renderDbList('su')" style="font-size:11px;padding:2px 6px;border:1px solid var(--border);border-radius:6px;background:white;"><option value="all">月：全て</option></select>
             
           </div>
         </div>
@@ -2148,6 +2142,7 @@ function startMasterPolling() {
     await loadMasterFromDB();
     renderMasterClassTable();
     renderMasterApproverTable();
+    Object.keys(DB_CFGS).forEach(function(p){ _updateDbClassFilter(p); });
   }, 5 * 60 * 1000); // 5分
 }
 function stopMasterPolling() {
@@ -2235,7 +2230,7 @@ async function manualRefreshApproval() {
   if (btn) { btn.textContent = '…'; btn.disabled = true; }
   await Promise.all([
     refreshApprovalStatuses(),
-    loadMasterFromDB().then(function(){ renderMasterClassTable(); renderMasterApproverTable(); })
+    loadMasterFromDB().then(function(){ renderMasterClassTable(); renderMasterApproverTable(); Object.keys(DB_CFGS).forEach(function(p){ _updateDbClassFilter(p); }); })
   ]);
   loadAllDbLists();
   if (btn) { btn.textContent = '↺'; btn.disabled = false; showToast('✅ 更新しました'); }
@@ -4737,22 +4732,44 @@ async function loadDbList(prefix){
   }catch(e){console.warn(e);}
 }
 
-function _updateDbClassFilter(prefix){
+function _updateDbClassFilter(prefix){ _updateDbFilters(prefix); }
+function _updateDbFilters(prefix){
+  // ── クラス選択肢
   const sel=document.getElementById(prefix+'_filterClass');
-  if(!sel)return;
-  const rows=_dbCache[prefix]||[];
-  const classes=new Set();
-  rows.forEach(function(r){ const c=String(r['対象クラス']||r['クラス名']||'').trim(); if(c)classes.add(c); });
-  // staffは自分の担任クラスのみ選択肢に出す
-  const isAdmin=['admin','encho','syunin','tokkatsu'].includes(SESSION.role);
-  const myClasses=_getMyClasses();
-  const current=sel.value;
-  sel.innerHTML='<option value="">クラス：全て</option>';
-  [...classes].sort(function(a,b){return a.localeCompare(b,'ja');}).forEach(function(c){
-    if(!isAdmin&&myClasses.length>0&&!myClasses.includes(c))return;
-    const o=document.createElement('option');o.value=c;o.textContent=c;sel.appendChild(o);
-  });
-  if(current)sel.value=current;
+  if(sel){
+    const isAdmin=['admin','encho','syunin','tokkatsu'].includes(SESSION&&SESSION.role);
+    const myClasses=_getMyClasses();
+    const current=sel.value;
+    sel.innerHTML='<option value="">クラス：全て</option>';
+    const masterClasses=(MASTER.classes||[]).map(function(c){return c.name;}).filter(Boolean);
+    const cacheClasses=(_dbCache[prefix]||[]).map(function(r){return String(r['対象クラス']||r['クラス名']||'').trim();}).filter(Boolean);
+    const allClasses=[...new Set([...masterClasses,...cacheClasses])].sort(function(a,b){return a.localeCompare(b,'ja');});
+    allClasses.forEach(function(c){
+      if(!isAdmin&&myClasses.length>0&&!myClasses.includes(c))return;
+      const o=document.createElement('option');o.value=c;o.textContent=c;sel.appendChild(o);
+    });
+    if(current)sel.value=current;
+  }
+  // ── 月選択肢（月案・週案のみ）
+  if(prefix==='gu'||prefix==='su'){
+    const msel=document.getElementById(prefix+'_filterMonth');
+    if(msel){
+      const curVal=msel.value||'all';
+      msel.innerHTML='<option value="all">月：全て</option>';
+      // 当月・前月ショートカット
+      const o1=document.createElement('option');o1.value='recent';o1.textContent='当月・前月';msel.appendChild(o1);
+      // 年度内の月（4〜3月）
+      const nendo=MASTER.kihon.nendo||(new Date().getMonth()>=3?new Date().getFullYear():new Date().getFullYear()-1);
+      const months=[4,5,6,7,8,9,10,11,12,1,2,3];
+      months.forEach(function(m){
+        const o=document.createElement('option');
+        o.value=String(m);
+        o.textContent=m+'月';
+        msel.appendChild(o);
+      });
+      msel.value=curVal;
+    }
+  }
 }
 
 function _getMyClasses(){
@@ -4813,17 +4830,21 @@ function renderDbList(prefix){
     const st=row['承認状態']||'未申請';
     // ── 日誌：承認完了は非表示（filterStatus=activeのみ）
     if(prefix==='ni'&&filterStatus==='active'&&st==='承認完了')return;
-    // ── 月案・週案：当月+前月フィルタ
-    if((prefix==='gu'||prefix==='su')&&filterMonth==='recent'){
+    // ── 月案・週案：月フィルタ
+    if((prefix==='gu'||prefix==='su')&&filterMonth!=='all'){
       const rowMonth=parseInt(row['対象月']||0);
       const rowYear=parseInt(row['対象年度']||0);
-      const isCur=(rowYear===nendo&&rowMonth===curMonth)||(rowYear===(curMonth>=4?curYear:curYear-1)&&rowMonth===curMonth);
-      const isPrev=(rowYear===prevYear&&rowMonth===prevMonth)||
-                   (prevMonth>=4&&rowYear===nendo&&rowMonth===prevMonth)||
-                   (prevMonth<4&&rowYear===nendo-1&&rowMonth===prevMonth);
-      // 当月または前月でなければ除外（ただし未申請・申請中・主任承認済は常に表示）
-      const activeStatuses=['未申請','申請中','主任承認済'];
-      if(!isCur&&!isPrev&&!activeStatuses.includes(st))return;
+      if(filterMonth==='recent'){
+        // 当月・前月ショートカット
+        const isCur=(rowYear===nendo&&rowMonth===curMonth);
+        const isPrev=(rowYear===(prevMonth>=4?nendo:nendo-1)&&rowMonth===prevMonth);
+        const activeStatuses=['未申請','申請中','主任承認済'];
+        if(!isCur&&!isPrev&&!activeStatuses.includes(st))return;
+      } else {
+        // 特定月指定（数値）
+        const targetMonth=parseInt(filterMonth);
+        if(rowMonth!==targetMonth)return;
+      }
     }
     // ── 年間：当該年度のみ（全期間選択なし）
     if(prefix==='ns'){
