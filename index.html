@@ -307,7 +307,7 @@ textarea.form-control.tall{min-height:120px;}
       <div class="db-panel">
         <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;margin-bottom:8px;">
           <div class="db-panel-title" style="margin-bottom:0;">📂 保存済みデータを呼び出す</div>
-          <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
+          <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;" id="ns_filterRow">
             <select id="ns_filterClass" onchange="renderDbList('ns')" style="font-size:11px;padding:2px 6px;border:1px solid var(--border);border-radius:6px;background:white;">
               <option value="">クラス：全て</option>
             </select>
@@ -363,11 +363,11 @@ textarea.form-control.tall{min-height:120px;}
       <div class="db-panel">
         <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;margin-bottom:8px;">
           <div class="db-panel-title" style="margin-bottom:0;">📂 保存済みデータを呼び出す</div>
-          <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
+          <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;" id="gu_filterRow">
             <select id="gu_filterClass" onchange="renderDbList('gu')" style="font-size:11px;padding:2px 6px;border:1px solid var(--border);border-radius:6px;background:white;">
               <option value="">クラス：全て</option>
             </select>
-            <select id="gu_filterMonth" onchange="renderDbList('gu')" style="font-size:11px;padding:2px 6px;border:1px solid var(--border);border-radius:6px;background:white;"><option value="all">月：全て</option></select>
+            
             
           </div>
         </div>
@@ -473,11 +473,11 @@ textarea.form-control.tall{min-height:120px;}
       <div class="db-panel">
         <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;margin-bottom:8px;">
           <div class="db-panel-title" style="margin-bottom:0;">📂 保存済みデータを呼び出す</div>
-          <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
+          <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;" id="su_filterRow">
             <select id="su_filterClass" onchange="renderDbList('su')" style="font-size:11px;padding:2px 6px;border:1px solid var(--border);border-radius:6px;background:white;">
               <option value="">クラス：全て</option>
             </select>
-            <select id="su_filterMonth" onchange="renderDbList('su')" style="font-size:11px;padding:2px 6px;border:1px solid var(--border);border-radius:6px;background:white;"><option value="all">月：全て</option></select>
+            
             
           </div>
         </div>
@@ -580,11 +580,12 @@ textarea.form-control.tall{min-height:120px;}
       <div class="db-panel">
         <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;margin-bottom:8px;">
           <div class="db-panel-title" style="margin-bottom:0;">📂 保存済みデータを呼び出す</div>
-          <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
+          <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;" id="ni_filterRow">
             <select id="ni_filterClass" onchange="renderDbList('ni')" style="font-size:11px;padding:2px 6px;border:1px solid var(--border);border-radius:6px;background:white;">
               <option value="">クラス：全て</option>
             </select>
             
+            <select id="ni_filterMonth" onchange="renderDbList('ni')" style="font-size:11px;padding:2px 6px;border:1px solid var(--border);border-radius:6px;background:white;"><option value="all">月：全て</option></select>
             <select id="ni_filterStatus" onchange="renderDbList('ni')" style="font-size:11px;padding:2px 6px;border:1px solid var(--border);border-radius:6px;background:white;">
             <option value="active">未完了のみ</option>
             <option value="all">すべて</option>
@@ -651,12 +652,11 @@ textarea.form-control.tall{min-height:120px;}
       <div class="db-panel">
         <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;margin-bottom:8px;">
           <div class="db-panel-title" style="margin-bottom:0;">📂 保存済みデータを呼び出す</div>
-          <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
+          <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;" id="ko_filterRow">
             <select id="ko_filterClass" onchange="renderDbList('ko')" style="font-size:11px;padding:2px 6px;border:1px solid var(--border);border-radius:6px;background:white;">
               <option value="">クラス：全て</option>
             </select>
-            
-            
+            <select id="ko_filterMonth" onchange="renderDbList('ko')" style="font-size:11px;padding:2px 6px;border:1px solid var(--border);border-radius:6px;background:white;"><option value="all">月：全て</option></select>
           </div>
         </div>
         <div class="db-list" id="ko_dbList"><span class="db-empty">（保存データなし）</span></div>
@@ -714,12 +714,11 @@ textarea.form-control.tall{min-height:120px;}
       <div class="db-panel">
         <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;margin-bottom:8px;">
           <div class="db-panel-title" style="margin-bottom:0;">📂 保存済みデータを呼び出す</div>
-          <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
+          <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;" id="ka_filterRow">
             <select id="ka_filterClass" onchange="renderDbList('ka')" style="font-size:11px;padding:2px 6px;border:1px solid var(--border);border-radius:6px;background:white;">
               <option value="">クラス：全て</option>
             </select>
-            
-            
+            <select id="ka_filterMonth" onchange="renderDbList('ka')" style="font-size:11px;padding:2px 6px;border:1px solid var(--border);border-radius:6px;background:white;"><option value="all">月：全て</option></select>
           </div>
         </div>
         <div class="db-list" id="ka_dbList"><span class="db-empty">（保存データなし）</span></div>
@@ -4734,34 +4733,37 @@ async function loadDbList(prefix){
 
 function _updateDbClassFilter(prefix){ _updateDbFilters(prefix); }
 function _updateDbFilters(prefix){
-  // ── クラス選択肢
-  const sel=document.getElementById(prefix+'_filterClass');
-  if(sel){
-    const isAdmin=['admin','encho','syunin','tokkatsu'].includes(SESSION&&SESSION.role);
-    const myClasses=_getMyClasses();
-    const current=sel.value;
-    sel.innerHTML='<option value="">クラス：全て</option>';
-    const masterClasses=(MASTER.classes||[]).map(function(c){return c.name;}).filter(Boolean);
-    const cacheClasses=(_dbCache[prefix]||[]).map(function(r){return String(r['対象クラス']||r['クラス名']||'').trim();}).filter(Boolean);
-    const allClasses=[...new Set([...masterClasses,...cacheClasses])].sort(function(a,b){return a.localeCompare(b,'ja');});
-    allClasses.forEach(function(c){
-      if(!isAdmin&&myClasses.length>0&&!myClasses.includes(c))return;
-      const o=document.createElement('option');o.value=c;o.textContent=c;sel.appendChild(o);
-    });
-    if(current)sel.value=current;
+  const isAdmin=['admin','encho','syunin','tokkatsu'].includes(SESSION&&SESSION.role);
+  const myClasses=_getMyClasses();
+
+  // ── クラス選択肢（管理者・園長・主任のみ表示）
+  const clsSel=document.getElementById(prefix+'_filterClass');
+  if(clsSel){
+    if(!isAdmin){
+      // staff はクラス選択を非表示（自分のクラスのみ自動絞り込み）
+      clsSel.style.display='none';
+    } else {
+      clsSel.style.display='';
+      const current=clsSel.value;
+      clsSel.innerHTML='<option value="">クラス：全て</option>';
+      const masterClasses=(MASTER.classes||[]).map(function(c){return c.name;}).filter(Boolean);
+      const cacheClasses=(_dbCache[prefix]||[])
+        .map(function(r){return String(r['対象クラス']||r['クラス名']||'').trim();})
+        .filter(function(c){return c&&!masterClasses.includes(c);});
+      [...masterClasses,...new Set(cacheClasses)].forEach(function(c){
+        const o=document.createElement('option');o.value=c;o.textContent=c;clsSel.appendChild(o);
+      });
+      if(current)clsSel.value=current;
+    }
   }
-  // ── 月選択肢（月案・週案のみ）
-  if(prefix==='gu'||prefix==='su'){
+
+  // ── 月選択肢（日誌・月案・週案・個別・観察）
+  if(['ni','gu','su','ko','ka'].includes(prefix)){
     const msel=document.getElementById(prefix+'_filterMonth');
     if(msel){
       const curVal=msel.value||'all';
       msel.innerHTML='<option value="all">月：全て</option>';
-      // 当月・前月ショートカット
-      const o1=document.createElement('option');o1.value='recent';o1.textContent='当月・前月';msel.appendChild(o1);
-      // 年度内の月（4〜3月）
-      const nendo=MASTER.kihon.nendo||(new Date().getMonth()>=3?new Date().getFullYear():new Date().getFullYear()-1);
-      const months=[4,5,6,7,8,9,10,11,12,1,2,3];
-      months.forEach(function(m){
+      [4,5,6,7,8,9,10,11,12,1,2,3].forEach(function(m){
         const o=document.createElement('option');
         o.value=String(m);
         o.textContent=m+'月';
@@ -4828,25 +4830,21 @@ function renderDbList(prefix){
     if(filterClass&&rowCls!==filterClass)return;
     if(!isAdmin&&myClasses.length>0&&!filterClass&&!myClasses.includes(rowCls))return;
     const st=row['承認状態']||'未申請';
-    // ── 日誌：承認完了は非表示（filterStatus=activeのみ）
-    if(prefix==='ni'&&filterStatus==='active'&&st==='承認完了')return;
-    // ── 月案・週案：月フィルタ
-    if((prefix==='gu'||prefix==='su')&&filterMonth!=='all'){
-      const rowMonth=parseInt(row['対象月']||0);
-      const rowYear=parseInt(row['対象年度']||0);
-      if(filterMonth==='recent'){
-        // 当月・前月ショートカット
-        const isCur=(rowYear===nendo&&rowMonth===curMonth);
-        const isPrev=(rowYear===(prevMonth>=4?nendo:nendo-1)&&rowMonth===prevMonth);
-        const activeStatuses=['未申請','申請中','主任承認済'];
-        if(!isCur&&!isPrev&&!activeStatuses.includes(st))return;
-      } else {
-        // 特定月指定（数値）
-        const targetMonth=parseInt(filterMonth);
-        if(rowMonth!==targetMonth)return;
+    // ── 日誌：月フィルタ＋承認完了非表示
+    if(prefix==='ni'){
+      if(filterStatus==='active'&&st==='承認完了')return;
+      if(filterMonth!=='all'){
+        const rowDate=String(row['対象日付']||'');
+        const rowMonth=parseInt(rowDate.slice(5,7)||row['対象月']||0);
+        if(rowMonth!==parseInt(filterMonth))return;
       }
     }
-    // ── 年間：当該年度のみ（全期間選択なし）
+    // ── 月案・週案・個別・観察：月フィルタ
+    if(['gu','su','ko','ka'].includes(prefix)&&filterMonth!=='all'){
+      const rowMonth=parseInt(row['対象月']||0);
+      if(rowMonth!==parseInt(filterMonth))return;
+    }
+    // ── 年間：当該年度のみ
     if(prefix==='ns'){
       const rowNendo=parseInt(row['対象年度']||0);
       if(rowNendo&&rowNendo!==nendo)return;
