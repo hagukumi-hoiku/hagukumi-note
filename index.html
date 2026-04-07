@@ -3518,7 +3518,7 @@ async function importChildrenCsvFile(file) {
 
   let text = await readFile('UTF-8');
   if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
-  if (text.includes('�')) text = await readFile('Shift-JIS');
+  if (text.includes(' ')) text = await readFile('Shift-JIS');
 
   function parseCsvLine(line) {
     const result = []; let cur = '', inQ = false;
@@ -4737,6 +4737,8 @@ async function loadRecord(prefix,key){
         });
       });
       setTimeout(function(){updateApprovalBadge(prefix,data['承認状態']||'未申請');},150);
+      // 承認フローDBと照合して最新状態に補正
+      (function(_p,_k){const _tm={ns:'nensyuu',gu:'getsuan',su:'shuuan',ni:'nisshi',ko:'kobetsu',ka:'kansatsu'};const _fk=[];if(_p==='ns'){['1','2','3','4'].forEach(function(n){_fk.push(_k+'_furi_ki'+n);});_fk.push(_k+'_furi_nendo');}gasPost({action:'getApprovalBatch',keys:[{type:_tm[_p]||_p,key:_k,furiKeys:_fk}]}).then(function(br){if(!br||!br.ok||!br.statuses)return;const st=br.statuses[_k];if(st)updateApprovalBadge(_p,st);_fk.forEach(function(fk){const fst=br.statuses[fk];if(fst){let ki=null;if(fk.endsWith('_furi_nendo'))ki='nendo';else if(fk.includes('_furi_ki')){const m=fk.match(/_furi_ki(\d)/);if(m)ki=Number(m[1]);}updateFuriStatusBadge(_p,ki,fst);}});}).catch(function(){});})(prefix,key);
       showToast('📂 データを読み込みました');
       return;
     }
@@ -4805,6 +4807,7 @@ async function loadRecord(prefix,key){
       }
       if(typeof updateKoMonthRange==='function') updateKoMonthRange();
       setTimeout(function(){updateApprovalBadge(prefix,data['承認状態']||'未申請');},150);
+      (function(_p,_k){const _tm={ns:'nensyuu',gu:'getsuan',su:'shuuan',ni:'nisshi',ko:'kobetsu',ka:'kansatsu'};gasPost({action:'getApprovalBatch',keys:[{type:_tm[_p]||_p,key:_k,furiKeys:[]}]}).then(function(br){if(!br||!br.ok||!br.statuses)return;const st=br.statuses[_k];if(st)updateApprovalBadge(_p,st);}).catch(function(){});})(prefix,key);
       showToast('📂 データを読み込みました');
       return;
     }
@@ -4849,6 +4852,7 @@ async function loadRecord(prefix,key){
         kaChildSel.value=kaChildName;
       }
       setTimeout(function(){updateApprovalBadge(prefix,data['承認状態']||'未申請');},150);
+      (function(_p,_k){const _tm={ns:'nensyuu',gu:'getsuan',su:'shuuan',ni:'nisshi',ko:'kobetsu',ka:'kansatsu'};gasPost({action:'getApprovalBatch',keys:[{type:_tm[_p]||_p,key:_k,furiKeys:[]}]}).then(function(br){if(!br||!br.ok||!br.statuses)return;const st=br.statuses[_k];if(st)updateApprovalBadge(_p,st);}).catch(function(){});})(prefix,key);
       showToast('📂 データを読み込みました');
       return;
     }
@@ -4863,6 +4867,34 @@ async function loadRecord(prefix,key){
       if(el&&data[e[0]]!==undefined) el.value=data[e[0]];
     });
     setTimeout(function(){updateApprovalBadge(prefix,data['承認状態']||'未申請');},150);
+    // 承認フローDBと照合して最新状態に補正（書類DBが古くても正しく表示）
+    const _typeMap2={ns:'nensyuu',gu:'getsuan',su:'shuuan',ni:'nisshi',ko:'kobetsu',ka:'kansatsu'};
+    const _batchKey=key;
+    const _batchType=_typeMap2[prefix]||prefix;
+    const _furiKeys2=[];
+    if(['ns','gu','su'].includes(prefix)){
+      if(prefix==='ns'){['1','2','3','4'].forEach(function(k){_furiKeys2.push(_batchKey+'_furi_ki'+k);});_furiKeys2.push(_batchKey+'_furi_nendo');}
+      else {_furiKeys2.push(_batchKey+'_furi');}
+    }
+    gasPost({action:'getApprovalBatch',keys:[{type:_batchType,key:_batchKey,furiKeys:_furiKeys2}]}).then(function(br){
+      if(!br||!br.ok||!br.statuses)return;
+      const st=br.statuses[_batchKey];
+      if(st) updateApprovalBadge(prefix,st);
+      // 書類DBとズレていたら自動で書き戻し
+      if(st && data && (data['承認状態']||'未申請') !== st){
+        console.log('[loadRecord] 承認状態ズレ検出→自動修正: DB='+data['承認状態']+' → フロー='+st);
+        gasPost({action:'fixApprovalStatus',type:_batchType,key:_batchKey,status:st}).catch(function(){});
+      }
+      _furiKeys2.forEach(function(fk){
+        const fst=br.statuses[fk];
+        if(fst){
+          let ki=null;
+          if(fk.endsWith('_furi_nendo'))ki='nendo';
+          else if(fk.includes('_furi_ki')){const m=fk.match(/_furi_ki(\d)/);if(m)ki=Number(m[1]);}
+          updateFuriStatusBadge(prefix,ki,fst);
+        }
+      });
+    }).catch(function(){});
     showToast('📂 データを読み込みました');
   }catch(e){hideLoading();console.error('[loadRecord]',e);showToast('❌ 読み込みエラー: '+e.message,'error');}
 }
@@ -4888,6 +4920,14 @@ async function saveForm(type,prefix){
     const data={};
     Object.entries(FMAPS[prefix]).forEach(function(e){const el=document.getElementById(e[1]);if(el)data[e[0]]=el.value;});
     if(prefix==='ns')PERIODS.forEach(function(p){NS_FIELDS.forEach(function(f){const el=document.getElementById('ns_'+p.num+'_'+f.id);if(el)data['第'+p.num+'期_'+f.label]=el.value;});});
+    // 現在の承認状態をバッジから取得して送信（保存で申請中が未申請に戻らないよう）
+    const stEl=document.getElementById(prefix+'_approvalStatus');
+    if(stEl){
+      const stMap={'未申請':'未申請','申請中':'申請中','主任承認済':'主任承認済','承認完了':'承認完了','差し戻し':'差し戻し',
+        '振り返り申請中':'振り返り申請中','振り返り主任承認済':'振り返り主任承認済','振り返り承認完了':'振り返り承認完了'};
+      const stText=stEl.textContent||'';
+      if(stMap[stText]) data['承認状態']=stMap[stText];
+    }
     const key=DB_CFGS[prefix].key(data);
     const res=await gasPost({action:'save',type,key,data});
     hideLoading();
