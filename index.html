@@ -320,7 +320,7 @@ textarea.form-control.tall{min-height:120px;}
       <div class="form-grid form-grid-3">
         <div class="form-group"><label class="form-label">対象年度<span class="required">*</span></label><select class="form-control" id="ns_nendo"></select></div>
         <div class="form-group"><label class="form-label">対象クラス<span class="required">*</span></label>
-          <select class="form-control" id="ns_class" onchange="updateAutoFields('ns');checkExistingData('ns')">
+          <select class="form-control" id="ns_class" onchange="updateAutoFields('ns');checkExistingData('ns');_syncDbFilter('ns','class',this.value)">
             <option value="">-- 選択 --</option><option>ひよこ</option><option>りす</option><option>うさぎ</option><option>こぐま</option><option>ぱんだ</option><option>とら</option>
           </select></div>
         <div class="form-group"><label class="form-label">担任（連名）</label><input class="form-control" id="ns_tanin" readonly></div>
@@ -396,11 +396,11 @@ textarea.form-control.tall{min-height:120px;}
       <div class="form-grid form-grid-4">
         <div class="form-group"><label class="form-label">対象年度<span class="required">*</span></label><select class="form-control" id="gu_nendo"></select></div>
         <div class="form-group"><label class="form-label">対象クラス<span class="required">*</span></label>
-          <select class="form-control" id="gu_class" onchange="updateAutoFields('gu');loadRefPanel('gu')">
+          <select class="form-control" id="gu_class" onchange="updateAutoFields('gu');loadRefPanel('gu');checkExistingData('gu');_syncDbFilter('gu','class',this.value)">
             <option value="">-- 選択 --</option><option>ひよこ</option><option>りす</option><option>うさぎ</option><option>こぐま</option><option>ぱんだ</option><option>とら</option>
           </select></div>
         <div class="form-group"><label class="form-label">対象月<span class="required">*</span></label>
-          <select class="form-control" id="gu_month" onchange="loadRefPanel('gu');checkExistingData('gu');recalcAllEvYoubi('gu')"><option value="">-- 選択 --</option><option value="4">4月</option><option value="5">5月</option><option value="6">6月</option><option value="7">7月</option><option value="8">8月</option><option value="9">9月</option><option value="10">10月</option><option value="11">11月</option><option value="12">12月</option><option value="1">1月</option><option value="2">2月</option><option value="3">3月</option></select></div>
+          <select class="form-control" id="gu_month" onchange="loadRefPanel('gu');checkExistingData('gu');recalcAllEvYoubi('gu');_syncDbFilter('gu','month',this.value)"><option value="">-- 選択 --</option><option value="4">4月</option><option value="5">5月</option><option value="6">6月</option><option value="7">7月</option><option value="8">8月</option><option value="9">9月</option><option value="10">10月</option><option value="11">11月</option><option value="12">12月</option><option value="1">1月</option><option value="2">2月</option><option value="3">3月</option></select></div>
         <div class="form-group"><label class="form-label">担任（連名）</label><input class="form-control" id="gu_tanin" readonly></div>
       </div>
       <div id="gu_existBanner" style="display:none;background:#fff8e1;border:1.5px solid #f9a825;border-radius:8px;padding:10px 14px;margin:8px 0 4px;"></div>
@@ -505,11 +505,11 @@ textarea.form-control.tall{min-height:120px;}
       <div class="form-grid form-grid-4">
         <div class="form-group"><label class="form-label">対象年度<span class="required">*</span></label><select class="form-control" id="su_nendo"></select></div>
         <div class="form-group"><label class="form-label">対象クラス<span class="required">*</span></label>
-          <select class="form-control" id="su_class" onchange="updateAutoFields('su');loadRefPanel('su')">
+          <select class="form-control" id="su_class" onchange="updateAutoFields('su');loadRefPanel('su');checkExistingData('su');_syncDbFilter('su','class',this.value)">
             <option value="">-- 選択 --</option><option>ひよこ</option><option>りす</option><option>うさぎ</option><option>こぐま</option><option>ぱんだ</option><option>とら</option>
           </select></div>
         <div class="form-group"><label class="form-label">対象月<span class="required">*</span></label>
-          <select class="form-control" id="su_month" onchange="loadRefPanel('su');onSuWeekChange()"><option value="">-- 選択 --</option><option value="4">4月</option><option value="5">5月</option><option value="6">6月</option><option value="7">7月</option><option value="8">8月</option><option value="9">9月</option><option value="10">10月</option><option value="11">11月</option><option value="12">12月</option><option value="1">1月</option><option value="2">2月</option><option value="3">3月</option></select></div>
+          <select class="form-control" id="su_month" onchange="loadRefPanel('su');onSuWeekChange();checkExistingData('su');_syncDbFilter('su','month',this.value)"><option value="">-- 選択 --</option><option value="4">4月</option><option value="5">5月</option><option value="6">6月</option><option value="7">7月</option><option value="8">8月</option><option value="9">9月</option><option value="10">10月</option><option value="11">11月</option><option value="12">12月</option><option value="1">1月</option><option value="2">2月</option><option value="3">3月</option></select></div>
         <div class="form-group"><label class="form-label">対象週<span class="required">*</span></label>
           <select class="form-control" id="su_week" onchange="onSuWeekChange();checkExistingData('su')"><option value="">-- 選択 --</option><option value="1">第1週</option><option value="2">第2週</option><option value="3">第3週</option><option value="4">第4週</option><option value="5">第5週</option></select></div>
         <div class="form-group">
@@ -2236,7 +2236,19 @@ async function manualRefreshApproval() {
 }
 
 // 振り返りバッジを更新するヘルパー
-// updateFuriStatusBadge は後方で定義（furiKeyフルキーにも対応済み）
+// 入力欄のクラス・月変更時に保存済みリストのフィルタを連動
+function _syncDbFilter(prefix, field, value){
+  if(field==='class'){
+    const sel=document.getElementById(prefix+'_filterClass');
+    if(sel&&value){sel.value=value;}
+  } else if(field==='month'){
+    const sel=document.getElementById(prefix+'_filterMonth');
+    if(sel&&value){sel.value=value;}
+  }
+  renderDbList(prefix);
+}
+
+
 
 async function loadMasterFromDB(){
   if(!SESSION||!GAS_URL)return;
@@ -3216,6 +3228,23 @@ function updateCount(el, max) {
     span.style.color = len >= max ? '#e74c3c' : len >= max * 0.9 ? '#e67e22' : 'var(--text-light)';
   }
 }
+// loadRecord後に全textareaのカウンターを一括更新
+function updateAllCounts(prefix) {
+  const sec = document.getElementById(prefix+'_section') || document.querySelector('section[id]');
+  // prefix配下の全textarea・inputを走査
+  document.querySelectorAll('[id^="'+prefix+'_"]').forEach(function(el) {
+    if (el.tagName !== 'TEXTAREA' && el.tagName !== 'INPUT') return;
+    const spanId = 'cnt_' + el.id;
+    const span = document.getElementById(spanId);
+    if (!span) return;
+    // maxlengthをHTMLから取得
+    const max = parseInt(el.getAttribute('maxlength') || '0');
+    if (!max) return;
+    const len = el.value.length;
+    span.textContent = len;
+    span.style.color = len >= max ? '#e74c3c' : len >= max * 0.9 ? '#e67e22' : 'var(--text-light)';
+  });
+}
 
 
 
@@ -3593,7 +3622,7 @@ async function importChildrenCsvFile(file) {
 
   let text = await readFile('UTF-8');
   if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
-  if (text.includes('�')) text = await readFile('Shift-JIS');
+  if (text.includes(' ')) text = await readFile('Shift-JIS');
 
   function parseCsvLine(line) {
     const result = []; let cur = '', inQ = false;
@@ -4699,9 +4728,7 @@ async function checkExistingData(prefix){
       const st=res.data['承認状態']||'未申請';
       const saved=res.data['保存日時']?String(res.data['保存日時']).slice(0,16):'';
       const stI=APPROVAL_STATUS[st]||{cls:'ab-draft',label:st};
-      // 承認バッジを保存済みデータの状態に更新
       setTimeout(function(){updateApprovalBadge(prefix,st);},50);
-      // ボタンクリック用にグローバル変数に退避
       window._existKey=key; window._existPrefix=prefix;
       banner.style.display='block';
       banner.innerHTML='📂 保存済みデータあり　'
@@ -4711,13 +4738,43 @@ async function checkExistingData(prefix){
         +'onclick="loadRecord(window._existPrefix,window._existKey)">'
         +'📂 読み込む</button>';
     } else {
-      // 保存済みデータなし → バッジを「未申請」にリセット
       banner.style.display='none';
       setTimeout(function(){updateApprovalBadge(prefix,'未申請');},50);
+      // データなし かつ 入力済みフィールドがある場合はクリア確認
+      const hasInput=_hasFormInput(prefix);
+      if(hasInput){
+        showConfirm('このクラス・月のデータはありません。\n現在の入力内容をクリアしますか？',{
+          icon:'🗑️',title:'入力内容のクリア確認',ok:'クリア',cancel:'このまま続ける',okColor:'var(--terracotta)'
+        }).then(function(ok){
+          if(!ok)return;
+          // クラス・月・週・日付以外をクリア
+          document.querySelectorAll('[id^="'+prefix+'_"]').forEach(function(el){
+            if(el.tagName==='SELECT')return; // クラス・月・週は残す
+            if((el.tagName==='TEXTAREA'||el.tagName==='INPUT')&&!el.readOnly)el.value='';
+          });
+          updateApprovalBadge(prefix,'未申請');
+          updateAllCounts(prefix);
+          showToast('🗑️ クリアしました');
+        });
+      }
     }
   }catch(e){
     banner.style.display='none';
   }
+}
+// フォームにテキスト入力があるか判定（セレクト・日付・承認者欄を除く）
+function _hasFormInput(prefix){
+  const skipPatterns=['_class','_cls','_month','_week','_nendo','_date','_youbi','_syunin','_encho','_tanin','_currentKey','_approvalStatus','_check'];
+  let found=false;
+  document.querySelectorAll('[id^="'+prefix+'_"]').forEach(function(el){
+    if(found)return;
+    if(el.tagName!=='TEXTAREA'&&el.tagName!=='INPUT')return;
+    if(el.readOnly)return;
+    const id=el.id||'';
+    if(skipPatterns.some(function(p){return id.includes(p);}))return;
+    if(el.value&&el.value.trim())found=true;
+  });
+  return found;
 }
 async function loadAllDbLists(){for(const p of Object.keys(DB_CFGS))await loadDbList(p);}
 
@@ -4919,6 +4976,7 @@ async function loadRecord(prefix,key){
       setTimeout(function(){updateApprovalBadge(prefix,data['承認状態']||'未申請');},150);
       // 承認フローDBと照合して最新状態に補正
       (function(_p,_k){const _tm={ns:'nensyuu',gu:'getsuan',su:'shuuan',ni:'nisshi',ko:'kobetsu',ka:'kansatsu'};const _fk=[];if(_p==='ns'){['1','2','3','4'].forEach(function(n){_fk.push(_k+'_furi_ki'+n);});_fk.push(_k+'_furi_nendo');}gasPost({action:'getApprovalBatch',keys:[{type:_tm[_p]||_p,key:_k,furiKeys:_fk}]}).then(function(br){if(!br||!br.ok||!br.statuses)return;const st=br.statuses[_k];if(st)updateApprovalBadge(_p,st);_fk.forEach(function(fk){const fst=br.statuses[fk];if(fst){let ki=null;if(fk.endsWith('_furi_nendo'))ki='nendo';else if(fk.includes('_furi_ki')){const m=fk.match(/_furi_ki(\d)/);if(m)ki=Number(m[1]);}updateFuriStatusBadge(_p,ki,fst);}});}).catch(function(){});})(prefix,key);
+      setTimeout(function(){ updateAllCounts(prefix); }, 150);
       showToast('📂 データを読み込みました');
       return;
     }
@@ -4988,6 +5046,7 @@ async function loadRecord(prefix,key){
       if(typeof updateKoMonthRange==='function') updateKoMonthRange();
       setTimeout(function(){updateApprovalBadge(prefix,data['承認状態']||'未申請');},150);
       (function(_p,_k){const _tm={ns:'nensyuu',gu:'getsuan',su:'shuuan',ni:'nisshi',ko:'kobetsu',ka:'kansatsu'};gasPost({action:'getApprovalBatch',keys:[{type:_tm[_p]||_p,key:_k,furiKeys:[]}]}).then(function(br){if(!br||!br.ok||!br.statuses)return;const st=br.statuses[_k];if(st)updateApprovalBadge(_p,st);}).catch(function(){});})(prefix,key);
+      setTimeout(function(){ updateAllCounts(prefix); }, 150);
       showToast('📂 データを読み込みました');
       return;
     }
@@ -5033,6 +5092,7 @@ async function loadRecord(prefix,key){
       }
       setTimeout(function(){updateApprovalBadge(prefix,data['承認状態']||'未申請');},150);
       (function(_p,_k){const _tm={ns:'nensyuu',gu:'getsuan',su:'shuuan',ni:'nisshi',ko:'kobetsu',ka:'kansatsu'};gasPost({action:'getApprovalBatch',keys:[{type:_tm[_p]||_p,key:_k,furiKeys:[]}]}).then(function(br){if(!br||!br.ok||!br.statuses)return;const st=br.statuses[_k];if(st)updateApprovalBadge(_p,st);}).catch(function(){});})(prefix,key);
+      setTimeout(function(){ updateAllCounts(prefix); }, 150);
       showToast('📂 データを読み込みました');
       return;
     }
@@ -5075,6 +5135,10 @@ async function loadRecord(prefix,key){
         }
       });
     }).catch(function(){});
+    // 月案・週案の行事曜日を再計算
+    if(prefix==='gu'||prefix==='su') setTimeout(function(){ recalcAllEvYoubi(prefix); }, 100);
+    // 全textareaの文字数カウンターを更新
+    setTimeout(function(){ updateAllCounts(prefix); }, 150);
     showToast('📂 データを読み込みました');
   }catch(e){hideLoading();console.error('[loadRecord]',e);showToast('❌ 読み込みエラー: '+e.message,'error');}
 }
@@ -6236,7 +6300,7 @@ function updateKoMonthRange(){
 }
 
 function checkForm(prefix,ids){const ok=ids.every(function(id){const el=document.getElementById(id);return el&&el.value.trim()!=='';});const b=document.getElementById(prefix+'_check');b.textContent=ok?'✅ 入力完了':'⚠️ 未入力項目があります';b.className='status-badge '+(ok?'status-ok':'status-warn');showToast(ok?'✅ 入力チェックOK！':'⚠️ 必須項目が未入力です',ok?'':'error');}
-function clearForm(prefix){showConfirm('入力内容をクリアしますか？',{icon:'🗑️',title:'クリアの確認',ok:'クリア',okColor:'var(--terracotta)'}).then(function(ok){if(!ok)return;document.querySelectorAll('[id^="'+prefix+'_"]').forEach(function(el){if(el.tagName==='SELECT')el.selectedIndex=0;else if((el.tagName==='TEXTAREA'||el.tagName==='INPUT')&&!el.readOnly)el.value='';});updateApprovalBadge(prefix,'未申請');showToast('🗑️ クリアしました');});}
+function clearForm(prefix){showConfirm('入力内容をクリアしますか？',{icon:'🗑️',title:'クリアの確認',ok:'クリア',okColor:'var(--terracotta)'}).then(function(ok){if(!ok)return;document.querySelectorAll('[id^="'+prefix+'_"]').forEach(function(el){if(el.tagName==='SELECT')el.selectedIndex=0;else if((el.tagName==='TEXTAREA'||el.tagName==='INPUT')&&!el.readOnly)el.value='';});updateApprovalBadge(prefix,'未申請');updateAllCounts(prefix);showToast('🗑️ クリアしました');});}
 function updateConnUI(ok){document.getElementById('syncDot').className='sync-dot '+(ok?'green':'orange');document.getElementById('syncLabel').textContent=ok?'スプレッドシート連携中':'未接続';const hi=document.getElementById('homeConnInfo');if(hi)hi.textContent=ok?'✅ Googleスプレッドシート：連携済み':'⚠️ スプレッドシート：未接続';}
 function showLoading(m){document.getElementById('loadingMsg').textContent=m||'通信中…';document.getElementById('loadingOverlay').style.display='flex';}
 function hideLoading(){document.getElementById('loadingOverlay').style.display='none';}
