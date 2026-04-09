@@ -4233,6 +4233,40 @@ async function applyApproval(type,prefix,label){
   Object.entries(FMAPS[prefix]).forEach(function(e){const el=document.getElementById(e[1]);if(el)data[e[0]]=el.value;});
   const key=DB_CFGS[prefix].key(data);
   if(!key||key.includes('undefined')){showToast('⚠️ クラスと対象期間を選択してから申請してください','error');return;}
+
+  // ── 必須項目チェック（申請前に自動実行）
+  const REQUIRED_FIELDS = {
+    ns: ['ns_class','ns_mokuhyo'],
+    gu: ['gu_class','gu_month','gu_seimei','gu_jyoucho','gu_kenko','gu_ningen','gu_kankyo','gu_kotoba','gu_hyougen','gu_sugata','gu_kankyo2','gu_kobetsu2','gu_katei','gu_hogo'],
+    su: ['su_class','su_month','su_week','su_nerai','su_kankyo','su_renkei','su_enjo'],
+    ni: ['ni_date','ni_class','ni_kinyusha','ni_shusseki','ni_kesseki','ni_hoiku','ni_kenko','ni_hyouka'],
+    ko: ['ko_class','ko_month','ko_child','ko_nerai','ko_naiyou','ko_sugata','ko_hairyo','ko_hyouka'],
+    ka: ['ka_class','ka_month','ka_child','ka_kiroku'],
+  };
+  const reqIds = REQUIRED_FIELDS[prefix] || [];
+  const emptyFields = reqIds.filter(function(id){
+    const el=document.getElementById(id);
+    return !el || !String(el.value||'').trim();
+  });
+  if(emptyFields.length > 0){
+    // 未入力フィールドのラベルを取得してハイライト
+    const emptyLabels = emptyFields.map(function(id){
+      const el=document.getElementById(id);
+      if(!el)return id;
+      el.style.outline='2px solid #e74c3c';
+      el.style.background='#fff5f5';
+      setTimeout(function(){el.style.outline='';el.style.background='';},3000);
+      // ラベルを親から取得
+      const fg=el.closest('.form-group');
+      if(fg){
+        const lbl=fg.querySelector('label.form-label');
+        if(lbl) return lbl.textContent.replace('*','').trim();
+      }
+      return id;
+    });
+    showToast('⚠️ 必須項目が未入力です：'+emptyLabels.slice(0,3).join('、')+(emptyLabels.length>3?'…他'+(emptyLabels.length-3)+'件':''),'error');
+    return;
+  }
   // 担任クラスチェック（staff のみ、admin/encho/syunin/tokkatsu は全クラス可）
   const isApproverRole=['admin','encho','syunin','tokkatsu'].includes(SESSION.role);
   if(!isApproverRole){
