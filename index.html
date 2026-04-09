@@ -4379,7 +4379,9 @@ function updateApprovalBadge(prefix,status){
   const furiIds=(FURI_FIELD_IDS[prefix]||[]);
   const isApproved=['承認完了','主任承認済'].includes(status);
   // ロック除外IDパターン（クラス・月・週・年度・園児選択など）
-  const SKIP_LOCK_PATTERNS=['_class','_cls','_month','_week','_nendo','_child','_jidou','_tanin','_dbList','_approvalStatus','_check','_refPanel'];
+  const SKIP_LOCK_PATTERNS=['_class','_cls','_month','_week','_nendo','_child','_jidou','_tanin','_dbList','_approvalStatus','_check','_refPanel','_start_date','_youbi','_getsurei','_seibetsu','_hira'];
+  // 常にreadonlyを保つべきフィールドID（承認状態に関わらず編集不可）
+  const ALWAYS_READONLY=['su_start_date','ni_youbi','ko_getsurei','ko_seibetsu','ko_tanin','ka_seibetsu','ka_hira','ka_tanin','ns_tanin','gu_tanin','su_tanin'];
   sec.querySelectorAll('input,textarea,select').forEach(function(inp){
     if(!inp.id) return;
     // 基本選択フィールドはロック対象外
@@ -4392,10 +4394,13 @@ function updateApprovalBadge(prefix,status){
       inp.style.color='#888';
       inp.title='承認済みのため編集できません';
     } else if(!isApproved){
-      inp.removeAttribute('readonly');
-      inp.style.background='';
-      inp.style.color='';
-      inp.title='';
+      // 常にreadonly保護すべきフィールドは解除しない
+      if(!ALWAYS_READONLY.includes(inp.id)){
+        inp.removeAttribute('readonly');
+        inp.style.background='';
+        inp.style.color='';
+        inp.title='';
+      }
     }
   });
 }
