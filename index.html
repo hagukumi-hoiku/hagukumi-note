@@ -6333,7 +6333,38 @@ function updateKoMonthRange(){
   el.textContent='（'+mo+'月〜'+endMo+'月）';
 }
 
-function checkForm(prefix,ids){const ok=ids.every(function(id){const el=document.getElementById(id);return el&&el.value.trim()!=='';});const b=document.getElementById(prefix+'_check');b.textContent=ok?'✅ 入力完了':'⚠️ 未入力項目があります';b.className='status-badge '+(ok?'status-ok':'status-warn');showToast(ok?'✅ 入力チェックOK！':'⚠️ 必須項目が未入力です',ok?'':'error');}
+function checkForm(prefix,ids){
+  // applyApprovalと同じ全必須フィールド定義を使う
+  const REQUIRED_FIELDS = {
+    ns: ['ns_class','ns_mokuhyo'],
+    gu: ['gu_class','gu_month','gu_seimei','gu_jyoucho','gu_kenko','gu_ningen','gu_kankyo','gu_kotoba','gu_hyougen','gu_sugata','gu_kankyo2','gu_kobetsu2','gu_katei','gu_hogo'],
+    su: ['su_class','su_month','su_week','su_nerai','su_kankyo','su_renkei','su_enjo'],
+    ni: ['ni_date','ni_class','ni_kinyusha','ni_shusseki','ni_kesseki','ni_hoiku','ni_kenko','ni_hyouka'],
+    ko: ['ko_class','ko_month','ko_child','ko_nerai','ko_naiyou','ko_sugata','ko_hairyo','ko_hyouka'],
+    ka: ['ka_class','ka_month','ka_child','ka_kiroku'],
+  };
+  const checkIds = REQUIRED_FIELDS[prefix] || ids;
+  const emptyIds = checkIds.filter(function(id){
+    const el=document.getElementById(id);
+    return !el||!String(el.value||'').trim();
+  });
+  const ok = emptyIds.length === 0;
+  // ハイライト処理
+  checkIds.forEach(function(id){
+    const el=document.getElementById(id);
+    if(!el)return;
+    if(!String(el.value||'').trim()){
+      el.style.outline='2px solid #e74c3c';
+      el.style.background='#fff5f5';
+      setTimeout(function(){el.style.outline='';el.style.background='';},3000);
+    } else {
+      el.style.outline='';el.style.background='';
+    }
+  });
+  const b=document.getElementById(prefix+'_check');
+  if(b){b.textContent=ok?'✅ 入力完了':'⚠️ 未入力項目があります';b.className='status-badge '+(ok?'status-ok':'status-warn');}
+  showToast(ok?'✅ 入力チェックOK！':'⚠️ 必須項目が未入力です（赤枠の項目を確認してください）',ok?'':'error');
+}
 function clearForm(prefix){showConfirm('入力内容をクリアしますか？',{icon:'🗑️',title:'クリアの確認',ok:'クリア',okColor:'var(--terracotta)'}).then(function(ok){if(!ok)return;document.querySelectorAll('[id^="'+prefix+'_"]').forEach(function(el){if(el.tagName==='SELECT')el.selectedIndex=0;else if((el.tagName==='TEXTAREA'||el.tagName==='INPUT')&&!el.readOnly)el.value='';});updateApprovalBadge(prefix,'未申請');updateAllCounts(prefix);showToast('🗑️ クリアしました');});}
 function updateConnUI(ok){document.getElementById('syncDot').className='sync-dot '+(ok?'green':'orange');document.getElementById('syncLabel').textContent=ok?'スプレッドシート連携中':'未接続';const hi=document.getElementById('homeConnInfo');if(hi)hi.textContent=ok?'✅ Googleスプレッドシート：連携済み':'⚠️ スプレッドシート：未接続';}
 function showLoading(m){document.getElementById('loadingMsg').textContent=m||'通信中…';document.getElementById('loadingOverlay').style.display='flex';}
