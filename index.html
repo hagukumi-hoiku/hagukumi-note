@@ -3622,7 +3622,7 @@ async function importChildrenCsvFile(file) {
 
   let text = await readFile('UTF-8');
   if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
-  if (text.includes(' ')) text = await readFile('Shift-JIS');
+  if (text.includes('�')) text = await readFile('Shift-JIS');
 
   function parseCsvLine(line) {
     const result = []; let cur = '', inQ = false;
@@ -6117,19 +6117,48 @@ function updateFuriApplyBtn(prefix, ki) {
 // 振り返りバッジの表示を更新
 function updateFuriStatusBadge(prefix, ki, status) {
   var stId;
-  if (prefix === 'gu')                  stId = 'gu_furi_status';
-  else if (prefix === 'su')             stId = 'su_furi_status';
+  if (prefix === 'gu')                        stId = 'gu_furi_status';
+  else if (prefix === 'su')                   stId = 'su_furi_status';
   else if (prefix === 'ns' && ki === 'nendo') stId = 'ns_furi_nendo_status';
-  else if (prefix === 'ns' && ki)       stId = 'ns_furi_' + ki + '_status';
+  else if (prefix === 'ns' && ki)             stId = 'ns_furi_' + ki + '_status';
   else return;
 
+  // バッジ更新
   var el = document.getElementById(stId);
-  if (!el) return;
-  if (!status || status === '承認完了') { el.style.display = 'none'; return; }
-  var s = APPROVAL_STATUS[status] || { cls: 'ab-furi-draft', label: status };
-  el.className = 'approval-badge ' + s.cls;
-  el.textContent = s.label;
-  el.style.display = 'inline-flex';
+  if (el) {
+    if (!status || status === '承認完了') { el.style.display = 'none'; }
+    else {
+      var s = APPROVAL_STATUS[status] || { cls: 'ab-furi-draft', label: status };
+      el.className = 'approval-badge ' + s.cls;
+      el.textContent = s.label;
+      el.style.display = 'inline-flex';
+    }
+  }
+
+  // ボタンID特定
+  var btnId;
+  if (prefix === 'gu') btnId = 'gu_furi_btn';
+  else if (prefix === 'su') btnId = 'su_furi_btn';
+  else if (prefix === 'ns' && ki === 'nendo') btnId = 'ns_furi_nendo_btn';
+  else if (prefix === 'ns' && ki) btnId = 'ns_furi_' + ki + '_btn';
+
+  if (!btnId) return;
+  var btn = document.getElementById(btnId);
+  if (!btn) return;
+
+  // 申請中〜承認完了はボタンをロック、それ以外はupdateFuriApplyBtnに委ねる
+  var shouldLock = ['振り返り申請中','振り返り主任承認済','振り返り承認完了'].includes(status);
+  if (shouldLock) {
+    btn.disabled = true;
+    btn.style.opacity = '0.4';
+    btn.style.cursor = 'not-allowed';
+    btn.title = '振り返り申請済みです';
+  } else {
+    // 入力内容に応じてupdateFuriApplyBtnで再評価
+    if (typeof updateFuriApplyBtn === 'function') {
+      updateFuriApplyBtn(prefix, ki);
+    }
+  }
 }
 
 // 振り返り申請フロー本体
@@ -6211,11 +6240,16 @@ async function applyFuri(prefix, ki) {
   hideLoading();
   if (res && res.ok) {
     updateFuriStatusBadge(prefix, ki, '振り返り申請中');
-    var furiBtn = document.getElementById((prefix === 'gu' ? 'gu' : prefix === 'su' ? 'su' : 'ns') + (ki ? '_furi_' + ki : '_furi') + '_btn');
-    // ボタンID正規化
-    var btnId2 = prefix === 'gu' ? 'gu_furi_btn' : prefix === 'su' ? 'su_furi_btn' : 'ns_furi_' + ki + '_btn';
-    var btn2 = document.getElementById(btnId2);
-    if (btn2) { btn2.disabled = true; btn2.style.opacity = '0.4'; btn2.style.cursor = 'not-allowed'; }
+    // ボタンIDを確実に特定してロック
+    var btnId2;
+    if (prefix === 'gu') btnId2 = 'gu_furi_btn';
+    else if (prefix === 'su') btnId2 = 'su_furi_btn';
+    else if (prefix === 'ns' && ki === 'nendo') btnId2 = 'ns_furi_nendo_btn';
+    else if (prefix === 'ns' && ki) btnId2 = 'ns_furi_' + ki + '_btn';
+    if (btnId2) {
+      var btn2 = document.getElementById(btnId2);
+      if (btn2) { btn2.disabled = true; btn2.style.opacity = '0.4'; btn2.style.cursor = 'not-allowed'; btn2.title = '振り返り申請済みです'; }
+    }
     var firstLabel = (function(){try{return getFirstApprovalLabel(type);}catch(e){return '主任';}})();
     showToast('📤 振り返りを申請しました。' + firstLabel + 'に通知を送りました。');
     setTimeout(loadNotifications, 1000);
