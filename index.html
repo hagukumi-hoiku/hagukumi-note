@@ -1527,8 +1527,11 @@ function getDeadline(type, nendo, month, weekStart, targetDate, dispYear) {
     return null;
   }
 
-  const fromSetting = calcFromSetting(deadlineSetting, actualYear, month);
-  if (fromSetting) return fromSetting;
+  // 週案は週の月曜日を基準にするため calcFromSetting を使わず週ベース計算へ
+  if (type !== 'shuuan') {
+    const fromSetting = calcFromSetting(deadlineSetting, actualYear, month);
+    if (fromSetting) return fromSetting;
+  }
 
   // ── 週案の設定値ベース計算 ──
   if (type === 'shuuan') {
