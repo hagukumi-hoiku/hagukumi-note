@@ -4340,7 +4340,7 @@ function updateApprovalBadge(prefix,status){
   const sec=el.closest('section');
   if(!sec)return;
   // 申請中・承認済は申請ボタン無効化（振り返り系は除く）
-  const locked=['申請中','主任承認済','承認完了'].includes(status)&&!status.includes('振り返り');
+  const locked=['申請中','主任承認済','承認完了','振り返り申請中','振り返り主任承認済','振り返り承認完了'].includes(status)&&!status.includes('振り返り');
   sec.querySelectorAll('.btn-check').forEach(function(btn){
     if(!btn.textContent.includes('申請'))return;
     btn.disabled=locked;
