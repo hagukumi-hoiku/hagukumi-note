@@ -4380,7 +4380,10 @@ function updateApprovalBadge(prefix,status){
   }
   // 承認完了時：振り返りフィールド以外をreadonly化（基本選択フィールドは除外）
   const furiIds=(FURI_FIELD_IDS[prefix]||[]);
-  const isApproved=['承認完了','主任承認済'].includes(status);
+  // 振り返り系ステータスも含めて本体フィールドをロックすべきか判定
+  const isApproved=['承認完了','主任承認済','振り返り申請中','振り返り主任承認済','振り返り承認完了'].includes(status);
+  // 振り返り承認完了時は振り返りフィールドもロック
+  const isFuriDone = status === '振り返り承認完了';
   // ロック除外IDパターン（クラス・月・週・年度・園児選択など）
   const SKIP_LOCK_PATTERNS=['_class','_cls','_month','_week','_nendo','_child','_jidou','_tanin','_dbList','_approvalStatus','_check','_refPanel','_start_date','_youbi','_getsurei','_seibetsu','_hira'];
   // 常にreadonlyを保つべきフィールドID（承認状態に関わらず編集不可）
@@ -4396,6 +4399,11 @@ function updateApprovalBadge(prefix,status){
       inp.style.background='#f5f5f5';
       inp.style.color='#888';
       inp.title='承認済みのため編集できません';
+    } else if(isApproved&&isFuri&&isFuriDone){
+      inp.setAttribute('readonly','');
+      inp.style.background='#f5f5f5';
+      inp.style.color='#888';
+      inp.title='振り返り承認済みのため編集できません';
     } else if(!isApproved){
       // 常にreadonly保護すべきフィールドは解除しない
       if(!ALWAYS_READONLY.includes(inp.id)){
@@ -4772,6 +4780,26 @@ async function checkExistingData(prefix){
       const stI=APPROVAL_STATUS[st]||{cls:'ab-draft',label:st};
       setTimeout(function(){updateApprovalBadge(prefix,st);},50);
       window._existKey=key; window._existPrefix=prefix;
+      // 承認フローDBから最新ステータスを取得してバッジを補正
+      (function(_p,_k){
+        const _tm={ns:'nensyuu',gu:'getsuan',su:'shuuan',ni:'nisshi',ko:'kobetsu',ka:'kansatsu'};
+        const _fk=[];
+        if(['ns','gu','su'].includes(_p)){
+          if(_p==='ns'){['1','2','3','4'].forEach(function(k){_fk.push(_k+'_furi_ki'+k);});_fk.push(_k+'_furi_nendo');}
+          else{_fk.push(_k+'_furi');}
+        }
+        gasPost({action:'getApprovalBatch',keys:[{type:_tm[_p]||_p,key:_k,furiKeys:_fk}]}).then(function(br){
+          if(!br||!br.ok||!br.statuses)return;
+          const bst=br.statuses[_k];if(bst)updateApprovalBadge(_p,bst);
+          _fk.forEach(function(fk){
+            const fst=br.statuses[fk];if(!fst)return;
+            let ki=null;
+            if(fk.endsWith('_furi_nendo'))ki='nendo';
+            else if(fk.includes('_furi_ki')){const m=fk.match(/_furi_ki(\d)/);if(m)ki=Number(m[1]);}
+            updateFuriStatusBadge(_p,ki,fst);
+          });
+        }).catch(function(){});
+      })(prefix,key);
       banner.style.display='block';
       banner.innerHTML='📂 保存済みデータあり　'
         +'<span class="approval-badge '+stI.cls+'" style="font-size:11px;">'+stI.label+'</span>'
@@ -5015,7 +5043,7 @@ async function loadRecord(prefix,key){
           if(el&&data[dk]!==undefined)el.value=data[dk];
         });
       });
-      setTimeout(function(){updateApprovalBadge(prefix,data['承認状態']||'未申請');},150);
+      setTimeout(function(){ var _st=data['承認状態']||'未申請'; updateApprovalBadge(prefix,_st); },150);
       // 承認フローDBと照合して最新状態に補正
       (function(_p,_k){const _tm={ns:'nensyuu',gu:'getsuan',su:'shuuan',ni:'nisshi',ko:'kobetsu',ka:'kansatsu'};const _fk=[];if(_p==='ns'){['1','2','3','4'].forEach(function(n){_fk.push(_k+'_furi_ki'+n);});_fk.push(_k+'_furi_nendo');}gasPost({action:'getApprovalBatch',keys:[{type:_tm[_p]||_p,key:_k,furiKeys:_fk}]}).then(function(br){if(!br||!br.ok||!br.statuses)return;const st=br.statuses[_k];if(st)updateApprovalBadge(_p,st);_fk.forEach(function(fk){const fst=br.statuses[fk];if(fst){let ki=null;if(fk.endsWith('_furi_nendo'))ki='nendo';else if(fk.includes('_furi_ki')){const m=fk.match(/_furi_ki(\d)/);if(m)ki=Number(m[1]);}updateFuriStatusBadge(_p,ki,fst);}});}).catch(function(){});})(prefix,key);
       setTimeout(function(){ updateAllCounts(prefix); }, 150);
@@ -5086,7 +5114,7 @@ async function loadRecord(prefix,key){
         }else{ koGeturei.value=''; }
       }
       if(typeof updateKoMonthRange==='function') updateKoMonthRange();
-      setTimeout(function(){updateApprovalBadge(prefix,data['承認状態']||'未申請');},150);
+      setTimeout(function(){ var _st=data['承認状態']||'未申請'; updateApprovalBadge(prefix,_st); },150);
       (function(_p,_k){const _tm={ns:'nensyuu',gu:'getsuan',su:'shuuan',ni:'nisshi',ko:'kobetsu',ka:'kansatsu'};gasPost({action:'getApprovalBatch',keys:[{type:_tm[_p]||_p,key:_k,furiKeys:[]}]}).then(function(br){if(!br||!br.ok||!br.statuses)return;const st=br.statuses[_k];if(st)updateApprovalBadge(_p,st);}).catch(function(){});})(prefix,key);
       setTimeout(function(){ updateAllCounts(prefix); }, 150);
       showToast('📂 データを読み込みました');
@@ -5132,7 +5160,7 @@ async function loadRecord(prefix,key){
         }
         kaChildSel.value=kaChildName;
       }
-      setTimeout(function(){updateApprovalBadge(prefix,data['承認状態']||'未申請');},150);
+      setTimeout(function(){ var _st=data['承認状態']||'未申請'; updateApprovalBadge(prefix,_st); },150);
       (function(_p,_k){const _tm={ns:'nensyuu',gu:'getsuan',su:'shuuan',ni:'nisshi',ko:'kobetsu',ka:'kansatsu'};gasPost({action:'getApprovalBatch',keys:[{type:_tm[_p]||_p,key:_k,furiKeys:[]}]}).then(function(br){if(!br||!br.ok||!br.statuses)return;const st=br.statuses[_k];if(st)updateApprovalBadge(_p,st);}).catch(function(){});})(prefix,key);
       setTimeout(function(){ updateAllCounts(prefix); }, 150);
       showToast('📂 データを読み込みました');
@@ -5148,7 +5176,7 @@ async function loadRecord(prefix,key){
       const el=document.getElementById(e[1]);
       if(el&&data[e[0]]!==undefined) el.value=data[e[0]];
     });
-    setTimeout(function(){updateApprovalBadge(prefix,data['承認状態']||'未申請');},150);
+    setTimeout(function(){ var _st=data['承認状態']||'未申請'; updateApprovalBadge(prefix,_st); },150);
     // 承認フローDBと照合して最新状態に補正（書類DBが古くても正しく表示）
     const _typeMap2={ns:'nensyuu',gu:'getsuan',su:'shuuan',ni:'nisshi',ko:'kobetsu',ka:'kansatsu'};
     const _batchKey=key;
@@ -6597,7 +6625,6 @@ function loadDemoRecord(prefix,row){
 
 
 function gotoFormWithData(type, cls, nendo, month, child, week) {
-  // 対応するセクションに移動してフォームに値を設定
   const secMap = {nensyuu:'nensyuu',getsuan:'getsuan',shuuan:'shuuan',
                   nisshi:'nisshi',kobetsu:'kobetsu',kansatsu:'kansatsu'};
   const prefMap = {nensyuu:'ns',getsuan:'gu',shuuan:'su',nisshi:'ni',kobetsu:'ko',kansatsu:'ka'};
@@ -6607,22 +6634,36 @@ function gotoFormWithData(type, cls, nendo, month, child, week) {
   setTimeout(function(){
     // クラス選択
     const clsEl = document.getElementById(pref+'_class') || document.getElementById(pref+'_cls');
-    if (clsEl && cls) clsEl.value = cls;
+    if (clsEl && cls) { clsEl.value = cls; if(typeof updateAutoFields==='function') updateAutoFields(pref); }
     // 年度
     const nendoEl = document.getElementById(pref+'_nendo');
     if (nendoEl && nendo) nendoEl.value = nendo;
     // 月
     const monthEl = document.getElementById(pref+'_month');
-    if (monthEl && month) monthEl.value = month;
+    if (monthEl && month) { monthEl.value = month; if(typeof loadRefPanel==='function') loadRefPanel(pref); }
     // 週
     const weekEl = document.getElementById(pref+'_week') || document.getElementById(pref+'_shu');
-    if (weekEl && week) weekEl.value = week;
+    if (weekEl && week) { weekEl.value = week; if(typeof onSuWeekChange==='function') onSuWeekChange(); }
     // 園児
     const childEl = document.getElementById(pref+'_child') || document.getElementById(pref+'_jidou');
     if (childEl && child) childEl.value = child;
-    // updateAutoFieldsが存在すれば呼ぶ
-    if (typeof updateAutoFields === 'function') updateAutoFields(pref);
     if (typeof updateChildList === 'function') updateChildList(pref);
+    // フィルタ連動
+    _syncDbFilter(pref, 'class', cls);
+    if (month) _syncDbFilter(pref, 'month', month);
+    // 保存済みデータを確認して読み込む（DB照会）
+    setTimeout(function(){
+      checkExistingData(pref).then(function(){
+        // バナーに読み込みボタンが出た場合は自動でloadRecord
+        const banner = document.getElementById(pref+'_existBanner');
+        if (banner && banner.style.display !== 'none') {
+          const loadBtn = banner.querySelector('button');
+          if (loadBtn && window._existKey && window._existPrefix === pref) {
+            loadRecord(pref, window._existKey);
+          }
+        }
+      });
+    }, 300);
   }, 200);
 }
 
