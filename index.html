@@ -4339,8 +4339,8 @@ function updateApprovalBadge(prefix,status){
   el.className='approval-badge '+s.cls;el.textContent=s.label;
   const sec=el.closest('section');
   if(!sec)return;
-  // 申請中・承認済は申請ボタン無効化（振り返り系は除く）
-  const locked=['申請中','主任承認済','承認完了','振り返り申請中','振り返り主任承認済','振り返り承認完了'].includes(status)&&!status.includes('振り返り');
+  // 申請中・承認系は全て本体申請ボタンをロック（振り返り中も含む）
+  const locked=['申請中','主任承認済','承認完了','振り返り申請中','振り返り主任承認済','振り返り承認完了'].includes(status);
   sec.querySelectorAll('.btn-check').forEach(function(btn){
     if(!btn.textContent.includes('申請'))return;
     btn.disabled=locked;
@@ -5159,8 +5159,9 @@ async function loadRecord(prefix,key){
       if(!br||!br.ok||!br.statuses)return;
       const st=br.statuses[_batchKey];
       if(st) updateApprovalBadge(prefix,st);
-      // 書類DBとズレていたら自動で書き戻し
-      if(st && data && (data['承認状態']||'未申請') !== st){
+      // 書類DBとズレていたら自動で書き戻し（本体ステータスのみ・振り返り系は除く）
+      const isBodySt=!String(st||'').includes('振り返り');
+      if(isBodySt && st && data && (data['承認状態']||'未申請') !== st){
         console.log('[loadRecord] 承認状態ズレ検出→自動修正: DB='+data['承認状態']+' → フロー='+st);
         gasPost({action:'fixApprovalStatus',type:_batchType,key:_batchKey,status:st}).catch(function(){});
       }
