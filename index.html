@@ -5210,6 +5210,8 @@ async function loadRecord(prefix,key){
     if(prefix==='gu'||prefix==='su') setTimeout(function(){ recalcAllEvYoubi(prefix); }, 100);
     // 全textareaの文字数カウンターを更新
     setTimeout(function(){ updateAllCounts(prefix); }, 150);
+    // 参照パネル更新（loadRecord完了後に呼ぶことで前週データ等が上書きされるのを防ぐ）
+    setTimeout(function(){ if(typeof loadRefPanel==='function') loadRefPanel(prefix); }, 300);
     showToast('📂 データを読み込みました');
   }catch(e){hideLoading();console.error('[loadRecord]',e);showToast('❌ 読み込みエラー: '+e.message,'error');}
 }
@@ -6636,7 +6638,6 @@ async function gotoFormWithData(type, cls, nendo, month, child, week) {
   await new Promise(function(r){ setTimeout(r, 150); });
 
   // ① フォームをクリア（前回データ残留を防ぐ）
-  //    セレクト以外のテキスト/textarea入力を空に
   document.querySelectorAll('[id^="'+pref+'_"]').forEach(function(el){
     if (el.tagName === 'SELECT') return;
     if ((el.tagName === 'TEXTAREA' || el.tagName === 'INPUT') && !el.readOnly) el.value = '';
@@ -6646,42 +6647,48 @@ async function gotoFormWithData(type, cls, nendo, month, child, week) {
   const banner = document.getElementById(pref+'_existBanner');
   if (banner) banner.style.display = 'none';
 
-  // ② セレクトに値をセット
+  // ② セレクトに値をセット（loadRefPanel/onSuWeekChangeは呼ばない→loadRecord後に実行）
   const clsEl = document.getElementById(pref+'_class') || document.getElementById(pref+'_cls');
   if (clsEl && cls) { clsEl.value = cls; if(typeof updateAutoFields==='function') updateAutoFields(pref); }
   const nendoEl = document.getElementById(pref+'_nendo');
   if (nendoEl && nendo) nendoEl.value = nendo;
   const monthEl = document.getElementById(pref+'_month');
-  if (monthEl && month) { monthEl.value = month; if(typeof loadRefPanel==='function') loadRefPanel(pref); }
+  if (monthEl && month) monthEl.value = month;
   const weekEl = document.getElementById(pref+'_week');
   if (weekEl && week) weekEl.value = week;
   const childEl = document.getElementById(pref+'_child') || document.getElementById(pref+'_jidou');
   if (childEl && child) childEl.value = child;
   if (typeof updateChildList === 'function') updateChildList(pref);
-  // フィルタ連動
   _syncDbFilter(pref, 'class', cls);
   if (month) _syncDbFilter(pref, 'month', month);
 
-  // ③ キーを直接組み立てて loadRecord
-  await new Promise(function(r){ setTimeout(r, 150); });
+  // ③ キーを組み立て
+  await new Promise(function(r){ setTimeout(r, 100); });
   const keyData = {};
   Object.entries(FMAPS[pref]).forEach(function(e){
     const el = document.getElementById(e[1]);
     if (el) keyData[e[0]] = el.value;
   });
   const recKey = DB_CFGS[pref] ? DB_CFGS[pref].key(keyData) : '';
-  if (!recKey || recKey.includes('undefined') || !recKey.trim()) return;
+  if (!recKey || recKey.includes('undefined') || !recKey.trim()) {
+    if (typeof onSuWeekChange === 'function' && pref === 'su') onSuWeekChange();
+    if (typeof loadRefPanel === 'function') loadRefPanel(pref);
+    return;
+  }
 
-  // ④ GASからデータ取得して存在すれば即loadRecord、なければバナー非表示のまま
+  // ④ データ存在確認 → あれば loadRecord（loadRefPanelはloadRecord完了後に呼ばれる）
+  //    データなし → 週開始日計算・loadRefPanelを呼んで新規作成状態に
   try {
     const res = await gasGet({action:'get', type:DB_CFGS[pref].type, key:recKey});
     if (res && res.ok && res.data) {
-      // データあり → 自動でloadRecord
-      loadRecord(pref, recKey);
+      await loadRecord(pref, recKey);
+    } else {
+      if (typeof onSuWeekChange === 'function' && pref === 'su') onSuWeekChange();
+      if (typeof loadRefPanel === 'function') loadRefPanel(pref);
     }
-    // データなし → クリア済み状態のまま（何もしない）
   } catch(e) {
-    // 通信エラー → クリア済み状態のまま
+    if (typeof onSuWeekChange === 'function' && pref === 'su') onSuWeekChange();
+    if (typeof loadRefPanel === 'function') loadRefPanel(pref);
   }
 }
 
