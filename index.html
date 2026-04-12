@@ -6626,64 +6626,70 @@ function loadDemoRecord(prefix,row){
 }
 
 
-async function gotoFormWithData(type, cls, nendo, month, child, week) {
-  const secMap = {nensyuu:'nensyuu',getsuan:'getsuan',shuuan:'shuuan',
-                  nisshi:'nisshi',kobetsu:'kobetsu',kansatsu:'kansatsu'};
-  const prefMap = {nensyuu:'ns',getsuan:'gu',shuuan:'su',nisshi:'ni',kobetsu:'ko',kansatsu:'ka'};
-  const sec = secMap[type], pref = prefMap[type];
+function gotoFormWithData(type, cls, nendo, month, child, week) {
+  var secMap = {nensyuu:'nensyuu',getsuan:'getsuan',shuuan:'shuuan',
+                nisshi:'nisshi',kobetsu:'kobetsu',kansatsu:'kansatsu'};
+  var prefMap = {nensyuu:'ns',getsuan:'gu',shuuan:'su',nisshi:'ni',kobetsu:'ko',kansatsu:'ka'};
+  var sec = secMap[type], pref = prefMap[type];
   if (!sec) return;
   showSection(sec);
 
-  await new Promise(function(r){ setTimeout(r, 150); });
+  setTimeout(function(){
+    // ① フォームをクリア（前回データ残留防止）
+    document.querySelectorAll('[id^="'+pref+'_"]').forEach(function(el){
+      if (el.tagName === 'SELECT') return;
+      if ((el.tagName === 'TEXTAREA' || el.tagName === 'INPUT') && !el.readOnly) el.value = '';
+    });
+    var banner = document.getElementById(pref+'_existBanner');
+    if (banner) banner.style.display = 'none';
 
-  // ① フォームをクリア（前回データ残留を防ぐ）
-  document.querySelectorAll('[id^="'+pref+'_"]').forEach(function(el){
-    if (el.tagName === 'SELECT') return;
-    if ((el.tagName === 'TEXTAREA' || el.tagName === 'INPUT') && !el.readOnly) el.value = '';
-  });
-  updateApprovalBadge(pref, '未申請');
-  updateAllCounts(pref);
-  var banner = document.getElementById(pref+'_existBanner');
-  if (banner) banner.style.display = 'none';
+    // ② セレクトをセット
+    var clsEl = document.getElementById(pref+'_class');
+    if (clsEl && cls) clsEl.value = cls;
+    var nendoEl = document.getElementById(pref+'_nendo');
+    if (nendoEl && nendo) nendoEl.value = nendo;
+    var monthEl = document.getElementById(pref+'_month');
+    if (monthEl && month) monthEl.value = month;
+    var weekEl = document.getElementById(pref+'_week');
+    if (weekEl && week) weekEl.value = week;
+    if (typeof updateAutoFields === 'function') updateAutoFields(pref);
+    _syncDbFilter(pref, 'class', cls);
+    if (month) _syncDbFilter(pref, 'month', month);
 
-  // ② セレクトに値をセット
-  var clsEl = document.getElementById(pref+'_class') || document.getElementById(pref+'_cls');
-  if (clsEl && cls) { clsEl.value = cls; if(typeof updateAutoFields==='function') updateAutoFields(pref); }
-  var nendoEl = document.getElementById(pref+'_nendo');
-  if (nendoEl && nendo) nendoEl.value = nendo;
-  var monthEl = document.getElementById(pref+'_month');
-  if (monthEl && month) monthEl.value = month;
-  var weekEl = document.getElementById(pref+'_week');
-  if (weekEl && week) weekEl.value = week;
-  var childEl = document.getElementById(pref+'_child') || document.getElementById(pref+'_jidou');
-  if (childEl && child) childEl.value = child;
-  if (typeof updateChildList === 'function') updateChildList(pref);
-  _syncDbFilter(pref, 'class', cls);
-  if (month) _syncDbFilter(pref, 'month', month);
+    // 個別・観察は園児リストを再構築してから園児をセット
+    if ((pref === 'ko' || pref === 'ka') && child) {
+      if (typeof updateChildList === 'function') updateChildList(pref);
+      setTimeout(function(){
+        var childEl = document.getElementById(pref+'_child');
+        if (childEl) childEl.value = child;
+        _doCheckAndLoad(pref);
+      }, 400);
+      return;
+    }
 
-  // ③ パラメータから直接キーを組み立て（DOM経由不要・確実）
-  var recKey = null;
-  if (pref === 'ns')                          recKey = String(nendo||'') + String(cls||'');
-  else if (pref === 'gu')                     recKey = String(nendo||'') + String(cls||'') + String(month||'');
-  else if (pref === 'su')                     recKey = String(nendo||'') + String(cls||'') + String(month||'') + String(week||'');
-  else if (pref === 'ko' || pref === 'ka')    recKey = String(nendo||'') + String(cls||'') + String(month||'') + _normN(child||'');
-  // ni（日誌）はdateベースのキーなのでcheckExistingDataに委ねる
-
-  if (recKey && !recKey.includes('undefined') && recKey.trim()) {
-    // ④ データ存在確認 → あれば loadRecord、なければ初期表示（onSuWeekChange・loadRefPanel）
-    try {
-      var res = await gasGet({action:'get', type:DB_CFGS[pref].type, key:recKey});
-      if (res && res.ok && res.data) {
-        await loadRecord(pref, recKey);
-        return; // loadRecord内でloadRefPanel等が呼ばれる
-      }
-    } catch(e) {}
-  }
-
-  // データなし or ni → 通常の初期表示
-  if (typeof onSuWeekChange === 'function' && pref === 'su') onSuWeekChange();
-  if (typeof loadRefPanel === 'function') loadRefPanel(pref);
+    // ③ checkExistingDataを呼び出し→データあれば自動loadRecord
+    setTimeout(function(){ _doCheckAndLoad(pref); }, 300);
+  }, 200);
 }
+
+// checkExistingData後にデータがあれば自動でloadRecord、なければloadRefPanel
+function _doCheckAndLoad(pref) {
+  checkExistingData(pref).then(function(){
+    var banner = document.getElementById(pref+'_existBanner');
+    if (banner && banner.style.display !== 'none' && window._existKey && window._existPrefix === pref) {
+      // 保存済みデータあり → 自動読み込み
+      loadRecord(pref, window._existKey);
+    } else {
+      // データなし → 週開始日計算・参照パネル表示
+      if (typeof onSuWeekChange === 'function' && pref === 'su') onSuWeekChange();
+      if (typeof loadRefPanel === 'function') loadRefPanel(pref);
+    }
+  }).catch(function(){
+    if (typeof onSuWeekChange === 'function' && pref === 'su') onSuWeekChange();
+    if (typeof loadRefPanel === 'function') loadRefPanel(pref);
+  });
+}
+
 
 function showSection(id){
   document.querySelectorAll('.section').forEach(function(s){s.classList.remove('active');});
