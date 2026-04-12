@@ -6634,7 +6634,6 @@ async function gotoFormWithData(type, cls, nendo, month, child, week) {
   if (!sec) return;
   showSection(sec);
 
-  // DOM更新待ち
   await new Promise(function(r){ setTimeout(r, 150); });
 
   // ① フォームをクリア（前回データ残留を防ぐ）
@@ -6644,52 +6643,46 @@ async function gotoFormWithData(type, cls, nendo, month, child, week) {
   });
   updateApprovalBadge(pref, '未申請');
   updateAllCounts(pref);
-  const banner = document.getElementById(pref+'_existBanner');
+  var banner = document.getElementById(pref+'_existBanner');
   if (banner) banner.style.display = 'none';
 
-  // ② セレクトに値をセット（loadRefPanel/onSuWeekChangeは呼ばない→loadRecord後に実行）
-  const clsEl = document.getElementById(pref+'_class') || document.getElementById(pref+'_cls');
+  // ② セレクトに値をセット
+  var clsEl = document.getElementById(pref+'_class') || document.getElementById(pref+'_cls');
   if (clsEl && cls) { clsEl.value = cls; if(typeof updateAutoFields==='function') updateAutoFields(pref); }
-  const nendoEl = document.getElementById(pref+'_nendo');
+  var nendoEl = document.getElementById(pref+'_nendo');
   if (nendoEl && nendo) nendoEl.value = nendo;
-  const monthEl = document.getElementById(pref+'_month');
+  var monthEl = document.getElementById(pref+'_month');
   if (monthEl && month) monthEl.value = month;
-  const weekEl = document.getElementById(pref+'_week');
+  var weekEl = document.getElementById(pref+'_week');
   if (weekEl && week) weekEl.value = week;
-  const childEl = document.getElementById(pref+'_child') || document.getElementById(pref+'_jidou');
+  var childEl = document.getElementById(pref+'_child') || document.getElementById(pref+'_jidou');
   if (childEl && child) childEl.value = child;
   if (typeof updateChildList === 'function') updateChildList(pref);
   _syncDbFilter(pref, 'class', cls);
   if (month) _syncDbFilter(pref, 'month', month);
 
-  // ③ キーを組み立て
-  await new Promise(function(r){ setTimeout(r, 100); });
-  const keyData = {};
-  Object.entries(FMAPS[pref]).forEach(function(e){
-    const el = document.getElementById(e[1]);
-    if (el) keyData[e[0]] = el.value;
-  });
-  const recKey = DB_CFGS[pref] ? DB_CFGS[pref].key(keyData) : '';
-  if (!recKey || recKey.includes('undefined') || !recKey.trim()) {
-    if (typeof onSuWeekChange === 'function' && pref === 'su') onSuWeekChange();
-    if (typeof loadRefPanel === 'function') loadRefPanel(pref);
-    return;
+  // ③ パラメータから直接キーを組み立て（DOM経由不要・確実）
+  var recKey = null;
+  if (pref === 'ns')                          recKey = String(nendo||'') + String(cls||'');
+  else if (pref === 'gu')                     recKey = String(nendo||'') + String(cls||'') + String(month||'');
+  else if (pref === 'su')                     recKey = String(nendo||'') + String(cls||'') + String(month||'') + String(week||'');
+  else if (pref === 'ko' || pref === 'ka')    recKey = String(nendo||'') + String(cls||'') + String(month||'') + _normN(child||'');
+  // ni（日誌）はdateベースのキーなのでcheckExistingDataに委ねる
+
+  if (recKey && !recKey.includes('undefined') && recKey.trim()) {
+    // ④ データ存在確認 → あれば loadRecord、なければ初期表示（onSuWeekChange・loadRefPanel）
+    try {
+      var res = await gasGet({action:'get', type:DB_CFGS[pref].type, key:recKey});
+      if (res && res.ok && res.data) {
+        await loadRecord(pref, recKey);
+        return; // loadRecord内でloadRefPanel等が呼ばれる
+      }
+    } catch(e) {}
   }
 
-  // ④ データ存在確認 → あれば loadRecord（loadRefPanelはloadRecord完了後に呼ばれる）
-  //    データなし → 週開始日計算・loadRefPanelを呼んで新規作成状態に
-  try {
-    const res = await gasGet({action:'get', type:DB_CFGS[pref].type, key:recKey});
-    if (res && res.ok && res.data) {
-      await loadRecord(pref, recKey);
-    } else {
-      if (typeof onSuWeekChange === 'function' && pref === 'su') onSuWeekChange();
-      if (typeof loadRefPanel === 'function') loadRefPanel(pref);
-    }
-  } catch(e) {
-    if (typeof onSuWeekChange === 'function' && pref === 'su') onSuWeekChange();
-    if (typeof loadRefPanel === 'function') loadRefPanel(pref);
-  }
+  // データなし or ni → 通常の初期表示
+  if (typeof onSuWeekChange === 'function' && pref === 'su') onSuWeekChange();
+  if (typeof loadRefPanel === 'function') loadRefPanel(pref);
 }
 
 function showSection(id){
