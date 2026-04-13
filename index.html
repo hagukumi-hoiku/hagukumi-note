@@ -134,6 +134,26 @@ textarea.form-control.tall{min-height:120px;}
 }
 @media(max-width:640px){.form-grid-2,.form-grid-3,.form-grid-4{grid-template-columns:1fr;}.approval-row{grid-template-columns:1fr;}.today-info{flex-direction:column;gap:12px;}.dash-grid{grid-template-columns:1fr 1fr;}}
 
+/* ===== スマホ縦向きヘッダー最適化 ===== */
+@media(max-width:480px){
+  .header-inner{padding:6px 10px;gap:6px;flex-wrap:nowrap;}
+  .header-logo{font-size:14px;}
+  .header-logo img{height:22px!important;}
+  /* 年度・園名・同期・バージョンを非表示にしてベル・更新・ログアウトを確保 */
+  .header-divider{display:none;}
+  .header-info{display:none;}
+  .sync-status{display:none;}
+  /* ベル・更新ボタン・ユーザー名・ログアウト は表示維持 */
+  #loginUserLabel{display:none!important;} /* ユーザー名は省スペース化で非表示 */
+}
+/* 週案：週開始日を2列目に配置（横2列×3行）してスマホでも見やすく */
+@media(max-width:640px){
+  #su_start_date{width:100%;box-sizing:border-box;}
+}
+
+/* 週案上部グリッド：PC4列、スマホ2列（週開始日が見切れないよう） */
+.su-top-grid{grid-template-columns:1fr 1fr 1fr 1fr;}
+@media(max-width:640px){.su-top-grid{grid-template-columns:1fr 1fr;}}
 /* ===== 参照パネル ===== */
 .ref-panel{background:linear-gradient(135deg,#f0f7f1,#eaf4f8);border:1.5px solid #b8d8bc;border-radius:10px;margin-bottom:16px;overflow:hidden;}
 .ref-toggle{display:flex;align-items:center;gap:10px;padding:11px 16px;cursor:pointer;user-select:none;}
@@ -502,7 +522,7 @@ textarea.form-control.tall{min-height:120px;}
           </div>
         </div>
       </div>
-      <div class="form-grid form-grid-4">
+      <div class="form-grid su-top-grid">
         <div class="form-group"><label class="form-label">対象年度<span class="required">*</span></label><select class="form-control" id="su_nendo"></select></div>
         <div class="form-group"><label class="form-label">対象クラス<span class="required">*</span></label>
           <select class="form-control" id="su_class" onchange="updateAutoFields('su');loadRefPanel('su');checkExistingData('su');_syncDbFilter('su','class',this.value)">
@@ -3625,7 +3645,7 @@ async function importChildrenCsvFile(file) {
 
   let text = await readFile('UTF-8');
   if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
-  if (text.includes('�')) text = await readFile('Shift-JIS');
+  if (text.includes(' ')) text = await readFile('Shift-JIS');
 
   function parseCsvLine(line) {
     const result = []; let cur = '', inQ = false;
