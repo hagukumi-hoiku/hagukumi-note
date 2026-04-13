@@ -2112,10 +2112,18 @@ async function loadMyTasks() {
             recDetailHtml += '<button class="btn btn-primary task-goto-btn" style="padding:4px 10px;font-size:11px;"'
               +' data-type="'+recType+'" data-cls="'+cls.name+'" data-nendo="'+dispNendo+'" data-month="'+dispMonth+'" data-child="'+c.name+'">'
               + shortName + ' ✏️</button>';
+          } else if (st === '未申請' || st === '差し戻し') {
+            // 保存済み未提出・差し戻し → 様式ジャンプボタン（クリックして読み込み可能）
+            const btnColor = st === '差し戻し' ? '#e74c3c' : 'var(--sage)';
+            const btnIcon  = st === '差し戻し' ? '↩️' : '📝';
+            recDetailHtml += '<button class="btn task-goto-btn" style="padding:4px 10px;font-size:11px;background:'+btnColor+';color:#fff;border:none;border-radius:16px;cursor:pointer;"'
+              +' data-type="'+recType+'" data-cls="'+cls.name+'" data-nendo="'+dispNendo+'" data-month="'+dispMonth+'" data-child="'+c.name+'">'
+              + shortName + ' ' + btnIcon + '</button>';
           } else {
+            // 申請中・主任承認済 → スパン表示（承認待ちで担任操作不要）
             const bg = st==='申請中'||st==='主任承認済'?'#c9a84c':'#888';
             recDetailHtml += '<span style="padding:4px 10px;border-radius:16px;font-size:11px;color:#fff;background:'+bg+'">'
-              + shortName + ' ' + (st==='申請中'?'申請中':'承認待') + '</span>';
+              + shortName + ' ' + (st==='申請中'?'申請中':'審査中') + '</span>';
           }
         });
         recDetailHtml += '</div>';
