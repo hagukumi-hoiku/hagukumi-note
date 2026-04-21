@@ -146,6 +146,18 @@ textarea.form-control.tall{min-height:120px;}
   /* ベル・更新ボタン・ユーザー名・ログアウト は表示維持 */
   #loginUserLabel{display:none!important;} /* ユーザー名は省スペース化で非表示 */
 }
+/* 様式出力：週案日誌の週指定・日付指定グリッドをスマホで縦並びに */
+@media(max-width:640px){
+  .shuuan-select-grid{grid-template-columns:1fr !important;}
+}
+/* 印刷プレビューモーダル：ヘッダーをスマホで2行レイアウトに */
+@media(max-width:640px){
+  .print-modal-header{flex-direction:column !important;align-items:stretch !important;gap:8px !important;padding:10px 12px !important;}
+  .print-modal-title{font-size:13px !important;text-align:center;}
+  .print-modal-btns{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;}
+  .print-modal-btns a,.print-modal-btns button{font-size:11px !important;padding:5px 10px !important;}
+  #printContent{padding:12px !important;}
+}
 /* 週案：週開始日を2列目に配置（横2列×3行）してスマホでも見やすく */
 @media(max-width:640px){
   #su_start_date{width:100%;box-sizing:border-box;}
@@ -871,7 +883,7 @@ textarea.form-control.tall{min-height:120px;}
             </div>
           </div>
           <!-- 週指定 or 日付指定 どちらかで出力 -->
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+          <div class="shuuan-select-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
             <div style="background:#f0f7ff;border:1.5px solid #90caf9;border-radius:8px;padding:12px;">
               <div style="font-size:12px;font-weight:700;color:#1565c0;margin-bottom:8px;">📅 週で指定</div>
               <div style="display:flex;flex-direction:column;gap:6px;">
@@ -1448,9 +1460,9 @@ textarea.form-control.tall{min-height:120px;}
 </div>
 <div id="printModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:8000;align-items:flex-start;justify-content:center;padding:20px;overflow-y:auto;">
   <div style="background:white;border-radius:14px;width:100%;max-width:860px;margin:auto;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.3);">
-    <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid var(--border);background:var(--sage-dark);color:white;">
-      <span id="printModalTitle" style="font-weight:700;font-size:14px;">印刷プレビュー</span>
-      <div style="display:flex;gap:8px;">
+    <div class="print-modal-header" style="display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid var(--border);background:var(--sage-dark);color:white;">
+      <span id="printModalTitle" class="print-modal-title" style="font-weight:700;font-size:14px;">印刷プレビュー</span>
+      <div class="print-modal-btns" style="display:flex;gap:8px;">
         <a id="printPdfDownloadBtn" href="#" target="_blank" style="display:none;padding:7px 16px;background:#e3f2fd;color:#1565c0;border-radius:8px;font-size:13px;text-decoration:none;font-weight:700;">📄 PDFダウンロード</a><a id="printDownloadBtn" href="#" target="_blank" style="display:none;padding:7px 16px;background:#e8f5e9;color:#4d7252;border-radius:8px;font-size:13px;text-decoration:none;font-weight:700;">📥 Excelダウンロード</a>
         <button onclick="printPdfDirect()" style="padding:7px 16px;background:white;color:var(--sage-dark);border:none;border-radius:8px;font-size:13px;font-family:'Noto Sans JP',sans-serif;font-weight:700;cursor:pointer;">🖨️ 印刷する</button>
         <button onclick="closePrintModal()" style="padding:7px 14px;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:white;border-radius:8px;font-size:13px;cursor:pointer;">✕ 閉じる</button>
