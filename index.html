@@ -1458,8 +1458,8 @@ textarea.form-control.tall{min-height:120px;}
     </div>
   </div>
 </div>
-<div id="printModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:8000;align-items:flex-start;justify-content:center;padding:20px;overflow-y:auto;">
-  <div style="background:white;border-radius:14px;width:100%;max-width:860px;margin:auto;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.3);">
+<div id="printModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:8000;align-items:flex-start;justify-content:center;padding:10px;overflow-y:auto;">
+  <div style="background:white;border-radius:14px;width:100%;max-width:860px;margin:auto;overflow:clip;box-shadow:0 20px 60px rgba(0,0,0,.3);">
     <div class="print-modal-header" style="display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid var(--border);background:var(--sage-dark);color:white;">
       <span id="printModalTitle" class="print-modal-title" style="font-weight:700;font-size:14px;">印刷プレビュー</span>
       <div class="print-modal-btns" style="display:flex;gap:8px;">
@@ -1468,7 +1468,7 @@ textarea.form-control.tall{min-height:120px;}
         <button onclick="closePrintModal()" style="padding:7px 14px;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:white;border-radius:8px;font-size:13px;cursor:pointer;">✕ 閉じる</button>
       </div>
     </div>
-    <div id="printContent" style="padding:32px;"></div>
+    <div id="printContent" style="padding:20px;overflow-x:auto;"></div>
   </div>
 </div>
 
@@ -5836,20 +5836,7 @@ function buildStyleHtml(type, d, nendo){
 
   if(type==='nisshi'){
     const head=HDR('日誌　'+V('クラス名')+'　'+V('対象日付'), '');
-    const body='<table style="width:100%;border-collapse:collapse;">'
-      +'<tr><th style="'+TH+'">日付</th><td style="'+TD+'">'+E(V('対象日付'))+'</td>'
-      +'<th style="'+TH+'">クラス</th><td style="'+TD+'">'+E(V('クラス名'))+'</td>'
-      +'<th style="'+TH+'">記入者</th><td style="'+TD+'">'+E(V('記入者'))+'</td></tr>'
-      +'<tr><th style="'+TH+'">出席</th><td style="'+TD+'">'+E(V('出席数'))+'名</td>'
-      +'<th style="'+TH+'">欠席</th><td style="'+TD+'">'+E(V('欠席数'))+'名（'+E(V('欠席理由'))+'）</td>'
-      +'<th style="'+TH+'">主任確認</th><td style="'+TD+'">'+E(V('主任確認'))+'</td></tr>'
-      +'</table>'
-      +'<table style="width:100%;border-collapse:collapse;margin-top:1px;">'
-      +ROW2W('保育内容',V('保育内容'))
-      +ROW2W('健康管理',V('健康管理'))
-      +ROW2W('特記事項',V('特記事項'))
-      +ROW2W('評価・反省',V('評価反省'))
-      +'</table>';
+    const body='<table style="width:100%;border-collapse:collapse;">'      +'<tr><th style="'+TH+'width:30%;">日付</th><td style="'+TD+'">'+E(V('対象日付'))+'</td></tr>'      +'<tr><th style="'+TH+'">クラス</th><td style="'+TD+'">'+E(V('クラス名'))+'</td></tr>'      +'<tr><th style="'+TH+'">記入者</th><td style="'+TD+'">'+E(V('記入者'))+'</td></tr>'      +'<tr><th style="'+TH+'">出席</th><td style="'+TD+'">'+E(V('出席数'))+'名</td></tr>'      +'<tr><th style="'+TH+'">欠席</th><td style="'+TD+'">'+E(V('欠席数'))+'名　'+E(V('欠席理由'))+'</td></tr>'      +'<tr><th style="'+TH+'">主任確認</th><td style="'+TD+'">'+E(V('主任確認'))+'</td></tr>'      +'</table>'      +'<table style="width:100%;border-collapse:collapse;margin-top:1px;">'      +ROW2W('保育内容',V('保育内容'))      +ROW2W('健康管理',V('健康管理'))      +ROW2W('特記事項',V('特記事項'))      +ROW2W('評価・反省',V('評価反省'))      +'</table>';
     return WRAP(head,body);
   }
 
