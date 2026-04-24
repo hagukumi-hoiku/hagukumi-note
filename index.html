@@ -557,7 +557,7 @@ textarea.form-control.tall{min-height:120px;}
     <div class="card-header"><div class="icon" style="background:#e8f5e9;">🎯</div>今週の計画</div>
     <div class="card-body">
       <div class="form-grid form-grid-2">
-        <div class="form-group"><label class="form-label">前週の子どもの姿 <span style="font-size:11px;color:#888;">（自動転記）</span></label><textarea class="form-control" id="su_zenshu" placeholder="週・月を選択すると前週の振り返りから自動転記されます（修正可）" maxlength="60" oninput="updateCount(this,60)"></textarea><div style="font-size:11px;color:#888;margin-top:2px;">前週の振り返りから自動転記。前週なし・年度始めの場合は「前週なし」と表示されます。</div></div>
+        <div class="form-group"><label class="form-label">前週の子どもの姿 <span style="font-size:11px;color:#888;">（自動転記）</span></label><textarea class="form-control" id="su_zenshu" placeholder="週・月を選択すると前週の振り返りから自動転記されます（修正可）" maxlength="60" oninput="updateCount(this,60)"></textarea><div style="display:flex;justify-content:space-between;align-items:center;font-size:11px;margin-top:2px;"><span style="color:#888;">前週の振り返りから自動転記。前週なし・年度始めの場合は「前週なし」と表示されます。</span><span style="color:var(--text-light);white-space:nowrap;margin-left:8px;"><span id="cnt_su_zenshu">0</span>/60文字</span></div></div>
         <div class="form-group"><label class="form-label">今週のねらい<span class="required">*</span></label><textarea class="form-control" id="su_nerai" placeholder="今週のねらい…" maxlength="75" oninput="updateCount(this,75)"></textarea><div style="text-align:right;font-size:10px;color:var(--text-light);margin-top:2px;"><span id="cnt_su_nerai">0</span>/75文字</div></div>
         <div class="form-group"><label class="form-label">環境構成<span class="required">*</span></label><textarea class="form-control" id="su_kankyo" placeholder="環境構成…" maxlength="60" oninput="updateCount(this,60)"></textarea><div style="text-align:right;font-size:10px;color:var(--text-light);margin-top:2px;"><span id="cnt_su_kankyo">0</span>/60文字</div></div>
         <div class="form-group"><label class="form-label">保護者との連携<span class="required">*</span></label><textarea class="form-control" id="su_renkei" placeholder="保護者との連携…" maxlength="75" oninput="updateCount(this,75)"></textarea><div style="text-align:right;font-size:10px;color:var(--text-light);margin-top:2px;"><span id="cnt_su_renkei">0</span>/75文字</div></div>
@@ -1779,6 +1779,32 @@ async function loadMyTasks() {
     const kanData = kanRes && kanRes.data || [];
     const getData = getRes && getRes.data || [];
 
+    // 承認フローDBとの乖離を補正（書類DBが古いステータスのまま残っていても正しく判定）
+    // 全書類の検索キーをまとめてgetApprovalBatchで一括取得
+    let apBatchMap = {};
+    try {
+      const batchKeys = [];
+      const allDbRows = [
+        ...(nsRes && nsRes.data || []).map(r => ({type:'nensyuu', key:r['検索キー']})),
+        ...(getRes && getRes.data || []).map(r => ({type:'getsuan', key:r['検索キー']})),
+        ...(suRes && suRes.data || []).map(r => ({type:'shuuan',   key:r['検索キー']})),
+      ];
+      allDbRows.forEach(function(e) {
+        if (e.key) batchKeys.push({type:e.type, key:e.key, furiKeys:[]});
+      });
+      if (batchKeys.length) {
+        const bRes = await gasPost({action:'getApprovalBatch', keys: batchKeys});
+        if (bRes && bRes.ok && bRes.statuses) apBatchMap = bRes.statuses;
+      }
+    } catch(e) {}
+
+    // ステータスをフローDB優先で取得するヘルパー
+    function resolvedSt(row, fallback) {
+      if (!row) return fallback || '未作成';
+      const key = row['検索キー'];
+      return (key && apBatchMap[key]) ? apBatchMap[key] : (row['承認状態'] || '未申請');
+    }
+
     let html = '';
 
     targetClasses.forEach((cls, ci) => {
@@ -1790,7 +1816,7 @@ async function loadMyTasks() {
       const nsRow = nsRes && nsRes.data ? nsRes.data.find(r =>
         String(r['対象クラス']) === cls.name && String(r['対象年度']) === String(dispNendo)
       ) : null;
-      const nsSt = nsRow ? (nsRow['承認状態'] || '未申請') : '未作成';
+      const nsSt = nsRow ? resolvedSt(nsRow) : '未作成';
       if (!['承認完了','振り返り承認完了'].includes(nsSt)) {
         const nsDl = getDeadlineCapped('nensyuu', dispNendo, dispMonth, null, null, dispYear);
         clsHtml += buildTaskSection(id+'_ns', '📋', '年間指導計画', nsDl, statusBadge(nsSt),
@@ -1805,7 +1831,7 @@ async function loadMyTasks() {
         String(r['対象月']) === String(dispMonth) &&
         String(r['対象年度']) === String(dispNendo)
       );
-      const getSt = getRow ? (getRow['承認状態'] || '未申請') : '未作成';
+      const getSt = getRow ? resolvedSt(getRow) : '未作成';
       const getDl = getDeadlineCapped('getsuan', dispNendo, dispMonth, null, null, dispYear);
       if (!['承認完了','振り返り承認完了'].includes(getSt)) {
         clsHtml += buildTaskSection(id+'_get', '📅', '月案', getDl, statusBadge(getSt),
@@ -1945,7 +1971,7 @@ async function loadMyTasks() {
           String(r['対象年度']) === String(dispNendo) &&
           String(r['対象週']) === String(week)
         );
-        const suSt = suRow ? (suRow['承認状態'] || '未申請') : '未作成';
+        const suSt = suRow ? resolvedSt(suRow) : '未作成';
         if (!['承認完了','振り返り承認完了'].includes(suSt)) {
           // 各週の月曜を基準に期限を計算（週ごとに異なる日付が渡される）
           const suDl = getDeadlineCapped('shuuan', dispNendo, dispMonth, weekMon, null, dispYear);
@@ -1966,7 +1992,7 @@ async function loadMyTasks() {
         );
         if (!suRowF) continue; // 作成されていない週はスキップ
         const hasSuFuri = suRowF['週振り返り'] && String(suRowF['週振り返り']).trim() !== '';
-        const suStF = suRowF['承認状態'] || '未申請';
+        const suStF = resolvedSt(suRowF);
         if (hasSuFuri || ['承認完了','振り返り申請中','振り返り主任承認済','振り返り承認完了'].includes(suStF)) continue; // 振り返り済みまたは承認完了はスキップ
         // 週の最終平日（金曜）を計算
         const wMon = getNthWeekMonday(dispYear, dispMonth, week);
@@ -3666,7 +3692,7 @@ async function importChildrenCsvFile(file) {
 
   let text = await readFile('UTF-8');
   if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
-  if (text.includes(' ')) text = await readFile('Shift-JIS');
+  if (text.includes('�')) text = await readFile('Shift-JIS');
 
   function parseCsvLine(line) {
     const result = []; let cur = '', inQ = false;
