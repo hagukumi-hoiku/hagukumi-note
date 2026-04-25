@@ -2088,10 +2088,11 @@ async function loadMyTasks() {
         if(todayInMonth && !isOffDay(todayNi)) {
           const todayStr = toDateStr(todayNi);
           const todayNiRow = niData.find(function(r){
-            return String(r['クラス名'])===cls.name && String(r['対象日付']||'').slice(0,10)===todayStr;
+            return String(r['クラス名']).trim()===cls.name.trim() && String(r['対象日付']||'').slice(0,10)===todayStr;
           });
-          if(!todayNiRow) {
-            const niDl = getDeadlineCapped('nisshi', dispNendo, dispMonth, null, todayNi, dispYear);
+          const todayNiSt = todayNiRow ? (todayNiRow['承認状態']||'未申請') : '';
+          const niDl = getDeadlineCapped('nisshi', dispNendo, dispMonth, null, todayNi, dispYear);
+          if(!todayNiRow || todayNiSt==='差し戻し') {
             const dayLabel=(todayNi.getMonth()+1)+'/'+todayNi.getDate()+'（'+dayNames[todayNi.getDay()]+'）';
             clsHtml += buildTaskSection(id+'_ni_today', '📓', '日誌 '+dayLabel+'（本日）', niDl,
               '<span style="font-size:11px;color:#4a90e2;font-weight:700;">本日分</span>',
@@ -2109,11 +2110,12 @@ async function loadMyTasks() {
           if(isOffDay(dt)) continue;
           const dtStr = toDateStr(dt);
           const row = niData.find(function(r){
-            return String(r['クラス名'])===cls.name && String(r['対象日付']||'').slice(0,10)===dtStr;
+            return String(r['クラス名']).trim()===cls.name.trim() && String(r['対象日付']||'').slice(0,10)===dtStr;
           });
-          if(!row) pastMissing.push(dt);
-        }
+          const rowSt = row ? (row['承認状態']||'未申請') : '';
+          if(!row || rowSt==='差し戻し') pastMissing.push(dt);
 
+        }
         if(pastMissing.length > 0) {
           const firstD = pastMissing[0], lastD = pastMissing[pastMissing.length-1];
           const rangeLabel = pastMissing.length===1
