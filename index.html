@@ -2277,7 +2277,7 @@ async function refreshApprovalStatuses() {
       const currentKey = keyEl ? keyEl.value : '';
       if (!currentKey) return;
       const typeMap = {ns:'nensyuu',gu:'getsuan',su:'shuuan',ni:'nisshi',ko:'kobetsu',ka:'kansatsu'};
-      const entry = { type: typeMap[prefix] || prefix, key: currentKey, furiKeys: [] };
+      const entry = { type: typeMap[prefix] || prefix, key: currentKey, furiKeys: buildFuriKeys(prefix, currentKey) };
       // 振り返りキーも収集
       if (['ns','gu','su'].includes(prefix)) {
         if (prefix === 'ns') {
@@ -4433,6 +4433,19 @@ const FURI_FIELD_IDS={
   su:['su_furikaeri'],
   ni:[], ko:[], ka:[],
 };
+// 書類種別・検索キーから振り返りキーを生成する共通関数
+function buildFuriKeys(prefix, key) {
+  if (!key) return [];
+  if (prefix === 'ns') {
+    // 年間指導計画：期×4 + 年度末
+    return ['1','2','3','4'].map(function(n){ return key+'_furi_ki'+n; }).concat([key+'_furi_nendo']);
+  }
+  // 月案・週案・個別・観察は _furi 1種
+  if (['gu','su','ko','ka'].includes(prefix)) return [key+'_furi'];
+  // 日誌・その他は振り返りなし
+  return [];
+}
+
 function updateApprovalBadge(prefix,status){
   const el=document.getElementById(prefix+'_approvalStatus');
   if(!el)return;
@@ -5236,7 +5249,7 @@ async function loadRecord(prefix,key){
       }
       if(typeof updateKoMonthRange==='function') updateKoMonthRange();
       setTimeout(function(){ var _st=data['承認状態']||'未申請'; updateApprovalBadge(prefix,_st); },150);
-      (function(_p,_k){const _tm={ns:'nensyuu',gu:'getsuan',su:'shuuan',ni:'nisshi',ko:'kobetsu',ka:'kansatsu'};gasPost({action:'getApprovalBatch',keys:[{type:_tm[_p]||_p,key:_k,furiKeys:[]}]}).then(function(br){if(!br||!br.ok||!br.statuses)return;const st=br.statuses[_k];if(st)updateApprovalBadge(_p,st);}).catch(function(){});})(prefix,key);
+      (function(_p,_k){const _tm={ns:'nensyuu',gu:'getsuan',su:'shuuan',ni:'nisshi',ko:'kobetsu',ka:'kansatsu'};gasPost({action:'getApprovalBatch',keys:[{type:_tm[_p]||_p,key:_k,furiKeys:buildFuriKeys(_p,_k)}]}).then(function(br){if(!br||!br.ok||!br.statuses)return;const st=br.statuses[_k];if(st)updateApprovalBadge(_p,st);}).catch(function(){});})(prefix,key);
       setTimeout(function(){ updateAllCounts(prefix); }, 150);
       showToast('📂 データを読み込みました');
       return;
@@ -5282,7 +5295,7 @@ async function loadRecord(prefix,key){
         kaChildSel.value=kaChildName;
       }
       setTimeout(function(){ var _st=data['承認状態']||'未申請'; updateApprovalBadge(prefix,_st); },150);
-      (function(_p,_k){const _tm={ns:'nensyuu',gu:'getsuan',su:'shuuan',ni:'nisshi',ko:'kobetsu',ka:'kansatsu'};gasPost({action:'getApprovalBatch',keys:[{type:_tm[_p]||_p,key:_k,furiKeys:[]}]}).then(function(br){if(!br||!br.ok||!br.statuses)return;const st=br.statuses[_k];if(st)updateApprovalBadge(_p,st);}).catch(function(){});})(prefix,key);
+      (function(_p,_k){const _tm={ns:'nensyuu',gu:'getsuan',su:'shuuan',ni:'nisshi',ko:'kobetsu',ka:'kansatsu'};gasPost({action:'getApprovalBatch',keys:[{type:_tm[_p]||_p,key:_k,furiKeys:buildFuriKeys(_p,_k)}]}).then(function(br){if(!br||!br.ok||!br.statuses)return;const st=br.statuses[_k];if(st)updateApprovalBadge(_p,st);}).catch(function(){});})(prefix,key);
       setTimeout(function(){ updateAllCounts(prefix); }, 150);
       showToast('📂 データを読み込みました');
       return;
