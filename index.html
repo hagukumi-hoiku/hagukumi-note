@@ -2087,11 +2087,17 @@ async function loadMyTasks() {
         const todayInMonth = todayNi.getFullYear()===dispYear && todayNi.getMonth()+1===dispMonth;
         if(todayInMonth && !isOffDay(todayNi)) {
           const todayStr = toDateStr(todayNi);
+          // 検索キーは「対象日付+クラス名」形式
+          const todayNiKey = todayStr + cls.name;
           const todayNiRow = niData.find(function(r){
-            return String(r['クラス名']).trim()===cls.name.trim() && String(r['対象日付']||'').slice(0,10)===todayStr;
+            const rKey = String(r['検索キー']||'');
+            if (rKey) return rKey.replace(/\s/g,'') === todayNiKey.replace(/\s/g,'');
+            // 検索キーがない古いレコードはフィールドで照合
+            return String(r['クラス名']||'').trim()===cls.name.trim() && String(r['対象日付']||'').slice(0,10)===todayStr;
           });
           const todayNiSt = todayNiRow ? (todayNiRow['承認状態']||'未申請') : '';
           const niDl = getDeadlineCapped('nisshi', dispNendo, dispMonth, null, todayNi, dispYear);
+          // 承認完了・申請中・主任承認済はタスク不要、未記入・差し戻しのみ表示
           if(!todayNiRow || todayNiSt==='差し戻し') {
             const dayLabel=(todayNi.getMonth()+1)+'/'+todayNi.getDate()+'（'+dayNames[todayNi.getDay()]+'）';
             clsHtml += buildTaskSection(id+'_ni_today', '📓', '日誌 '+dayLabel+'（本日）', niDl,
@@ -2109,10 +2115,14 @@ async function loadMyTasks() {
           if(dt >= todayNi) break;
           if(isOffDay(dt)) continue;
           const dtStr = toDateStr(dt);
+          const niKey = dtStr + cls.name;
           const row = niData.find(function(r){
-            return String(r['クラス名']).trim()===cls.name.trim() && String(r['対象日付']||'').slice(0,10)===dtStr;
+            const rKey = String(r['検索キー']||'');
+            if (rKey) return rKey.replace(/\s/g,'') === niKey.replace(/\s/g,'');
+            return String(r['クラス名']||'').trim()===cls.name.trim() && String(r['対象日付']||'').slice(0,10)===dtStr;
           });
           const rowSt = row ? (row['承認状態']||'未申請') : '';
+          // 承認完了・申請中・主任承認済は除外、未記入・差し戻しのみ追加
           if(!row || rowSt==='差し戻し') pastMissing.push(dt);
 
         }
