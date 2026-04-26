@@ -4573,7 +4573,7 @@ async function loadMyApplications(){
       const isReject=st==='差し戻し';
       const fkey=item['検索キー']||'';
       const ftype=item['書類種別']||'';
-      const label=item['書類ラベル']||item['書類タイトル']||'';
+      const label=item['書類タイトル']||item['書類ラベル']||'';  // タイトル優先（例：「月案（うさぎ4月）」）
       const cls=item['対象クラス']||item['クラス名']||'';
       const rejectComment=isReject?(item['差し戻しコメント']||''):'';
       div.style.background=isReject?'#fff8f8':'white';
@@ -4924,7 +4924,13 @@ async function checkExistingData(prefix){
         }
         gasPost({action:'getApprovalBatch',keys:[{type:_tm[_p]||_p,key:_k,furiKeys:_fk}]}).then(function(br){
           if(!br||!br.ok||!br.statuses)return;
-          const bst=br.statuses[_k];if(bst)updateApprovalBadge(_p,bst);
+          const bst=br.statuses[_k];
+          if(bst){
+            updateApprovalBadge(_p,bst);
+            // バナーのバッジも同期更新
+            const _bel=document.getElementById(_p+'_exist_badge');
+            if(_bel){const _bsi=APPROVAL_STATUS[bst]||{cls:'ab-draft',label:bst};_bel.className='approval-badge '+_bsi.cls;_bel.textContent=_bsi.label;}
+          }
           _fk.forEach(function(fk){
             const fst=br.statuses[fk];if(!fst)return;
             let ki=null;
