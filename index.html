@@ -2569,20 +2569,29 @@ function applyMasterToUI(){
     if(syunin){const o=document.createElement('option');o.value=syunin;o.textContent=syunin;o.selected=true;el.appendChild(o);}
   });
 
-  // 個別・観察記録の園児選択を更新
+  // 個別・観察記録の園児選択を更新（退園者除外）
   ['ko_child','ka_child'].forEach(id=>{
     const el=document.getElementById(id);
     if(!el)return;
     const clsId = id==='ko_child'?'ko_class':'ka_class';
     const nendoId = id==='ko_child'?'ko_nendo':'ka_nendo';
+    const monthId = id==='ko_child'?'ko_month':'ka_month';
     const cls=document.getElementById(clsId)?.value||'';
     const nendo=document.getElementById(nendoId)?.value||'';
+    const month=Number(document.getElementById(monthId)?.value||0);
     const usePrev = MASTER.prevNendo && nendo && String(nendo)===String(MASTER.prevNendo);
     const useNext = MASTER.nextNendo && nendo && String(nendo)===String(MASTER.nextNendo);
     const src = usePrev ? MASTER.prevChildren : useNext ? MASTER.nextChildren : MASTER.children;
     const children=cls?(src[cls]||[]):Object.values(src||{}).flat();
+    // 対象月の末日時点で在籍しているかで絞り込む
+    const nendoNum = nendo ? Number(nendo) : new Date().getFullYear();
+    const actualYear = month ? (month>=4 ? nendoNum : nendoNum+1) : new Date().getFullYear();
+    const monthEnd = month ? new Date(actualYear, month, 0) : new Date();
     el.innerHTML='<option value="">-- 選択 --</option>';
-    children.forEach(c=>{
+    children.filter(c=>{
+      if(!c.taienDate||c.taienDate==='') return true;
+      return new Date(String(c.taienDate).replace(/\//g,'-')) >= monthEnd;
+    }).forEach(c=>{
       const o=document.createElement('option');
       o.value=c.name;o.textContent=c.displayName||c.name;
       el.appendChild(o);
@@ -3723,7 +3732,7 @@ async function importChildrenCsvFile(file) {
 
   let text = await readFile('UTF-8');
   if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
-  if (text.includes('�')) text = await readFile('Shift-JIS');
+  if (text.includes(' ')) text = await readFile('Shift-JIS');
 
   function parseCsvLine(line) {
     const result = []; let cur = '', inQ = false;
