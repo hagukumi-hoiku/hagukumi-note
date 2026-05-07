@@ -5898,7 +5898,16 @@ function buildStyleHtml(type, d, nendo){
   const ROW2W=function(label,val){return ROW2(label,val,'160px');};
 
   // ヘッダー行（共通メタ情報）
-  function metaBlock(cls, nendo, month, extra, tanin, syunin, encho){
+  // 承認ロールラベルヘルパー（様式承認設定から取得）
+  function _getApvLabel(docType) {
+    const s = (MASTER.kihon && MASTER.kihon['様式承認設定']) || '';
+    const m = {};
+    s.split(',').forEach(function(x){ const p = x.trim().split(':'); if(p[0]&&p[1]) m[p[0].trim()] = p[1].trim(); });
+    return (m[docType] || 'syunin') === 'tokkatsu' ? '統括' : '主任';
+  }
+
+  function metaBlock(cls, nendo, month, extra, tanin, syunin, encho, syuninLabel){
+    const sl = syuninLabel || '主任';
     let cells='<td style="'+TD+'text-align:center;">'+E(nendo?nendo+'年度':'')+'</td>'
       +'<td style="'+TD+'text-align:center;">'+E(cls||'')+'</td>'
       +(month?'<td style="'+TD+'text-align:center;">'+E(month+'月')+'</td>':'')
@@ -5909,7 +5918,7 @@ function buildStyleHtml(type, d, nendo){
     let heads='<th style="'+TH+'">年度</th><th style="'+TH+'">クラス</th>'
       +(month?'<th style="'+TH+'">月</th>':'')
       +(extra?'<th style="'+TH+'">'+extra+'</th>':'')
-      +'<th style="'+TH+'">担任</th><th style="'+TH+'">主任</th><th style="'+TH+'">園長</th>';
+      +'<th style="'+TH+'">担任</th><th style="'+TH+'">'+E(sl)+'</th><th style="'+TH+'">園長</th>';
     return '<table style="width:100%;border-collapse:collapse;"><thead><tr>'+heads+'</tr></thead><tbody><tr>'+cells+'</tr></tbody></table>';
   }
 
@@ -5931,7 +5940,7 @@ function buildStyleHtml(type, d, nendo){
     }).join('');
     const head=HDR('月案　'+V('対象クラス')+'　'+V('対象月')+'月', V('対象年度')+'年度');
     const body='<table style="width:100%;border-collapse:collapse;">'
-      +metaBlock(V('対象クラス'),V('対象年度'),V('対象月'),'',V('担任'),V('主任承認'),V('園長承認'))
+      +metaBlock(V('対象クラス'),V('対象年度'),V('対象月'),'',V('担任'),V('主任承認'),V('園長承認'),_getApvLabel('getsuan'))
       +'</table>'
       +(evRows?'<table style="width:100%;border-collapse:collapse;margin-top:1px;"><thead><tr><th style="'+TH+'">行事</th><th style="'+TH+'width:55px;text-align:center;">日</th><th style="'+TH+'width:50px;text-align:center;">曜日</th><th style="'+TH+'">内容</th></tr></thead><tbody>'+evRows+'</tbody></table>':'')
       +'<table style="width:100%;border-collapse:collapse;margin-top:1px;">'
@@ -5977,7 +5986,7 @@ function buildStyleHtml(type, d, nendo){
     ];
     const head=HDR('年間指導計画　'+V('対象クラス'), V('対象年度')+'年度');
     let body='<table style="width:100%;border-collapse:collapse;">'
-      +metaBlock(V('対象クラス'),V('対象年度'),'','',V('担任'),V('主任承認'),V('園長承認'))
+      +metaBlock(V('対象クラス'),V('対象年度'),'','',V('担任'),V('主任承認'),V('園長承認'),_getApvLabel('nensyuu'))
       +'</table>'
       +'<table style="width:100%;border-collapse:collapse;margin-top:1px;">'
       +ROW2W('年間目標',V('年間目標'))
@@ -6049,7 +6058,7 @@ function buildStyleHtml(type, d, nendo){
        }).join(''):'<tr><td colspan="2" style="padding:8px;color:#aaa;font-size:12px;">週を選択するとここに表示されます</td></tr>')
       +'</table>';
     const body='<table style="width:100%;border-collapse:collapse;">'
-      +metaBlock(V('対象クラス'),V('対象年度'),V('対象月'),'第'+V('対象週')+'週',V('担任'),V('主任承認'),V('園長承認'))
+      +metaBlock(V('対象クラス'),V('対象年度'),V('対象月'),'第'+V('対象週')+'週',V('担任'),V('主任承認'),V('園長承認'),_getApvLabel('shuuan'))
       +'</table>'
       +'<table style="width:100%;border-collapse:collapse;margin-top:1px;">'
       +ROW2W('前週の子どもの姿',V('前週の子どもの姿'))
