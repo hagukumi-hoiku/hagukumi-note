@@ -660,7 +660,7 @@ textarea.form-control.tall{min-height:120px;}
         <div class="form-group"><label class="form-label">評価・反省<span class="required">*</span></label><textarea class="form-control" id="ni_hyouka" placeholder="評価・反省…" maxlength="130" oninput="updateCount(this,130)"></textarea><div style="text-align:right;font-size:10px;color:var(--text-light);margin-top:2px;"><span id="cnt_ni_hyouka">0</span>/130文字</div></div>
       </div>
       <div class="approval-row">
-        <div class="form-group"><label class="form-label">主任確認</label><select class="form-control" id="ni_syunin"><option value="">-- 選択 --</option></select></div>
+        <div class="form-group"><label class="form-label"><span id="ni_syunin_label">主任確認</span></label><select class="form-control" id="ni_syunin"><option value="">-- 選択 --</option></select></div>
         <div class="form-group"><label class="form-label">園長確認</label><select class="form-control" id="ni_encho"><option value="">-- 選択 --</option></select></div>
       </div>
       <div class="btn-row">
@@ -1826,6 +1826,20 @@ async function loadMyTasks() {
         batchKeys.push({type:'shuuan', key:r['検索キー'], furiKeys:[r['検索キー']+'_furi']});
       });
 
+      // 個別記録・観察記録・日誌（振り返りなし）
+      (kobRes && kobRes.data || []).forEach(function(r) {
+        if (!r['検索キー']) return;
+        batchKeys.push({type:'kobetsu', key:r['検索キー'], furiKeys:[]});
+      });
+      (kanRes && kanRes.data || []).forEach(function(r) {
+        if (!r['検索キー']) return;
+        batchKeys.push({type:'kansatsu', key:r['検索キー'], furiKeys:[]});
+      });
+      (niRes && niRes.data || []).forEach(function(r) {
+        if (!r['検索キー']) return;
+        batchKeys.push({type:'nisshi', key:r['検索キー'], furiKeys:[]});
+      });
+
       if (batchKeys.length) {
         const bRes = await gasPost({action:'getApprovalBatch', keys: batchKeys});
         if (bRes && bRes.ok && bRes.statuses) apBatchMap = bRes.statuses;
@@ -2115,7 +2129,7 @@ async function loadMyTasks() {
             // 検索キーがない古いレコードはフィールドで照合
             return String(r['クラス名']||'').trim()===cls.name.trim() && String(r['対象日付']||'').slice(0,10)===todayStr;
           });
-          const todayNiSt = todayNiRow ? (todayNiRow['承認状態']||'未申請') : '';
+          const todayNiSt = todayNiRow ? (apBatchMap[String(todayNiRow['検索キー']||'')] || todayNiRow['承認状態']||'未申請') : '';
           const niDl = getDeadlineCapped('nisshi', dispNendo, dispMonth, null, todayNi, dispYear);
           // 承認完了・申請中・主任承認済はタスク不要、未記入・差し戻しのみ表示
           if(!todayNiRow || todayNiSt==='差し戻し') {
@@ -2141,7 +2155,7 @@ async function loadMyTasks() {
             if (rKey) return rKey.replace(/\s/g,'') === niKey.replace(/\s/g,'');
             return String(r['クラス名']||'').trim()===cls.name.trim() && String(r['対象日付']||'').slice(0,10)===dtStr;
           });
-          const rowSt = row ? (row['承認状態']||'未申請') : '';
+          const rowSt = row ? (apBatchMap[String(row['検索キー']||'')] || row['承認状態']||'未申請') : '';
           // 承認完了・申請中・主任承認済は除外、未記入・差し戻しのみ追加
           if(!row || rowSt==='差し戻し') pastMissing.push(dt);
 
@@ -2194,8 +2208,9 @@ async function loadMyTasks() {
             String(r['対象年度']||'') === String(dispNendo) &&
             (r['園児名'] === c.name || r['氏名'] === c.name)
           );
-          const st = row ? (row['承認状態'] || '未申請') : '未作成';
-          if (st === '承認完了' || st === '承認済') return;
+          const st = resolvedSt(row, '未作成');
+          // 承認完了・振り返り系は完了扱い（個別・観察に振り返りはないが念のため）
+          if (DONE_STATUSES.includes(st) || st === '承認完了') return;
           pendingCount++;
           const shortName = (c.name||'').replace(/\s/g,'').slice(0,3);
           if (st === '未作成') {
@@ -2766,7 +2781,9 @@ function updateApprovalLabels(){
   Object.entries(typeMap).forEach(([prefix, type])=>{
     const role = map[type] || 'syunin';
     const isTokkatsu = role === 'tokkatsu';
-    const label = isTokkatsu ? '統括承認' : '主任承認';
+    // 日誌(ni)は「確認」、他の様式は「承認」
+    const suffix = (prefix === 'ni') ? '確認' : '承認';
+    const label = isTokkatsu ? ('統括' + suffix) : ('主任' + suffix);
     // ラベル更新
     const labelEl = document.getElementById(prefix+'_syunin_label');
     if(labelEl) labelEl.textContent = label;
@@ -6071,7 +6088,8 @@ function buildStyleHtml(type, d, nendo){
 
   if(type==='nisshi'){
     const head=HDR('日誌　'+V('クラス名')+'　'+V('対象日付'), '');
-    const body='<table style="width:100%;border-collapse:collapse;">'      +'<tr><th style="'+TH+'width:30%;">日付</th><td style="'+TD+'">'+E(V('対象日付'))+'</td></tr>'      +'<tr><th style="'+TH+'">クラス</th><td style="'+TD+'">'+E(V('クラス名'))+'</td></tr>'      +'<tr><th style="'+TH+'">記入者</th><td style="'+TD+'">'+E(V('記入者'))+'</td></tr>'      +'<tr><th style="'+TH+'">出席</th><td style="'+TD+'">'+E(V('出席数'))+'名</td></tr>'      +'<tr><th style="'+TH+'">欠席</th><td style="'+TD+'">'+E(V('欠席数'))+'名　'+E(V('欠席理由'))+'</td></tr>'      +'<tr><th style="'+TH+'">主任確認</th><td style="'+TD+'">'+E(V('主任確認'))+'</td></tr>'      +'</table>'      +'<table style="width:100%;border-collapse:collapse;margin-top:1px;">'      +ROW2W('保育内容',V('保育内容'))      +ROW2W('健康管理',V('健康管理'))      +ROW2W('特記事項',V('特記事項'))      +ROW2W('評価・反省',V('評価反省'))      +'</table>';
+    const _niApvLabel=(function(){const s=(MASTER.kihon&&MASTER.kihon['様式承認設定'])||'';const m={};s.split(',').forEach(function(x){const p=x.trim().split(':');if(p[0]&&p[1])m[p[0].trim()]=p[1].trim();});return(m['nisshi']||'syunin')==='tokkatsu'?'統括確認':'主任確認';})();
+    const body='<table style="width:100%;border-collapse:collapse;">'      +'<tr><th style="'+TH+'width:30%;">日付</th><td style="'+TD+'">'+E(V('対象日付'))+'</td></tr>'      +'<tr><th style="'+TH+'">クラス</th><td style="'+TD+'">'+E(V('クラス名'))+'</td></tr>'      +'<tr><th style="'+TH+'">記入者</th><td style="'+TD+'">'+E(V('記入者'))+'</td></tr>'      +'<tr><th style="'+TH+'">出席</th><td style="'+TD+'">'+E(V('出席数'))+'名</td></tr>'      +'<tr><th style="'+TH+'">欠席</th><td style="'+TD+'">'+E(V('欠席数'))+'名　'+E(V('欠席理由'))+'</td></tr>'      +'<tr><th style="'+TH+'">'+_niApvLabel+'</th><td style="'+TD+'">'+E(V('主任確認'))+'</td></tr>'      +'</table>'      +'<table style="width:100%;border-collapse:collapse;margin-top:1px;">'      +ROW2W('保育内容',V('保育内容'))      +ROW2W('健康管理',V('健康管理'))      +ROW2W('特記事項',V('特記事項'))      +ROW2W('評価・反省',V('評価反省'))      +'</table>';
     return WRAP(head,body);
   }
 
