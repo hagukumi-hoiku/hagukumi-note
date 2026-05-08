@@ -329,10 +329,19 @@ textarea.form-control.tall{min-height:120px;}
     <div class="card-body" id="myTaskArea">
       <div style="color:var(--text-light);font-size:13px;text-align:center;padding:20px;">ログイン後に読み込みます…</div>
     </div>
+  <!-- 管理者専用：未提出超過一覧（ON/OFF問わず表示、syunin/tokkatsu/encho/admin） -->
+  <div id="overdueAdminPanel" class="card" style="margin-top:16px;display:none;">
+    <div class="card-header" style="cursor:pointer;" onclick="toggleOverdueAdminPanel()">
+      <div class="icon" style="background:#fdecea;">⚠️</div>
+      未提出超過一覧
+      <span id="overdueAdminBadge" style="margin-left:8px;background:#c0392b;color:#fff;font-size:11px;font-weight:700;padding:2px 8px;border-radius:10px;"></span>
+      <span style="margin-left:auto;font-size:12px;color:var(--text-mid);" id="overdueAdminToggleLabel">▼ 開く</span>
+    </div>
+    <div id="overdueAdminBody" class="card-body" style="display:none;padding:10px 14px;">
+      <div id="overdueAdminList"></div>
+    </div>
   </div>
 </section>
-
-<section id="nensyuu" class="section">
   <div class="card">
     <div class="card-header"><div class="icon" style="background:#fff9e0;">📋</div>年間指導計画 入力</div>
     <div class="card-body">
@@ -1241,6 +1250,25 @@ textarea.form-control.tall{min-height:120px;}
       <div style="margin-top:8px;display:flex;gap:8px;align-items:center;">
         <button class="btn btn-primary" onclick="saveKyuenDates()">💾 休園日を保存</button>
         <span id="kyuenSaveResult" style="font-size:12px;color:var(--text-mid);"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 未提出アラート設定 -->
+  <div class="card" style="margin-top:16px;">
+    <div class="card-header"><div class="icon" style="background:#fff3e0;">🔔</div>未提出アラート設定</div>
+    <div class="card-body">
+      <div style="font-size:12px;color:#666;margin-bottom:14px;">
+        期限から2日超過した未申請書類がある場合に、ログイン時に赤いアラートを表示します。<br>
+        <strong>OFF</strong>にすると全スタッフへのアラートを停止します。
+      </div>
+      <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span style="font-size:14px;font-weight:600;color:var(--text-main);">未提出アラート表示：</span>
+          <button id="overdueAlertToggleBtn" onclick="toggleOverdueAlertSetting()"
+            style="min-width:80px;padding:7px 18px;border-radius:20px;border:none;font-size:14px;font-weight:700;cursor:pointer;transition:background .2s;"></button>
+        </div>
+        <span id="overdueAlertSaveResult" style="font-size:12px;color:var(--text-mid);"></span>
       </div>
     </div>
   </div>
@@ -2403,6 +2431,7 @@ async function loadMasterFromDB(){
       '期設定':kihon['期設定']||'',
       'kyuenDates':kihon['kyuenDates']||'',
       '振り返り期限設定':kihon['振り返り期限設定']||'',
+      'overdueAlertEnabled':kihon['overdueAlertEnabled'] !== undefined ? kihon['overdueAlertEnabled'] : 'true',
     };
 
     // 年度セレクトを初期化（getAvailableNendosで選択可能範囲を制限）
@@ -2974,6 +3003,31 @@ async function deleteExcelTmpFiles(){
     if(el)el.textContent='❌ 失敗';
   }
 }
+// 未提出アラートON/OFFボタン状態更新
+function _updateOverdueAlertToggleBtn(){
+  const btn = document.getElementById('overdueAlertToggleBtn');
+  if(!btn) return;
+  const isOn = !MASTER.kihon || MASTER.kihon['overdueAlertEnabled'] !== 'false';
+  btn.textContent = isOn ? '🔔 ON' : '🔕 OFF';
+  btn.style.background = isOn ? '#27ae60' : '#95a5a6';
+  btn.style.color = '#fff';
+}
+
+async function toggleOverdueAlertSetting(){
+  const isOn = !MASTER.kihon || MASTER.kihon['overdueAlertEnabled'] !== 'false';
+  const newVal = isOn ? 'false' : 'true';
+  const res = await gasPost({action:'saveMasterSetting', key:'overdueAlertEnabled', value:newVal});
+  const resultEl = document.getElementById('overdueAlertSaveResult');
+  if(res && res.ok){
+    MASTER.kihon['overdueAlertEnabled'] = newVal;
+    _updateOverdueAlertToggleBtn();
+    if(resultEl) resultEl.textContent = newVal === 'true' ? '✅ ONに変更しました' : '✅ OFFに変更しました';
+    setTimeout(()=>{ if(resultEl) resultEl.textContent=''; }, 3000);
+  } else {
+    if(resultEl) resultEl.textContent = '❌ 保存に失敗しました';
+  }
+}
+
 async function saveKyuenDates(){
   const val = (document.getElementById('kyuenDatesInput')?.value||'').trim();
   // 改行をカンマに変換して正規化
@@ -3722,6 +3776,8 @@ async function showMasterSection() {
   if (addBtn) {
     addBtn.style.display = (SESSION && ['admin','encho','syunin'].includes(SESSION.role)) ? 'inline-flex' : 'none';
   }
+  // 未提出アラートON/OFFボタンの状態を反映
+  _updateOverdueAlertToggleBtn();
 }
 
 // CSVドラッグ&ドロップ
@@ -5006,23 +5062,80 @@ async function markAllNotificationsRead(){
 }
 
 // ログイン時の期限超過アラート
+// アラートアイテム1件のHTMLを組み立てる（モーダル・管理者パネル共用）
+function _buildAlertItemHtml(a, compact){
+  const TXT = compact ? 'font-size:12px' : 'font-size:13px;font-weight:700;color:#333;';
+  const SUB = 'font-size:11px;color:#c0392b;margin-top:2px;';
+  const DET = 'font-size:11px;color:#555;margin-top:3px;';
+  let detail = '';
+  if(a.children && a.children.length > 0){
+    detail = '<div style="'+DET+'">👤 '+a.children.map(function(n){return esc(n);}).join('　')+'</div>';
+  } else if(a.dates && a.dates.length > 0){
+    detail = '<div style="'+DET+'">📅 '+a.dates.map(function(d){
+      const p=d.split('-'); return p[1]+'/'+p[2];
+    }).join('　')+'</div>';
+  } else if(a.weekStart){
+    const ws=a.weekStart.slice(5).replace('-','/');
+    detail = '<div style="'+DET+'">📅 週開始：'+ws+'〜</div>';
+  }
+  const bg = compact ? '#fff8f8' : '#fff5f5';
+  const border = compact ? '2px solid #e57373' : '3px solid #c0392b';
+  return '<div style="display:flex;align-items:flex-start;gap:8px;padding:8px 10px;margin-bottom:6px;background:'+bg+';border-radius:8px;border-left:'+border+';">'
+    +'<span style="font-size:'+(compact?'14px':'16px')+';flex-shrink:0;">📋</span>'
+    +'<div style="flex:1;min-width:0;">'
+    +'<div style="'+TXT+'">'+esc(a.label)+'</div>'
+    +(compact ? '' : '<div style="'+SUB+'">期限超過 — 至急申請してください</div>')
+    +detail
+    +'</div>'
+    +'</div>';
+}
+
+// 管理者パネル開閉トグル
+function toggleOverdueAdminPanel(){
+  const body = document.getElementById('overdueAdminBody');
+  const lbl  = document.getElementById('overdueAdminToggleLabel');
+  if(!body) return;
+  const isOpen = body.style.display !== 'none';
+  body.style.display = isOpen ? 'none' : 'block';
+  if(lbl) lbl.textContent = isOpen ? '▼ 開く' : '▲ 閉じる';
+}
+
 async function checkOverdueAlertOnLogin(){
-  if(!SESSION||!GAS_URL)return;
+  if(!SESSION||!GAS_URL) return;
+  const isAlertOn = !MASTER.kihon || MASTER.kihon['overdueAlertEnabled'] !== 'false';
+  const isSupervisor = SESSION && ['admin','encho','syunin','tokkatsu'].includes(SESSION.role);
+  // OFFかつ管理者でもなければ何もしない
+  if(!isAlertOn && !isSupervisor) return;
   try{
-    const res=await gasPost({action:'getOverdueAlert'});
-    if(!res||!res.ok||!res.alerts||res.alerts.length===0)return;
-    const listEl=document.getElementById('overdueAlertList');
-    if(!listEl)return;
-    listEl.innerHTML=res.alerts.map(function(a){
-      return '<div style="display:flex;align-items:flex-start;gap:8px;padding:8px 10px;margin-bottom:6px;background:#fff5f5;border-radius:8px;border-left:3px solid #c0392b;">'
-        +'<span style="font-size:16px;flex-shrink:0;">📋</span>'
-        +'<div><div style="font-size:13px;font-weight:700;color:#333;">'+esc(a.label)+'</div>'
-        +'<div style="font-size:11px;color:#c0392b;margin-top:2px;">期限超過 - 至急申請してください</div></div>'
-        +'</div>';
-    }).join('');
-    const modal=document.getElementById('overdueAlertModal');
-    if(modal)modal.style.display='flex';
-  }catch(e){console.warn('[overdueAlert]',e);}
+    const res = await gasPost({action:'getOverdueAlert'});
+    if(!res || !res.ok || !res.alerts) return;
+    const alerts = res.alerts;
+
+    // ── ① 全ユーザー向け：ON時はモーダル表示 ──
+    if(isAlertOn && alerts.length > 0){
+      const listEl = document.getElementById('overdueAlertList');
+      if(listEl) listEl.innerHTML = alerts.map(function(a){ return _buildAlertItemHtml(a, false); }).join('');
+      const modal = document.getElementById('overdueAlertModal');
+      if(modal) modal.style.display = 'flex';
+    }
+
+    // ── ② 管理者向け：ON/OFF問わずホームパネルに表示 ──
+    if(isSupervisor){
+      const panel  = document.getElementById('overdueAdminPanel');
+      const listEl = document.getElementById('overdueAdminList');
+      const badge  = document.getElementById('overdueAdminBadge');
+      if(!panel || !listEl) return;
+      if(alerts.length === 0){
+        // データなし時も折りたたみ表示
+        listEl.innerHTML = '<div style="color:var(--text-light);font-size:13px;padding:12px 0;">現在、期限超過の未提出書類はありません ✅</div>';
+        if(badge) badge.textContent = '';
+      } else {
+        listEl.innerHTML = alerts.map(function(a){ return _buildAlertItemHtml(a, true); }).join('');
+        if(badge) badge.textContent = alerts.length+'件';
+      }
+      panel.style.display = 'block';
+    }
+  }catch(e){ console.warn('[overdueAlert]', e); }
 }
 
 // 保存済みデータの存在確認・バナー表示
@@ -6159,7 +6272,7 @@ function buildStyleHtml(type, d, nendo){
           :'<tr><th style="'+TH+'">ねらい</th><td style="'+TD+'" colspan="2">'+E(V2('ねらい'))+'</td>'          +'<th style="'+TH+'">内容</th><td style="'+TD+'" colspan="2">'+E(V2('内容'))+'</td></tr>'          +'<tr><th style="'+TH+'">子どもの姿</th><td style="'+TD+'" colspan="2">'+E(V2('子どもの姿'))+'</td>'          +'<th style="'+TH+'">保育者の配慮</th><td style="'+TD+'" colspan="2">'+E(V2('保育者の配慮'))+'</td></tr>'          +'<tr><th style="'+TH+'">特記事項</th><td style="'+TD+'" colspan="2">'+E(V2('特記事項'))+'</td>'          +'<th style="'+TH+'">評価・反省</th><td style="'+TD+'" colspan="2">'+E(V2('評価反省'))+'</td></tr>'        );
     };
     const head=HDR('個別記録　'+koClsName+'　'+koDispName, koNendo+'年度 '+koMonRange+'期');
-    const body='<table style="width:100%;border-collapse:collapse;">'      +'<tr><th style="'+TH+'">クラス</th><td style="'+TD+'">'+E(koClsName)+'</td>'      +'<th style="'+TH+'">園児名</th><td style="'+TD+'font-weight:700;">'+E(koDispName)+'（'+E(koHira)+'）</td>'      +'<th style="'+TH+'">性別</th><td style="'+TD+'">'+E(V('性別'))+'</td></tr>'      +'<tr><th style="'+TH+'">年度</th><td style="'+TD+'">'+koNendo+'年度</td>'      +'<th style="'+TH+'">対象期間</th><td style="'+TD+'">'+koMonRange+'</td>'      +'<th style="'+TH+'">担任</th><td style="'+TD+'">'+E(V('担任'))+'</td></tr>'      +'<tr><th style="'+TH+'">生年月日</th><td style="'+TD+'">'+E(koBirth)+'</td>'      +'<th style="'+TH+'">主任承認</th><td style="'+TD+'">'+E(V('主任承認'))+'</td>'      +'<th style="'+TH+'">園長承認</th><td style="'+TD+'">'+E(V('園長承認'))+'</td></tr>'      +'</table>'      +'<table style="width:100%;border-collapse:collapse;margin-top:4px;">'      +koDisplayMonths.map(function(_,i){return koMonBlock(i);}).join('')      +'</table>';
+    const body='<table style="width:100%;border-collapse:collapse;">'      +'<tr><th style="'+TH+'">クラス</th><td style="'+TD+'">'+E(koClsName)+'</td>'      +'<th style="'+TH+'">園児名</th><td style="'+TD+'font-weight:700;">'+E(koDispName)+'（'+E(koHira)+'）</td>'      +'<th style="'+TH+'">性別</th><td style="'+TD+'">'+E(V('性別'))+'</td></tr>'      +'<tr><th style="'+TH+'">年度</th><td style="'+TD+'">'+koNendo+'年度</td>'      +'<th style="'+TH+'">対象期間</th><td style="'+TD+'">'+koMonRange+'</td>'      +'<th style="'+TH+'">担任</th><td style="'+TD+'">'+E(V('担任'))+'</td></tr>'      +'<tr><th style="'+TH+'">生年月日</th><td style="'+TD+'">'+E(koBirth)+'</td>'      +'<th style="'+TH+'">'+_getApvLabel('kobetsu')+'承認</th><td style="'+TD+'">'+E(V('主任承認'))+'</td>'      +'<th style="'+TH+'">園長承認</th><td style="'+TD+'">'+E(V('園長承認'))+'</td></tr>'      +'</table>'      +'<table style="width:100%;border-collapse:collapse;margin-top:4px;">'      +koDisplayMonths.map(function(_,i){return koMonBlock(i);}).join('')      +'</table>';
     return WRAP(head,body);
   }
 
@@ -6196,7 +6309,7 @@ function buildStyleHtml(type, d, nendo){
       +'<th style="'+TH+'">性別</th><td style="'+TD+'">'+E(V('性別'))+'</td></tr>'
       +'<tr><th style="'+TH+'">年度</th><td style="'+TD+'">'+kaNendo+'年度</td>'
       +'<th style="'+TH+'">担任</th><td style="'+TD+'">'+E(V('担任'))+'</td>'
-      +'<th style="'+TH+'">主任承認</th><td style="'+TD+'">'+E(V('主任承認'))+'</td></tr>'
+      +'<th style="'+TH+'">'+_getApvLabel('kansatsu')+'承認</th><td style="'+TD+'">'+E(V('主任承認'))+'</td></tr>'
       +'<tr><th style="'+TH+'">園長承認</th><td style="'+TD+'">'+E(V('園長承認'))+'</td>'
       +'<td colspan="4"></td></tr>'
       +'</table>'
