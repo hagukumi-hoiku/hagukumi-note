@@ -4598,6 +4598,19 @@ function updateApprovalBadge(prefix,status){
       rejectBox.style.display = 'none';
     }
   }
+  // ── 差し戻し時は問答無用で全フィールドを編集可能にする ──
+  // (SKIPパターンの有無に関わらず、以前の承認済みロックを確実に解除)
+  if(status === '差し戻し'){
+    sec.querySelectorAll('input,textarea,select').forEach(function(inp){
+      if(!inp.id) return;
+      if(ALWAYS_READONLY.includes(inp.id)) return; // 絶対readonly以外はすべて解除
+      inp.removeAttribute('readonly');
+      inp.style.background='';
+      inp.style.color='';
+      inp.title='';
+    });
+  }
+
   const sec=el.closest('section');
   if(!sec)return;
   // 申請中・承認系は全て本体申請ボタンをロック（振り返り中も含む）
@@ -5458,7 +5471,7 @@ async function loadRecord(prefix,key){
       });
       setTimeout(function(){ var _st=data['承認状態']||'未申請'; updateApprovalBadge(prefix,_st); },150);
       // 承認フローDBと照合して最新状態に補正
-      (function(_p,_k){const _tm={ns:'nensyuu',gu:'getsuan',su:'shuuan',ni:'nisshi',ko:'kobetsu',ka:'kansatsu'};const _fk=[];if(_p==='ns'){['1','2','3','4'].forEach(function(n){_fk.push(_k+'_furi_ki'+n);});_fk.push(_k+'_furi_nendo');}gasPost({action:'getApprovalBatch',keys:[{type:_tm[_p]||_p,key:_k,furiKeys:_fk}]}).then(function(br){if(!br||!br.ok||!br.statuses)return;const st=br.statuses[_k];if(st)updateApprovalBadge(_p,st);_fk.forEach(function(fk){const fst=br.statuses[fk];if(fst){let ki=null;if(fk.endsWith('_furi_nendo'))ki='nendo';else if(fk.includes('_furi_ki')){const m=fk.match(/_furi_ki(\d)/);if(m)ki=Number(m[1]);}updateFuriStatusBadge(_p,ki,fst);}});}).catch(function(){});})(prefix,key);
+      (function(_p,_k){const _tm={ns:'nensyuu',gu:'getsuan',su:'shuuan',ni:'nisshi',ko:'kobetsu',ka:'kansatsu'};const _fk=[];if(_p==='ns'){['1','2','3','4'].forEach(function(n){_fk.push(_k+'_furi_ki'+n);});_fk.push(_k+'_furi_nendo');}gasPost({action:'getApprovalBatch',keys:[{type:_tm[_p]||_p,key:_k,furiKeys:_fk}]}).then(function(br){if(!br||!br.ok||!br.statuses)return;if(br.rejectComments)Object.assign(apBatchComments,br.rejectComments);const st=br.statuses[_k];if(st)updateApprovalBadge(_p,st);_fk.forEach(function(fk){const fst=br.statuses[fk];if(fst){let ki=null;if(fk.endsWith('_furi_nendo'))ki='nendo';else if(fk.includes('_furi_ki')){const m=fk.match(/_furi_ki(\d)/);if(m)ki=Number(m[1]);}updateFuriStatusBadge(_p,ki,fst);}});}).catch(function(){});})(prefix,key);
       setTimeout(function(){ updateAllCounts(prefix); }, 150);
       showToast('📂 データを読み込みました');
       return;
@@ -5528,7 +5541,7 @@ async function loadRecord(prefix,key){
       }
       if(typeof updateKoMonthRange==='function') updateKoMonthRange();
       setTimeout(function(){ var _st=data['承認状態']||'未申請'; updateApprovalBadge(prefix,_st); },150);
-      (function(_p,_k){const _tm={ns:'nensyuu',gu:'getsuan',su:'shuuan',ni:'nisshi',ko:'kobetsu',ka:'kansatsu'};gasPost({action:'getApprovalBatch',keys:[{type:_tm[_p]||_p,key:_k,furiKeys:buildFuriKeys(_p,_k)}]}).then(function(br){if(!br||!br.ok||!br.statuses)return;const st=br.statuses[_k];if(st)updateApprovalBadge(_p,st);}).catch(function(){});})(prefix,key);
+      (function(_p,_k){const _tm={ns:'nensyuu',gu:'getsuan',su:'shuuan',ni:'nisshi',ko:'kobetsu',ka:'kansatsu'};gasPost({action:'getApprovalBatch',keys:[{type:_tm[_p]||_p,key:_k,furiKeys:buildFuriKeys(_p,_k)}]}).then(function(br){if(!br||!br.ok||!br.statuses)return;if(br.rejectComments)Object.assign(apBatchComments,br.rejectComments);const st=br.statuses[_k];if(st)updateApprovalBadge(_p,st);}).catch(function(){});})(prefix,key);
       setTimeout(function(){ updateAllCounts(prefix); }, 150);
       showToast('📂 データを読み込みました');
       return;
@@ -5574,7 +5587,7 @@ async function loadRecord(prefix,key){
         kaChildSel.value=kaChildName;
       }
       setTimeout(function(){ var _st=data['承認状態']||'未申請'; updateApprovalBadge(prefix,_st); },150);
-      (function(_p,_k){const _tm={ns:'nensyuu',gu:'getsuan',su:'shuuan',ni:'nisshi',ko:'kobetsu',ka:'kansatsu'};gasPost({action:'getApprovalBatch',keys:[{type:_tm[_p]||_p,key:_k,furiKeys:buildFuriKeys(_p,_k)}]}).then(function(br){if(!br||!br.ok||!br.statuses)return;const st=br.statuses[_k];if(st)updateApprovalBadge(_p,st);}).catch(function(){});})(prefix,key);
+      (function(_p,_k){const _tm={ns:'nensyuu',gu:'getsuan',su:'shuuan',ni:'nisshi',ko:'kobetsu',ka:'kansatsu'};gasPost({action:'getApprovalBatch',keys:[{type:_tm[_p]||_p,key:_k,furiKeys:buildFuriKeys(_p,_k)}]}).then(function(br){if(!br||!br.ok||!br.statuses)return;if(br.rejectComments)Object.assign(apBatchComments,br.rejectComments);const st=br.statuses[_k];if(st)updateApprovalBadge(_p,st);}).catch(function(){});})(prefix,key);
       setTimeout(function(){ updateAllCounts(prefix); }, 150);
       showToast('📂 データを読み込みました');
       return;
@@ -5601,6 +5614,8 @@ async function loadRecord(prefix,key){
     }
     gasPost({action:'getApprovalBatch',keys:[{type:_batchType,key:_batchKey,furiKeys:_furiKeys2}]}).then(function(br){
       if(!br||!br.ok||!br.statuses)return;
+      // 差し戻しコメントをキャッシュに反映（updateApprovalBadge より先に）
+      if(br.rejectComments) Object.assign(apBatchComments, br.rejectComments);
       const st=br.statuses[_batchKey];
       if(st) updateApprovalBadge(prefix,st);
       // 書類DBとズレていたら自動で書き戻し（本体ステータスのみ・振り返り系は除く）
@@ -5621,6 +5636,8 @@ async function loadRecord(prefix,key){
     }).catch(function(){});
     // 月案・週案の行事曜日を再計算
     if(prefix==='gu'||prefix==='su') setTimeout(function(){ recalcAllEvYoubi(prefix); }, 100);
+    // 日誌の曜日を日付から再計算（ロード後に正しい曜日を表示）
+    if(prefix==='ni') setTimeout(function(){ updateYoubi(); }, 50);
     // 全textareaの文字数カウンターを更新
     setTimeout(function(){ updateAllCounts(prefix); }, 150);
     // 参照パネル更新（loadRecord完了後に呼ぶことで前週データ等が上書きされるのを防ぐ）
