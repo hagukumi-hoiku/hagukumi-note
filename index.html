@@ -387,7 +387,7 @@ textarea.form-control.tall{min-height:120px;}
         <button class="btn btn-check" onclick="checkForm('ns',['ns_class','ns_mokuhyo'])">📊 入力チェック</button>
         <button class="btn btn-primary" onclick="saveForm('nensyuu','ns')">💾 スプレッドシートに保存</button>
           <button class="btn btn-check" onclick="applyApproval('nensyuu','ns','年間指導計画')">📤 申請する</button>
-          <span id="ns_approvalStatus" class="approval-badge ab-draft">未申請</span><input type="hidden" id="ns_currentKey" value="">
+          <span id="ns_approvalStatus" class="approval-badge ab-draft">未申請</span><div id="ns_rejectBox" style="display:none;width:100%;margin-top:6px;padding:8px 12px;background:#fff3f3;border-left:3px solid #c0392b;border-radius:6px;font-size:12px;color:#7b0000;"><strong>⚠️ 差し戻しコメント：</strong><span id="ns_rejectComment"></span></div><input type="hidden" id="ns_currentKey" value="">
         <button class="btn btn-secondary" onclick="clearForm('ns')">🗑️ クリア</button>
       </div>
       <div class="btn-row" id="ns_furi_nendo_area" style="margin-top:8px;border-top:1px dashed #ce93d8;padding-top:12px;">
@@ -496,7 +496,7 @@ textarea.form-control.tall{min-height:120px;}
         <button class="btn btn-check" onclick="checkForm('gu',['gu_class','gu_month','gu_seimei','gu_jyoucho','gu_kenko'])">📊 入力チェック</button>
         <button class="btn btn-primary" onclick="saveForm('getsuan','gu')">💾 スプレッドシートに保存</button>
           <button class="btn btn-check" onclick="applyApproval('getsuan','gu','月案')">📤 申請する</button>
-          <span id="gu_approvalStatus" class="approval-badge ab-draft">未申請</span><input type="hidden" id="gu_currentKey" value="">
+          <span id="gu_approvalStatus" class="approval-badge ab-draft">未申請</span><div id="gu_rejectBox" style="display:none;width:100%;margin-top:6px;padding:8px 12px;background:#fff3f3;border-left:3px solid #c0392b;border-radius:6px;font-size:12px;color:#7b0000;"><strong>⚠️ 差し戻しコメント：</strong><span id="gu_rejectComment"></span></div><input type="hidden" id="gu_currentKey" value="">
         <button class="btn btn-secondary" onclick="clearForm('gu')">🗑️ クリア</button>
       </div>
       <div class="btn-row" id="gu_furi_area" style="margin-top:8px;border-top:1px dashed #ce93d8;padding-top:12px;">
@@ -602,7 +602,7 @@ textarea.form-control.tall{min-height:120px;}
         <button class="btn btn-check" onclick="checkForm('su',['su_class','su_month','su_week','su_nerai'])">📊 入力チェック</button>
         <button class="btn btn-primary" onclick="saveForm('shuuan','su')">💾 スプレッドシートに保存</button>
           <button class="btn btn-check" onclick="applyApproval('shuuan','su','週案')">📤 申請する</button>
-          <span id="su_approvalStatus" class="approval-badge ab-draft">未申請</span><input type="hidden" id="su_currentKey" value="">
+          <span id="su_approvalStatus" class="approval-badge ab-draft">未申請</span><div id="su_rejectBox" style="display:none;width:100%;margin-top:6px;padding:8px 12px;background:#fff3f3;border-left:3px solid #c0392b;border-radius:6px;font-size:12px;color:#7b0000;"><strong>⚠️ 差し戻しコメント：</strong><span id="su_rejectComment"></span></div><input type="hidden" id="su_currentKey" value="">
         <button class="btn btn-secondary" onclick="clearForm('su')">🗑️ クリア</button>
       </div>
       <div class="btn-row" id="su_furi_area" style="margin-top:8px;border-top:1px dashed #ce93d8;padding-top:12px;">
@@ -679,7 +679,7 @@ textarea.form-control.tall{min-height:120px;}
         <button class="btn btn-check" onclick="checkForm('ni',['ni_date','ni_class','ni_kinyusha','ni_hoiku','ni_kenko','ni_hyouka'])">📊 入力チェック</button>
         <button class="btn btn-primary" onclick="saveForm('nisshi','ni')">💾 スプレッドシートに保存</button>
           <button class="btn btn-check" onclick="applyApproval('nisshi','ni','日誌')">📤 申請する</button>
-          <span id="ni_approvalStatus" class="approval-badge ab-draft">未申請</span><input type="hidden" id="ni_currentKey" value="">
+          <span id="ni_approvalStatus" class="approval-badge ab-draft">未申請</span><div id="ni_rejectBox" style="display:none;width:100%;margin-top:6px;padding:8px 12px;background:#fff3f3;border-left:3px solid #c0392b;border-radius:6px;font-size:12px;color:#7b0000;"><strong>⚠️ 差し戻しコメント：</strong><span id="ni_rejectComment"></span></div><input type="hidden" id="ni_currentKey" value="">
         <button class="btn btn-secondary" onclick="clearForm('ni')">🗑️ クリア</button>
       </div>
     </div>
@@ -741,7 +741,7 @@ textarea.form-control.tall{min-height:120px;}
         <button class="btn btn-check" onclick="checkForm('ko',['ko_class','ko_month','ko_child','ko_nerai','ko_naiyou'])">📊 入力チェック</button>
         <button class="btn btn-primary" onclick="saveForm('kobetsu','ko')">💾 スプレッドシートに保存</button>
           <button class="btn btn-check" onclick="applyApproval('kobetsu','ko','個別記録')">📤 申請する</button>
-          <span id="ko_approvalStatus" class="approval-badge ab-draft">未申請</span><input type="hidden" id="ko_currentKey" value="">
+          <span id="ko_approvalStatus" class="approval-badge ab-draft">未申請</span><div id="ko_rejectBox" style="display:none;width:100%;margin-top:6px;padding:8px 12px;background:#fff3f3;border-left:3px solid #c0392b;border-radius:6px;font-size:12px;color:#7b0000;"><strong>⚠️ 差し戻しコメント：</strong><span id="ko_rejectComment"></span></div><input type="hidden" id="ko_currentKey" value="">
         <button class="btn btn-secondary" onclick="clearForm('ko')">🗑️ クリア</button>
       </div>
     </div>
@@ -796,7 +796,7 @@ textarea.form-control.tall{min-height:120px;}
         <button class="btn btn-check" onclick="checkForm('ka',['ka_class','ka_month','ka_child','ka_kiroku'])">📊 入力チェック</button>
         <button class="btn btn-primary" onclick="saveForm('kansatsu','ka')">💾 スプレッドシートに保存</button>
           <button class="btn btn-check" onclick="applyApproval('kansatsu','ka','観察記録')">📤 申請する</button>
-          <span id="ka_approvalStatus" class="approval-badge ab-draft">未申請</span><input type="hidden" id="ka_currentKey" value="">
+          <span id="ka_approvalStatus" class="approval-badge ab-draft">未申請</span><div id="ka_rejectBox" style="display:none;width:100%;margin-top:6px;padding:8px 12px;background:#fff3f3;border-left:3px solid #c0392b;border-radius:6px;font-size:12px;color:#7b0000;"><strong>⚠️ 差し戻しコメント：</strong><span id="ka_rejectComment"></span></div><input type="hidden" id="ka_currentKey" value="">
         <button class="btn btn-secondary" onclick="clearForm('ka')">🗑️ クリア</button>
       </div>
     </div>
@@ -1832,6 +1832,7 @@ async function loadMyTasks() {
     // 承認フローDBとの乖離を補正（書類DBが古いステータスのまま残っていても正しく判定）
     // 全書類の検索キーをまとめてgetApprovalBatchで一括取得（振り返りキーも含める）
     let apBatchMap = {};
+let apBatchComments = {}; // 差し戻しコメント { key: comment }
     try {
       const batchKeys = [];
 
@@ -1872,7 +1873,10 @@ async function loadMyTasks() {
 
       if (batchKeys.length) {
         const bRes = await gasPost({action:'getApprovalBatch', keys: batchKeys});
-        if (bRes && bRes.ok && bRes.statuses) apBatchMap = bRes.statuses;
+        if (bRes && bRes.ok && bRes.statuses) {
+          apBatchMap = bRes.statuses;
+          if (bRes.rejectComments) Object.assign(apBatchComments, bRes.rejectComments);
+        }
       }
     } catch(e) {}
 
@@ -2357,6 +2361,7 @@ async function refreshApprovalStatuses() {
     if (!keys.length) return;
     const res = await gasPost({ action: 'getApprovalBatch', keys });
     if (!res || !res.ok || !res.statuses) return;
+    if (res.rejectComments) Object.assign(apBatchComments, res.rejectComments);
     // バッジ更新
     Object.keys(DB_CFGS).forEach(function(prefix) {
       const keyEl = document.getElementById(prefix + '_currentKey');
@@ -2364,6 +2369,7 @@ async function refreshApprovalStatuses() {
       if (!currentKey) return;
       const st = res.statuses[currentKey];
       if (st) updateApprovalBadge(prefix, st);
+      if (bRes.rejectComments) Object.assign(apBatchComments, bRes.rejectComments);
       // 振り返りバッジも更新
       if (['ns','gu','su'].includes(prefix)) {
         const furiKeys = prefix === 'ns'
@@ -3843,7 +3849,7 @@ async function importChildrenCsvFile(file) {
 
   let text = await readFile('UTF-8');
   if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
-  if (text.includes(' ')) text = await readFile('Shift-JIS');
+  if (text.includes('�')) text = await readFile('Shift-JIS');
 
   function parseCsvLine(line) {
     const result = []; let cur = '', inQ = false;
@@ -4573,6 +4579,25 @@ function updateApprovalBadge(prefix,status){
   if(!el)return;
   const s=APPROVAL_STATUS[status]||{cls:'ab-draft',label:status};
   el.className='approval-badge '+s.cls;el.textContent=s.label;
+
+  // 差し戻しコメント表示（差し戻し状態のときのみ表示）
+  const rejectBox = document.getElementById(prefix+'_rejectBox');
+  const rejectCmt = document.getElementById(prefix+'_rejectComment');
+  if(rejectBox){
+    if(status === '差し戻し'){
+      const keyEl = document.getElementById(prefix+'_currentKey');
+      const currentKey = keyEl ? keyEl.value : '';
+      const comment = (currentKey && apBatchComments[currentKey]) || '';
+      if(comment){
+        if(rejectCmt) rejectCmt.textContent = comment;
+        rejectBox.style.display = 'block';
+      } else {
+        rejectBox.style.display = 'none';
+      }
+    } else {
+      rejectBox.style.display = 'none';
+    }
+  }
   const sec=el.closest('section');
   if(!sec)return;
   // 申請中・承認系は全て本体申請ボタンをロック（振り返り中も含む）
