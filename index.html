@@ -1777,16 +1777,20 @@ async function loadMyTasks() {
   if (adminRoles.includes(SESSION.role)) {
     targetClasses = MASTER.classes; // 管理者系は全クラス表示
   } else {
-    // 担任クラスで絞る（tanninClass優先、次にroleをクラス名として解釈）
-    const tanninStr = SESSION.tanninClass || SESSION.role || '';
+    // 担任クラスで絞る（tanninClassのみを使用。roleはクラス名と無関係）
+    const tanninStr = SESSION.tanninClass || '';
     const myClassNames = tanninStr.split(/[,、]/).map(s => s.trim()).filter(Boolean);
-    targetClasses = MASTER.classes.filter(c => myClassNames.includes(c.name));
-    // tanninClassが未設定の場合は担任列から自分の名前で検索
+    const normCls = s => String(s||'').trim().replace(/[\s\u3000]/g,'');
+    targetClasses = MASTER.classes.filter(c => myClassNames.some(n => normCls(n) === normCls(c.name)));
+    // tanninClassが未設定の場合はマスタ_クラスの担任列から自分の名前で検索
     if (targetClasses.length === 0) {
-      const myName = SESSION.staffName || SESSION.username;
-      targetClasses = MASTER.classes.filter(c => (c.tanin||[]).includes(myName));
+      const myName = (SESSION.staffName || SESSION.username || '').trim();
+      targetClasses = MASTER.classes.filter(c =>
+        (c.tanin||[]).some(t => String(t).trim() === myName)
+      );
     }
-    if (targetClasses.length === 0) targetClasses = MASTER.classes; // 最終フォールバック
+    // それでも見つからない場合は空（全クラス表示しない）
+    // → タスクなしと表示される（誤って他クラスのタスクを見せない）
   }
 
   // 月セレクト初期化（初回のみ）
@@ -4589,19 +4593,31 @@ function updateApprovalBadge(prefix,status){
   const s=APPROVAL_STATUS[status]||{cls:'ab-draft',label:status};
   el.className='approval-badge '+s.cls;el.textContent=s.label;
 
-  // 差し戻しコメント表示（差し戻し状態のときのみ表示）
+  // ── 差し戻しコメント表示 ──
   const rejectBox = document.getElementById(prefix+'_rejectBox');
   const rejectCmt = document.getElementById(prefix+'_rejectComment');
   if(rejectBox){
     if(status === '差し戻し'){
       const keyEl = document.getElementById(prefix+'_currentKey');
       const currentKey = keyEl ? keyEl.value : '';
-      const comment = (currentKey && apBatchComments[currentKey]) || '';
-      if(comment){
-        if(rejectCmt) rejectCmt.textContent = comment;
-        rejectBox.style.display = 'block';
-      } else {
-        rejectBox.style.display = 'none';
+      if(!currentKey){ rejectBox.style.display='none'; }
+      else{
+        const cached = apBatchComments[currentKey];
+        if(cached){
+          // キャッシュあり → すぐ表示
+          if(rejectCmt) rejectCmt.textContent = cached;
+          rejectBox.style.display = 'block';
+        } else {
+          // キャッシュなし → GASに直接問い合わせ（adminが他クラスを見る場合など）
+          rejectBox.style.display = 'none';
+          gasPost({action:'getRejectComment', key:currentKey}).then(function(r){
+            if(r && r.ok && r.comment){
+              apBatchComments[currentKey] = r.comment;
+              if(rejectCmt) rejectCmt.textContent = r.comment;
+              rejectBox.style.display = 'block';
+            }
+          }).catch(function(){});
+        }
       }
     } else {
       rejectBox.style.display = 'none';
