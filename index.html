@@ -387,8 +387,10 @@ textarea.form-control.tall{min-height:120px;}
         <button class="btn btn-check" onclick="checkForm('ns',['ns_class','ns_mokuhyo'])">📊 入力チェック</button>
         <button class="btn btn-primary" onclick="saveForm('nensyuu','ns')">💾 スプレッドシートに保存</button>
           <button class="btn btn-check" onclick="applyApproval('nensyuu','ns','年間指導計画')">📤 申請する</button>
-          <span id="ns_approvalStatus" class="approval-badge ab-draft">未申請</span><div id="ns_rejectBox" style="display:none;width:100%;margin-top:6px;padding:8px 12px;background:#fff3f3;border-left:3px solid #c0392b;border-radius:6px;font-size:12px;color:#7b0000;"><strong>⚠️ 差し戻しコメント：</strong><span id="ns_rejectComment"></span></div><input type="hidden" id="ns_currentKey" value="">
+          <span id="ns_approvalStatus" class="approval-badge ab-draft">未申請</span><input type="hidden" id="ns_currentKey" value="">
         <button class="btn btn-secondary" onclick="clearForm('ns')">🗑️ クリア</button>
+
+      <div id="ns_rejectBox" style="display:none;margin:4px 0 8px;padding:10px 14px;background:#fff0f0;border-left:4px solid #c0392b;border-radius:8px;font-size:13px;color:#7b0000;line-height:1.6;"><strong>⚠️ 差し戻しコメント：</strong><br><span id="ns_rejectComment" style="white-space:pre-wrap;"></span></div>
       </div>
       <div class="btn-row" id="ns_furi_nendo_area" style="margin-top:8px;border-top:1px dashed #ce93d8;padding-top:12px;">
         <span style="font-size:12px;color:#6a1b9a;font-weight:600;">📝 年度末振り返り</span>
@@ -496,8 +498,10 @@ textarea.form-control.tall{min-height:120px;}
         <button class="btn btn-check" onclick="checkForm('gu',['gu_class','gu_month','gu_seimei','gu_jyoucho','gu_kenko'])">📊 入力チェック</button>
         <button class="btn btn-primary" onclick="saveForm('getsuan','gu')">💾 スプレッドシートに保存</button>
           <button class="btn btn-check" onclick="applyApproval('getsuan','gu','月案')">📤 申請する</button>
-          <span id="gu_approvalStatus" class="approval-badge ab-draft">未申請</span><div id="gu_rejectBox" style="display:none;width:100%;margin-top:6px;padding:8px 12px;background:#fff3f3;border-left:3px solid #c0392b;border-radius:6px;font-size:12px;color:#7b0000;"><strong>⚠️ 差し戻しコメント：</strong><span id="gu_rejectComment"></span></div><input type="hidden" id="gu_currentKey" value="">
+          <span id="gu_approvalStatus" class="approval-badge ab-draft">未申請</span><input type="hidden" id="gu_currentKey" value="">
         <button class="btn btn-secondary" onclick="clearForm('gu')">🗑️ クリア</button>
+
+      <div id="gu_rejectBox" style="display:none;margin:4px 0 8px;padding:10px 14px;background:#fff0f0;border-left:4px solid #c0392b;border-radius:8px;font-size:13px;color:#7b0000;line-height:1.6;"><strong>⚠️ 差し戻しコメント：</strong><br><span id="gu_rejectComment" style="white-space:pre-wrap;"></span></div>
       </div>
       <div class="btn-row" id="gu_furi_area" style="margin-top:8px;border-top:1px dashed #ce93d8;padding-top:12px;">
         <span style="font-size:12px;color:#6a1b9a;font-weight:600;">📝 月振り返り</span>
@@ -602,8 +606,10 @@ textarea.form-control.tall{min-height:120px;}
         <button class="btn btn-check" onclick="checkForm('su',['su_class','su_month','su_week','su_nerai'])">📊 入力チェック</button>
         <button class="btn btn-primary" onclick="saveForm('shuuan','su')">💾 スプレッドシートに保存</button>
           <button class="btn btn-check" onclick="applyApproval('shuuan','su','週案')">📤 申請する</button>
-          <span id="su_approvalStatus" class="approval-badge ab-draft">未申請</span><div id="su_rejectBox" style="display:none;width:100%;margin-top:6px;padding:8px 12px;background:#fff3f3;border-left:3px solid #c0392b;border-radius:6px;font-size:12px;color:#7b0000;"><strong>⚠️ 差し戻しコメント：</strong><span id="su_rejectComment"></span></div><input type="hidden" id="su_currentKey" value="">
+          <span id="su_approvalStatus" class="approval-badge ab-draft">未申請</span><input type="hidden" id="su_currentKey" value="">
         <button class="btn btn-secondary" onclick="clearForm('su')">🗑️ クリア</button>
+
+      <div id="su_rejectBox" style="display:none;margin:4px 0 8px;padding:10px 14px;background:#fff0f0;border-left:4px solid #c0392b;border-radius:8px;font-size:13px;color:#7b0000;line-height:1.6;"><strong>⚠️ 差し戻しコメント：</strong><br><span id="su_rejectComment" style="white-space:pre-wrap;"></span></div>
       </div>
       <div class="btn-row" id="su_furi_area" style="margin-top:8px;border-top:1px dashed #ce93d8;padding-top:12px;">
         <span style="font-size:12px;color:#6a1b9a;font-weight:600;">📝 週振り返り</span>
@@ -679,9 +685,10 @@ textarea.form-control.tall{min-height:120px;}
         <button class="btn btn-check" onclick="checkForm('ni',['ni_date','ni_class','ni_kinyusha','ni_hoiku','ni_kenko','ni_hyouka'])">📊 入力チェック</button>
         <button class="btn btn-primary" onclick="saveForm('nisshi','ni')">💾 スプレッドシートに保存</button>
           <button class="btn btn-check" onclick="applyApproval('nisshi','ni','日誌')">📤 申請する</button>
-          <span id="ni_approvalStatus" class="approval-badge ab-draft">未申請</span><div id="ni_rejectBox" style="display:none;width:100%;margin-top:6px;padding:8px 12px;background:#fff3f3;border-left:3px solid #c0392b;border-radius:6px;font-size:12px;color:#7b0000;"><strong>⚠️ 差し戻しコメント：</strong><span id="ni_rejectComment"></span></div><input type="hidden" id="ni_currentKey" value="">
+          <span id="ni_approvalStatus" class="approval-badge ab-draft">未申請</span><input type="hidden" id="ni_currentKey" value="">
         <button class="btn btn-secondary" onclick="clearForm('ni')">🗑️ クリア</button>
       </div>
+      <div id="ni_rejectBox" style="display:none;margin:4px 0 8px;padding:10px 14px;background:#fff0f0;border-left:4px solid #c0392b;border-radius:8px;font-size:13px;color:#7b0000;line-height:1.6;"><strong>⚠️ 差し戻しコメント：</strong><br><span id="ni_rejectComment" style="white-space:pre-wrap;"></span></div>
     </div>
   </div>
 </section>
@@ -741,9 +748,10 @@ textarea.form-control.tall{min-height:120px;}
         <button class="btn btn-check" onclick="checkForm('ko',['ko_class','ko_month','ko_child','ko_nerai','ko_naiyou'])">📊 入力チェック</button>
         <button class="btn btn-primary" onclick="saveForm('kobetsu','ko')">💾 スプレッドシートに保存</button>
           <button class="btn btn-check" onclick="applyApproval('kobetsu','ko','個別記録')">📤 申請する</button>
-          <span id="ko_approvalStatus" class="approval-badge ab-draft">未申請</span><div id="ko_rejectBox" style="display:none;width:100%;margin-top:6px;padding:8px 12px;background:#fff3f3;border-left:3px solid #c0392b;border-radius:6px;font-size:12px;color:#7b0000;"><strong>⚠️ 差し戻しコメント：</strong><span id="ko_rejectComment"></span></div><input type="hidden" id="ko_currentKey" value="">
+          <span id="ko_approvalStatus" class="approval-badge ab-draft">未申請</span><input type="hidden" id="ko_currentKey" value="">
         <button class="btn btn-secondary" onclick="clearForm('ko')">🗑️ クリア</button>
       </div>
+      <div id="ko_rejectBox" style="display:none;margin:4px 0 8px;padding:10px 14px;background:#fff0f0;border-left:4px solid #c0392b;border-radius:8px;font-size:13px;color:#7b0000;line-height:1.6;"><strong>⚠️ 差し戻しコメント：</strong><br><span id="ko_rejectComment" style="white-space:pre-wrap;"></span></div>
     </div>
   </div>
 </section>
@@ -796,9 +804,10 @@ textarea.form-control.tall{min-height:120px;}
         <button class="btn btn-check" onclick="checkForm('ka',['ka_class','ka_month','ka_child','ka_kiroku'])">📊 入力チェック</button>
         <button class="btn btn-primary" onclick="saveForm('kansatsu','ka')">💾 スプレッドシートに保存</button>
           <button class="btn btn-check" onclick="applyApproval('kansatsu','ka','観察記録')">📤 申請する</button>
-          <span id="ka_approvalStatus" class="approval-badge ab-draft">未申請</span><div id="ka_rejectBox" style="display:none;width:100%;margin-top:6px;padding:8px 12px;background:#fff3f3;border-left:3px solid #c0392b;border-radius:6px;font-size:12px;color:#7b0000;"><strong>⚠️ 差し戻しコメント：</strong><span id="ka_rejectComment"></span></div><input type="hidden" id="ka_currentKey" value="">
+          <span id="ka_approvalStatus" class="approval-badge ab-draft">未申請</span><input type="hidden" id="ka_currentKey" value="">
         <button class="btn btn-secondary" onclick="clearForm('ka')">🗑️ クリア</button>
       </div>
+      <div id="ka_rejectBox" style="display:none;margin:4px 0 8px;padding:10px 14px;background:#fff0f0;border-left:4px solid #c0392b;border-radius:8px;font-size:13px;color:#7b0000;line-height:1.6;"><strong>⚠️ 差し戻しコメント：</strong><br><span id="ka_rejectComment" style="white-space:pre-wrap;"></span></div>
     </div>
   </div>
 </section>
