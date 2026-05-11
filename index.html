@@ -1778,25 +1778,27 @@ async function loadMyTasks() {
   // 権限でクラスを決定
   // admin/encho/syunin → 全クラス
   // クラス名（例：とら、とら,ぱんだ） → 該当クラスのみ
-  const adminRoles = ['admin','encho','syunin','tokkatsu','管理者','園長','主任','統括'];
+  const adminRoles = ['admin','encho','syunin','tokkatsu'];
+  // ※ 日本語ロール名（'主任','統括'等）はここでは判定しない。GASで必ず英字roleを返すこと
   let targetClasses;
   if (adminRoles.includes(SESSION.role)) {
     targetClasses = MASTER.classes; // 管理者系は全クラス表示
   } else {
-    // 担任クラスで絞る（tanninClassのみを使用。roleはクラス名と無関係）
-    const tanninStr = SESSION.tanninClass || '';
-    const myClassNames = tanninStr.split(/[,、]/).map(s => s.trim()).filter(Boolean);
-    const normCls = s => String(s||'').trim().replace(/[\s\u3000]/g,'');
-    targetClasses = MASTER.classes.filter(c => myClassNames.some(n => normCls(n) === normCls(c.name)));
-    // tanninClassが未設定の場合はマスタ_クラスの担任列から自分の名前で検索
-    if (targetClasses.length === 0) {
-      const myName = (SESSION.staffName || SESSION.username || '').trim();
+    const tanninStr = (SESSION.tanninClass || '').trim();
+    if (!tanninStr) {
+      // 担任クラス未設定 → タスク非表示（他クラスを誤表示しない）
+      console.warn('[loadMyTasks] tanninClass未設定:', SESSION.username, SESSION.role);
+      targetClasses = [];
+    } else {
+      const myClassNames = tanninStr.split(/[,、]/).map(s => s.trim()).filter(Boolean);
+      const normCls = s => String(s||'').replace(/[\s\u3000]/g,'');
       targetClasses = MASTER.classes.filter(c =>
-        (c.tanin||[]).some(t => String(t).trim() === myName)
+        myClassNames.some(n => normCls(n) === normCls(c.name))
       );
+      if (targetClasses.length === 0) {
+        console.warn('[loadMyTasks] クラス名不一致:', myClassNames, MASTER.classes.map(c=>c.name));
+      }
     }
-    // それでも見つからない場合は空（全クラス表示しない）
-    // → タスクなしと表示される（誤って他クラスのタスクを見せない）
   }
 
   // 月セレクト初期化（初回のみ）
