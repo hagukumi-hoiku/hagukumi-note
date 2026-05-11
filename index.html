@@ -390,6 +390,7 @@ textarea.form-control.tall{min-height:120px;}
           <span id="ns_approvalStatus" class="approval-badge ab-draft">未申請</span><input type="hidden" id="ns_currentKey" value="">
         <button class="btn btn-secondary" onclick="clearForm('ns')">🗑️ クリア</button>
 
+      <div id="ns_prevRejectBox" style="display:none;margin:4px 0 8px;padding:10px 14px;background:#fff8e1;border-left:4px solid #f39c12;border-radius:8px;font-size:13px;color:#7d5a00;line-height:1.6;"><strong>📋 前回差し戻し理由（承認者確認用）：</strong><br><span id="ns_prevRejectComment" style="white-space:pre-wrap;"></span></div>
       <div id="ns_rejectBox" style="display:none;margin:4px 0 8px;padding:10px 14px;background:#fff0f0;border-left:4px solid #c0392b;border-radius:8px;font-size:13px;color:#7b0000;line-height:1.6;"><strong>⚠️ 差し戻しコメント：</strong><br><span id="ns_rejectComment" style="white-space:pre-wrap;"></span></div>
       </div>
       <div class="btn-row" id="ns_furi_nendo_area" style="margin-top:8px;border-top:1px dashed #ce93d8;padding-top:12px;">
@@ -501,6 +502,7 @@ textarea.form-control.tall{min-height:120px;}
           <span id="gu_approvalStatus" class="approval-badge ab-draft">未申請</span><input type="hidden" id="gu_currentKey" value="">
         <button class="btn btn-secondary" onclick="clearForm('gu')">🗑️ クリア</button>
 
+      <div id="gu_prevRejectBox" style="display:none;margin:4px 0 8px;padding:10px 14px;background:#fff8e1;border-left:4px solid #f39c12;border-radius:8px;font-size:13px;color:#7d5a00;line-height:1.6;"><strong>📋 前回差し戻し理由（承認者確認用）：</strong><br><span id="gu_prevRejectComment" style="white-space:pre-wrap;"></span></div>
       <div id="gu_rejectBox" style="display:none;margin:4px 0 8px;padding:10px 14px;background:#fff0f0;border-left:4px solid #c0392b;border-radius:8px;font-size:13px;color:#7b0000;line-height:1.6;"><strong>⚠️ 差し戻しコメント：</strong><br><span id="gu_rejectComment" style="white-space:pre-wrap;"></span></div>
       </div>
       <div class="btn-row" id="gu_furi_area" style="margin-top:8px;border-top:1px dashed #ce93d8;padding-top:12px;">
@@ -609,6 +611,7 @@ textarea.form-control.tall{min-height:120px;}
           <span id="su_approvalStatus" class="approval-badge ab-draft">未申請</span><input type="hidden" id="su_currentKey" value="">
         <button class="btn btn-secondary" onclick="clearForm('su')">🗑️ クリア</button>
 
+      <div id="su_prevRejectBox" style="display:none;margin:4px 0 8px;padding:10px 14px;background:#fff8e1;border-left:4px solid #f39c12;border-radius:8px;font-size:13px;color:#7d5a00;line-height:1.6;"><strong>📋 前回差し戻し理由（承認者確認用）：</strong><br><span id="su_prevRejectComment" style="white-space:pre-wrap;"></span></div>
       <div id="su_rejectBox" style="display:none;margin:4px 0 8px;padding:10px 14px;background:#fff0f0;border-left:4px solid #c0392b;border-radius:8px;font-size:13px;color:#7b0000;line-height:1.6;"><strong>⚠️ 差し戻しコメント：</strong><br><span id="su_rejectComment" style="white-space:pre-wrap;"></span></div>
       </div>
       <div class="btn-row" id="su_furi_area" style="margin-top:8px;border-top:1px dashed #ce93d8;padding-top:12px;">
@@ -688,6 +691,7 @@ textarea.form-control.tall{min-height:120px;}
           <span id="ni_approvalStatus" class="approval-badge ab-draft">未申請</span><input type="hidden" id="ni_currentKey" value="">
         <button class="btn btn-secondary" onclick="clearForm('ni')">🗑️ クリア</button>
       </div>
+      <div id="ni_prevRejectBox" style="display:none;margin:4px 0 8px;padding:10px 14px;background:#fff8e1;border-left:4px solid #f39c12;border-radius:8px;font-size:13px;color:#7d5a00;line-height:1.6;"><strong>📋 前回差し戻し理由（承認者確認用）：</strong><br><span id="ni_prevRejectComment" style="white-space:pre-wrap;"></span></div>
       <div id="ni_rejectBox" style="display:none;margin:4px 0 8px;padding:10px 14px;background:#fff0f0;border-left:4px solid #c0392b;border-radius:8px;font-size:13px;color:#7b0000;line-height:1.6;"><strong>⚠️ 差し戻しコメント：</strong><br><span id="ni_rejectComment" style="white-space:pre-wrap;"></span></div>
     </div>
   </div>
@@ -751,6 +755,7 @@ textarea.form-control.tall{min-height:120px;}
           <span id="ko_approvalStatus" class="approval-badge ab-draft">未申請</span><input type="hidden" id="ko_currentKey" value="">
         <button class="btn btn-secondary" onclick="clearForm('ko')">🗑️ クリア</button>
       </div>
+      <div id="ko_prevRejectBox" style="display:none;margin:4px 0 8px;padding:10px 14px;background:#fff8e1;border-left:4px solid #f39c12;border-radius:8px;font-size:13px;color:#7d5a00;line-height:1.6;"><strong>📋 前回差し戻し理由（承認者確認用）：</strong><br><span id="ko_prevRejectComment" style="white-space:pre-wrap;"></span></div>
       <div id="ko_rejectBox" style="display:none;margin:4px 0 8px;padding:10px 14px;background:#fff0f0;border-left:4px solid #c0392b;border-radius:8px;font-size:13px;color:#7b0000;line-height:1.6;"><strong>⚠️ 差し戻しコメント：</strong><br><span id="ko_rejectComment" style="white-space:pre-wrap;"></span></div>
     </div>
   </div>
@@ -807,6 +812,7 @@ textarea.form-control.tall{min-height:120px;}
           <span id="ka_approvalStatus" class="approval-badge ab-draft">未申請</span><input type="hidden" id="ka_currentKey" value="">
         <button class="btn btn-secondary" onclick="clearForm('ka')">🗑️ クリア</button>
       </div>
+      <div id="ka_prevRejectBox" style="display:none;margin:4px 0 8px;padding:10px 14px;background:#fff8e1;border-left:4px solid #f39c12;border-radius:8px;font-size:13px;color:#7d5a00;line-height:1.6;"><strong>📋 前回差し戻し理由（承認者確認用）：</strong><br><span id="ka_prevRejectComment" style="white-space:pre-wrap;"></span></div>
       <div id="ka_rejectBox" style="display:none;margin:4px 0 8px;padding:10px 14px;background:#fff0f0;border-left:4px solid #c0392b;border-radius:8px;font-size:13px;color:#7b0000;line-height:1.6;"><strong>⚠️ 差し戻しコメント：</strong><br><span id="ka_rejectComment" style="white-space:pre-wrap;"></span></div>
     </div>
   </div>
@@ -1845,7 +1851,8 @@ async function loadMyTasks() {
     // 承認フローDBとの乖離を補正（書類DBが古いステータスのまま残っていても正しく判定）
     // 全書類の検索キーをまとめてgetApprovalBatchで一括取得（振り返りキーも含める）
     let apBatchMap = {};
-let apBatchComments = {}; // 差し戻しコメント { key: comment }
+let apBatchComments = {};     // 差し戻しコメント { key: comment }
+let apBatchPrevComments = {}; // 再申請中の前回差し戻しコメント { key: comment }
     try {
       const batchKeys = [];
 
@@ -1889,6 +1896,7 @@ let apBatchComments = {}; // 差し戻しコメント { key: comment }
         if (bRes && bRes.ok && bRes.statuses) {
           apBatchMap = bRes.statuses;
           if (bRes.rejectComments) Object.assign(apBatchComments, bRes.rejectComments);
+if (bRes.prevRejectComments) Object.assign(apBatchPrevComments, bRes.prevRejectComments);
         }
       }
     } catch(e) {}
@@ -2375,6 +2383,7 @@ async function refreshApprovalStatuses() {
     const res = await gasPost({ action: 'getApprovalBatch', keys });
     if (!res || !res.ok || !res.statuses) return;
     if (res.rejectComments) Object.assign(apBatchComments, res.rejectComments);
+if (res.prevRejectComments) Object.assign(apBatchPrevComments, res.prevRejectComments);
     // バッジ更新
     Object.keys(DB_CFGS).forEach(function(prefix) {
       const keyEl = document.getElementById(prefix + '_currentKey');
@@ -2383,6 +2392,7 @@ async function refreshApprovalStatuses() {
       const st = res.statuses[currentKey];
       if (st) updateApprovalBadge(prefix, st);
       if (bRes.rejectComments) Object.assign(apBatchComments, bRes.rejectComments);
+if (bRes.prevRejectComments) Object.assign(apBatchPrevComments, bRes.prevRejectComments);
       // 振り返りバッジも更新
       if (['ns','gu','su'].includes(prefix)) {
         const furiKeys = prefix === 'ns'
@@ -3862,7 +3872,7 @@ async function importChildrenCsvFile(file) {
 
   let text = await readFile('UTF-8');
   if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
-  if (text.includes('�')) text = await readFile('Shift-JIS');
+  if (text.includes(' ')) text = await readFile('Shift-JIS');
 
   function parseCsvLine(line) {
     const result = []; let cur = '', inQ = false;
@@ -4525,6 +4535,26 @@ async function applyApproval(type,prefix,label){
   if(['gu','su','ns'].includes(prefix)){
     furiList = getFuriInfoList(prefix, key).filter(function(f){ return f.furiField.length > 0; });
   }
+  // ── 文字数制限チェック（maxlength超過の場合は申請不可） ──
+  const _secEl2 = document.getElementById(prefix+'_approvalStatus');
+  const _sec2 = _secEl2 ? _secEl2.closest('section') : null;
+  if(_sec2){
+    const _charErrors = [];
+    _sec2.querySelectorAll('textarea[maxlength],input[maxlength]').forEach(function(ta){
+      if(!ta.id || !ta.id.startsWith(prefix+'_')) return;
+      const lim = parseInt(ta.getAttribute('maxlength')||'0');
+      if(lim > 0 && ta.value.length > lim){
+        const fg = ta.closest('.form-group');
+        const lbl = fg ? (fg.querySelector('label')||{textContent:ta.id}).textContent.replace(/[*＊]/g,'').trim() : ta.id;
+        _charErrors.push(lbl+'（'+ta.value.length+'/'+lim+'文字）');
+      }
+    });
+    if(_charErrors.length > 0){
+      showToast('❌ 文字数制限を超えています：'+_charErrors.join('、'),'error');
+      return;
+    }
+  }
+
   var furiMsg = furiList.length > 0 ? '\n\n✅ 振り返りも入力されています。本体と同時に申請します。' : '';
   var _applyOk = await showConfirm('「'+docTitle+'」を申請します。\n申請と同時に自動保存されます。'+furiMsg, {icon:'📤',title:'申請の確認',ok:'申請する'});
   if(!_applyOk)return;
@@ -4587,48 +4617,83 @@ function buildFuriKeys(prefix, key) {
   return [];
 }
 
+// 差し戻しコメントを整形（コメントなし時は承認者名・役割を表示）
+function formatRejectComment(raw) {
+  if (!raw) return '差し戻し理由は承認者にご確認ください。';
+  // 新形式: コメントあり「【田中(主任)】理由テキスト」
+  // 新形式: コメントなし「（コメントなし）\n差し戻し理由は【田中(主任)】にご確認ください。」
+  // 旧形式: 「【田中】（コメントなし）」
+  if (raw.startsWith('（コメントなし）')) return raw; // 新形式コメントなし → そのまま表示
+  const m = raw.match(/^【([^】]+)】(.*)$/s);
+  if (!m) return raw;
+  const name = m[1].trim();
+  const reason = (m[2] || '').trim();
+  if (!reason || reason === '（コメントなし）') {
+    // 旧形式コメントなし → 名前を使ってメッセージ生成
+    return '（コメントなし）\n差し戻し理由は【' + name + '】にご確認ください。';
+  }
+  return raw; // コメントあり → そのまま表示
+}
+
+// 差し戻しコメントを整形（コメントなし時は承認者名指定メッセージに変換）
 function updateApprovalBadge(prefix,status){
   const el=document.getElementById(prefix+'_approvalStatus');
   if(!el)return;
   const s=APPROVAL_STATUS[status]||{cls:'ab-draft',label:status};
   el.className='approval-badge '+s.cls;el.textContent=s.label;
 
+  // sec は最初に取得（これ以降で参照するため必ずここで宣言）
+  const sec=el.closest('section');
+
   // ── 差し戻しコメント表示 ──
   const rejectBox = document.getElementById(prefix+'_rejectBox');
   const rejectCmt = document.getElementById(prefix+'_rejectComment');
   if(rejectBox){
-    if(status === '差し戻し'){
-      const keyEl = document.getElementById(prefix+'_currentKey');
-      const currentKey = keyEl ? keyEl.value : '';
-      if(!currentKey){ rejectBox.style.display='none'; }
-      else{
-        const cached = apBatchComments[currentKey];
-        if(cached){
-          // キャッシュあり → すぐ表示
-          if(rejectCmt) rejectCmt.textContent = cached;
+    const keyEl = document.getElementById(prefix+'_currentKey');
+    const currentKey = keyEl ? keyEl.value : '';
+    if(status === '差し戻し' && currentKey){
+      // まずキャッシュ確認
+      const cached = apBatchComments[currentKey];
+      if(cached){
+        if(rejectCmt) rejectCmt.textContent = formatRejectComment(cached);
+        rejectBox.style.display = 'block';
+      } else {
+        // GASから直接取得（admin他クラス閲覧・タイミングズレ対応）
+        rejectBox.style.display = 'none';
+        gasPost({action:'getRejectComment', key:currentKey}).then(function(r){
+          const cmt = (r && r.ok && r.comment) ? r.comment : '';
+          apBatchComments[currentKey] = cmt;
+          if(rejectCmt) rejectCmt.textContent = formatRejectComment(cmt);
           rejectBox.style.display = 'block';
-        } else {
-          // キャッシュなし → GASに直接問い合わせ（adminが他クラスを見る場合など）
-          rejectBox.style.display = 'none';
-          gasPost({action:'getRejectComment', key:currentKey}).then(function(r){
-            if(r && r.ok && r.comment){
-              apBatchComments[currentKey] = r.comment;
-              if(rejectCmt) rejectCmt.textContent = r.comment;
-              rejectBox.style.display = 'block';
-            }
-          }).catch(function(){});
-        }
+        }).catch(function(){
+          if(rejectCmt) rejectCmt.textContent = '差し戻し理由は承認者にご確認ください。';
+          rejectBox.style.display = 'block';
+        });
       }
     } else {
       rejectBox.style.display = 'none';
     }
   }
-  // ── 差し戻し時は問答無用で全フィールドを編集可能にする ──
-  // (SKIPパターンの有無に関わらず、以前の承認済みロックを確実に解除)
-  if(status === '差し戻し'){
+
+  // ── 前回差し戻しコメント表示（承認者向け：申請中で履歴あり） ──
+  const prevBox = document.getElementById(prefix+'_prevRejectBox');
+  if(prevBox){
+    const keyEl2 = document.getElementById(prefix+'_currentKey');
+    const ck2 = keyEl2 ? keyEl2.value : '';
+    if(status === '申請中' && ck2 && apBatchPrevComments[ck2]){
+      const prevCmt = document.getElementById(prefix+'_prevRejectComment');
+      if(prevCmt) prevCmt.textContent = apBatchPrevComments[ck2];
+      prevBox.style.display = 'block';
+    } else {
+      prevBox.style.display = 'none';
+    }
+  }
+
+  // ── 差し戻し時は全フィールドを強制解除（SKIPパターン含む） ──
+  if(status === '差し戻し' && sec){
     sec.querySelectorAll('input,textarea,select').forEach(function(inp){
       if(!inp.id) return;
-      if(ALWAYS_READONLY.includes(inp.id)) return; // 絶対readonly以外はすべて解除
+      if(ALWAYS_READONLY.includes(inp.id)) return;
       inp.removeAttribute('readonly');
       inp.style.background='';
       inp.style.color='';
@@ -4636,7 +4701,6 @@ function updateApprovalBadge(prefix,status){
     });
   }
 
-  const sec=el.closest('section');
   if(!sec)return;
   // 申請中・承認系は全て本体申請ボタンをロック（振り返り中も含む）
   const locked=['申請中','主任承認済','承認完了','振り返り申請中','振り返り主任承認済','振り返り承認完了'].includes(status);
@@ -5496,7 +5560,7 @@ async function loadRecord(prefix,key){
       });
       setTimeout(function(){ var _st=data['承認状態']||'未申請'; updateApprovalBadge(prefix,_st); },150);
       // 承認フローDBと照合して最新状態に補正
-      (function(_p,_k){const _tm={ns:'nensyuu',gu:'getsuan',su:'shuuan',ni:'nisshi',ko:'kobetsu',ka:'kansatsu'};const _fk=[];if(_p==='ns'){['1','2','3','4'].forEach(function(n){_fk.push(_k+'_furi_ki'+n);});_fk.push(_k+'_furi_nendo');}gasPost({action:'getApprovalBatch',keys:[{type:_tm[_p]||_p,key:_k,furiKeys:_fk}]}).then(function(br){if(!br||!br.ok||!br.statuses)return;if(br.rejectComments)Object.assign(apBatchComments,br.rejectComments);const st=br.statuses[_k];if(st)updateApprovalBadge(_p,st);_fk.forEach(function(fk){const fst=br.statuses[fk];if(fst){let ki=null;if(fk.endsWith('_furi_nendo'))ki='nendo';else if(fk.includes('_furi_ki')){const m=fk.match(/_furi_ki(\d)/);if(m)ki=Number(m[1]);}updateFuriStatusBadge(_p,ki,fst);}});}).catch(function(){});})(prefix,key);
+      (function(_p,_k){const _tm={ns:'nensyuu',gu:'getsuan',su:'shuuan',ni:'nisshi',ko:'kobetsu',ka:'kansatsu'};const _fk=[];if(_p==='ns'){['1','2','3','4'].forEach(function(n){_fk.push(_k+'_furi_ki'+n);});_fk.push(_k+'_furi_nendo');}gasPost({action:'getApprovalBatch',keys:[{type:_tm[_p]||_p,key:_k,furiKeys:_fk}]}).then(function(br){if(!br||!br.ok||!br.statuses)return;if(br.rejectComments)Object.assign(apBatchComments,br.rejectComments);if(br.prevRejectComments)Object.assign(apBatchPrevComments,br.prevRejectComments);const st=br.statuses[_k];if(st)updateApprovalBadge(_p,st);_fk.forEach(function(fk){const fst=br.statuses[fk];if(fst){let ki=null;if(fk.endsWith('_furi_nendo'))ki='nendo';else if(fk.includes('_furi_ki')){const m=fk.match(/_furi_ki(\d)/);if(m)ki=Number(m[1]);}updateFuriStatusBadge(_p,ki,fst);}});}).catch(function(){});})(prefix,key);
       setTimeout(function(){ updateAllCounts(prefix); }, 150);
       showToast('📂 データを読み込みました');
       return;
@@ -5641,6 +5705,7 @@ async function loadRecord(prefix,key){
       if(!br||!br.ok||!br.statuses)return;
       // 差し戻しコメントをキャッシュに反映（updateApprovalBadge より先に）
       if(br.rejectComments) Object.assign(apBatchComments, br.rejectComments);
+      if(br.prevRejectComments) Object.assign(apBatchPrevComments, br.prevRejectComments);
       const st=br.statuses[_batchKey];
       if(st) updateApprovalBadge(prefix,st);
       // 書類DBとズレていたら自動で書き戻し（本体ステータスのみ・振り返り系は除く）
