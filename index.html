@@ -4622,22 +4622,24 @@ function buildFuriKeys(prefix, key) {
   return [];
 }
 
-// 差し戻しコメントを整形（コメントなし時は承認者名・役割を表示）
+// 差し戻しコメントを整形（役職名で表示）
 function formatRejectComment(raw) {
   if (!raw) return '差し戻し理由は承認者にご確認ください。';
-  // 新形式: コメントあり「【田中(主任)】理由テキスト」
-  // 新形式: コメントなし「（コメントなし）\n差し戻し理由は【田中(主任)】にご確認ください。」
-  // 旧形式: 「【田中】（コメントなし）」
-  if (raw.startsWith('（コメントなし）')) return raw; // 新形式コメントなし → そのまま表示
+  // 新形式: 「（コメントなし）\n差し戻し理由は【主任】にご確認ください。」→ そのまま
+  if (raw.startsWith('（コメントなし）')) return raw;
+  // 新形式コメントあり: 「【主任】理由」→ そのまま
+  // 旧形式: 「【田中(主任)】コメント」→ 役職名だけ抽出して再フォーマット
   const m = raw.match(/^【([^】]+)】(.*)$/s);
   if (!m) return raw;
-  const name = m[1].trim();
+  const nameField = m[1].trim(); // 例: 「田中(主任)」or「主任」
   const reason = (m[2] || '').trim();
+  // 役職名を抽出（括弧内の役職名、または全体が役職名）
+  const roleMatch = nameField.match(/\(([^)]+)\)$/);
+  const role = roleMatch ? roleMatch[1] : nameField;
   if (!reason || reason === '（コメントなし）') {
-    // 旧形式コメントなし → 名前を使ってメッセージ生成
-    return '（コメントなし）\n差し戻し理由は【' + name + '】にご確認ください。';
+    return '（コメントなし）\n差し戻し理由は【' + role + '】にご確認ください。';
   }
-  return raw; // コメントあり → そのまま表示
+  return '【' + role + '】' + reason;
 }
 
 // 差し戻しコメントを整形（コメントなし時は承認者名指定メッセージに変換）
