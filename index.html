@@ -2241,10 +2241,10 @@ if (bRes.prevRejectComments) Object.assign(apBatchPrevComments, bRes.prevRejectC
           if (new Date(td) < new Date(dispYear, dispMonth-1, 1)) return false;
         }
         if (c.nyuenDate && c.nyuenDate !== '') {
-          const nd = String(c.nyuenDate).replace(/\//g, '-');
-          // 年度末（翌3月末）より後に入園する場合のみ除外
-          const nendoEnd = new Date(dispNendo + 1, 3, 0); // 翌年3月末
-          if (new Date(nd) > nendoEnd) return false;
+          const nd = new Date(String(c.nyuenDate).replace(/\//g, '-'));
+          // その月の末日より後に入園した子はその月の記録対象外（途中入園対応）
+          const monthEnd = new Date(dispYear, dispMonth, 0);
+          if (nd > monthEnd) return false;
         }
         return true;
       });
@@ -2388,7 +2388,7 @@ async function refreshApprovalStatuses() {
     const res = await gasPost({ action: 'getApprovalBatch', keys });
     if (!res || !res.ok || !res.statuses) return;
     if (res.rejectComments) Object.assign(apBatchComments, res.rejectComments);
-if (res.prevRejectComments) Object.assign(apBatchPrevComments, res.prevRejectComments);
+    if (res.prevRejectComments) Object.assign(apBatchPrevComments, res.prevRejectComments);
     // バッジ更新
     Object.keys(DB_CFGS).forEach(function(prefix) {
       const keyEl = document.getElementById(prefix + '_currentKey');
@@ -2396,8 +2396,6 @@ if (res.prevRejectComments) Object.assign(apBatchPrevComments, res.prevRejectCom
       if (!currentKey) return;
       const st = res.statuses[currentKey];
       if (st) updateApprovalBadge(prefix, st);
-      if (bRes.rejectComments) Object.assign(apBatchComments, bRes.rejectComments);
-if (bRes.prevRejectComments) Object.assign(apBatchPrevComments, bRes.prevRejectComments);
       // 振り返りバッジも更新
       if (['ns','gu','su'].includes(prefix)) {
         const furiKeys = prefix === 'ns'
@@ -3877,7 +3875,7 @@ async function importChildrenCsvFile(file) {
 
   let text = await readFile('UTF-8');
   if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
-  if (text.includes(' ')) text = await readFile('Shift-JIS');
+  if (text.includes('�')) text = await readFile('Shift-JIS');
 
   function parseCsvLine(line) {
     const result = []; let cur = '', inQ = false;
@@ -4575,6 +4573,9 @@ async function applyApproval(type,prefix,label){
   hideLoading();
   if(res&&res.ok){
     updateApprovalBadge(prefix,'申請中');
+    // 申請完了後はcurrentKeyをクリア（ポーリングが古いキーで上書きするのを防ぐ）
+    const _ckEl = document.getElementById(prefix+'_currentKey');
+    if(_ckEl) _ckEl.value = '';
     // 振り返りが同時申請された場合はバッジも更新
     furiList.forEach(function(f){
       updateFuriStatusBadge(prefix, f.ki, '振り返り申請中');
@@ -4622,24 +4623,24 @@ function buildFuriKeys(prefix, key) {
   return [];
 }
 
-// 差し戻しコメントを整形（役職名で表示）
+// 差し戻しコメントを整形（役職名で表示、旧形式はユーザー名のまま）
 function formatRejectComment(raw) {
   if (!raw) return '差し戻し理由は承認者にご確認ください。';
-  // 新形式: 「（コメントなし）\n差し戻し理由は【主任】にご確認ください。」→ そのまま
   if (raw.startsWith('（コメントなし）')) return raw;
-  // 新形式コメントあり: 「【主任】理由」→ そのまま
-  // 旧形式: 「【田中(主任)】コメント」→ 役職名だけ抽出して再フォーマット
+  const ROLE_NAMES = ['園長', '主任', '統括', '管理者'];
   const m = raw.match(/^【([^】]+)】(.*)$/s);
   if (!m) return raw;
-  const nameField = m[1].trim(); // 例: 「田中(主任)」or「主任」
+  const nameField = m[1].trim();
   const reason = (m[2] || '').trim();
-  // 役職名を抽出（括弧内の役職名、または全体が役職名）
+  // 役職名を抽出（括弧内の役職名、または全体が既知の役職名）
   const roleMatch = nameField.match(/\(([^)]+)\)$/);
-  const role = roleMatch ? roleMatch[1] : nameField;
+  // ロールが特定できればそれを表示、できなければ nameField（ユーザー名等）をそのまま使用
+  const display = roleMatch ? roleMatch[1]
+    : (ROLE_NAMES.includes(nameField) ? nameField : nameField);
   if (!reason || reason === '（コメントなし）') {
-    return '（コメントなし）\n差し戻し理由は【' + role + '】にご確認ください。';
+    return '（コメントなし）\n差し戻し理由は【' + display + '】にご確認ください。';
   }
-  return '【' + role + '】' + reason;
+  return '【' + display + '】' + reason;
 }
 
 // 差し戻しコメントを整形（コメントなし時は承認者名指定メッセージに変換）
@@ -4696,8 +4697,17 @@ function updateApprovalBadge(prefix,status){
     }
   }
 
-  // ── 差し戻し時は全フィールドを強制解除（SKIPパターン含む） ──
+  // ── 差し戻し時は全フィールドとボタンを強制解除 ──
   if(status === '差し戻し' && sec){
+    // 申請ボタンを明示的に有効化
+    sec.querySelectorAll('.btn-check,.btn-primary').forEach(function(btn){
+      if(!btn.textContent.includes('申請') && !btn.textContent.includes('保存')) return;
+      btn.disabled = false;
+      btn.style.opacity = '1';
+      btn.style.cursor = 'pointer';
+      btn.title = '';
+    });
+    // 入力フィールドを解除
     sec.querySelectorAll('input,textarea,select').forEach(function(inp){
       if(!inp.id) return;
       if(ALWAYS_READONLY.includes(inp.id)) return;
