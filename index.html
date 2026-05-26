@@ -1773,8 +1773,27 @@ function toggleTask(id) {
   if (arrow) arrow.textContent = open ? '▶' : '▼';
 }
 
+// ===== タスクキャッシュ =====
+// MASTER未ロード時の空フェッチ防止 + ページ切替ごとの重複フェッチ防止
+let _taskCache = null;       // { html, timestamp, cacheKey }
+let _taskLoading = false;    // 二重実行フラグ
+
 async function loadMyTasks() {
   if (!SESSION || !GAS_URL) return;
+
+  // ① MASTERガード: MASTER未ロードなら何もしない（ログイン直後の空フェッチ防止）
+  //    loadMasterFromDB().then(()=>loadMyTasks()) で正規ルートから再呼び出しされる
+  if (!MASTER.classes || MASTER.classes.length === 0) {
+    const area = document.getElementById('myTaskArea');
+    if (area && !area.innerHTML.includes('読み込み中')) {
+      area.innerHTML = '<div style="color:var(--text-light);font-size:13px;text-align:center;padding:20px;">読み込み中…</div>';
+    }
+    return;
+  }
+
+  // ② 二重実行ガード
+  if (_taskLoading) return;
+
   const now = new Date();
   const month = now.getMonth() + 1;
   const nendo = MASTER.kihon.nendo || now.getFullYear();
@@ -1838,73 +1857,47 @@ async function loadMyTasks() {
 
   const area = document.getElementById('myTaskArea');
   if (!area) return;
+
+  // ③ キャッシュ判定（60秒以内 かつ 同じユーザー・月なら再フェッチしない）
+  const _cacheKey = (SESSION.username||'') + '|' + dispYear + '-' + dispMonth;
+  const _CACHE_TTL = 60 * 1000; // 60秒
+  if (_taskCache && _taskCache.cacheKey === _cacheKey
+      && (Date.now() - _taskCache.timestamp) < _CACHE_TTL) {
+    area.innerHTML = _taskCache.html;
+    // イベント再バインド
+    area.querySelectorAll('.task-goto-btn').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        gotoFormWithData(btn.dataset.type, btn.dataset.cls, btn.dataset.nendo, btn.dataset.month, btn.dataset.child, btn.dataset.week);
+      });
+    });
+    return;
+  }
+
   area.innerHTML = '<div style="color:var(--text-light);font-size:13px;text-align:center;padding:20px;">読み込み中…</div>';
+  _taskLoading = true;
 
   try {
-    const [kobRes, kanRes, getRes, nsRes, suRes, niRes] = await Promise.all([
-      gasGet({action:'get', type:'kobetsu'}),
-      gasGet({action:'get', type:'kansatsu'}),
-      gasGet({action:'get', type:'getsuan'}),
-      gasGet({action:'get', type:'nensyuu'}),
-      gasGet({action:'get', type:'shuuan'}),
-      gasGet({action:'get', type:'nisshi'}),
-    ]);
+    // ── getHomeTasks: 7リクエスト→1リクエスト化 ──
+    // サーバー側でクラス×月フィルタ済みデータ + 承認ステータスを一括返却
+    const htRes = await gasPost({action:'getHomeTasks', month: dispMonth, year: dispYear});
+    if (!htRes || !htRes.ok) throw new Error((htRes && htRes.error) || '通信エラー');
 
-    const kobData = kobRes && kobRes.data || [];
-    const kanData = kanRes && kanRes.data || [];
-    const getData = getRes && getRes.data || [];
+    // 以降のレンダリングロジックと変数名を合わせるためエイリアスを定義
+    const nsRes  = { data: htRes.ns || [] };
+    const getRes = { data: htRes.gu || [] };  // getsuan
+    const suRes  = { data: htRes.su || [] };
+    const niRes  = { data: htRes.ni || [] };
+    const kobRes = { data: htRes.ko || [] };
+    const kanRes = { data: htRes.ka || [] };
 
-    // 承認フローDBとの乖離を補正（書類DBが古いステータスのまま残っていても正しく判定）
-    // 全書類の検索キーをまとめてgetApprovalBatchで一括取得（振り返りキーも含める）
-    let apBatchMap = {};
-    // ※ apBatchComments・apBatchPrevComments はグローバル変数（上部で宣言済み）
-    try {
-      const batchKeys = [];
+    const kobData = htRes.ko || [];
+    const kanData = htRes.ka || [];
+    const getData = htRes.gu || [];
 
-      // 年間指導計画：期の振り返り×4 + 年度末振り返り
-      (nsRes && nsRes.data || []).forEach(function(r) {
-        if (!r['検索キー']) return;
-        const k = r['検索キー'];
-        const fk = ['1','2','3','4'].map(function(n){ return k+'_furi_ki'+n; });
-        fk.push(k+'_furi_nendo');
-        batchKeys.push({type:'nensyuu', key:k, furiKeys:fk});
-      });
-
-      // 月案：_furi キー
-      (getRes && getRes.data || []).forEach(function(r) {
-        if (!r['検索キー']) return;
-        batchKeys.push({type:'getsuan', key:r['検索キー'], furiKeys:[r['検索キー']+'_furi']});
-      });
-
-      // 週案：_furi キー
-      (suRes && suRes.data || []).forEach(function(r) {
-        if (!r['検索キー']) return;
-        batchKeys.push({type:'shuuan', key:r['検索キー'], furiKeys:[r['検索キー']+'_furi']});
-      });
-
-      // 個別記録・観察記録・日誌（振り返りなし）
-      (kobRes && kobRes.data || []).forEach(function(r) {
-        if (!r['検索キー']) return;
-        batchKeys.push({type:'kobetsu', key:r['検索キー'], furiKeys:[]});
-      });
-      (kanRes && kanRes.data || []).forEach(function(r) {
-        if (!r['検索キー']) return;
-        batchKeys.push({type:'kansatsu', key:r['検索キー'], furiKeys:[]});
-      });
-      (niRes && niRes.data || []).forEach(function(r) {
-        if (!r['検索キー']) return;
-        batchKeys.push({type:'nisshi', key:r['検索キー'], furiKeys:[]});
-      });
-
-      if (batchKeys.length) {
-        const bRes = await gasPost({action:'getApprovalBatch', keys: batchKeys});
-        if (bRes && bRes.ok && bRes.statuses) {
-          apBatchMap = bRes.statuses;
-          if (bRes.rejectComments) Object.assign(apBatchComments, bRes.rejectComments);
-if (bRes.prevRejectComments) Object.assign(apBatchPrevComments, bRes.prevRejectComments);
-        }
-      }
-    } catch(e) {}
+    // 承認ステータスマップ（getApprovalBatch相当。GAS側で付与済み）
+    const apBatchMap = htRes.statuses || {};
+    if (htRes.rejectComments) Object.assign(apBatchComments, htRes.rejectComments);
+    if (htRes.prevRejectComments) Object.assign(apBatchPrevComments, htRes.prevRejectComments);
 
     // ステータスをフローDB優先で取得するヘルパー
     // 本体承認完了後は振り返りステータスを優先返却（getApprovalBatchと同じ優先順位）
@@ -2314,7 +2307,10 @@ if (bRes.prevRejectComments) Object.assign(apBatchPrevComments, bRes.prevRejectC
       }
     });
 
-    area.innerHTML = html || '<div style="color:var(--text-light);font-size:13px;text-align:center;padding:20px);">担当クラスのデータがありません</div>';
+    const renderedHtml = html || '<div style="color:var(--text-light);font-size:13px;text-align:center;padding:20px);">担当クラスのデータがありません</div>';
+    area.innerHTML = renderedHtml;
+    // ④ キャッシュ保存（成功時のみ）
+    _taskCache = { html: renderedHtml, timestamp: Date.now(), cacheKey: _cacheKey };
     // 未作成ボタンのイベント設定
     area.querySelectorAll('.task-goto-btn').forEach(function(btn){
       btn.addEventListener('click', function(){
@@ -2323,8 +2319,13 @@ if (bRes.prevRejectComments) Object.assign(apBatchPrevComments, bRes.prevRejectC
     });
   } catch(e) {
     area.innerHTML = '<div style="color:#c0392b;font-size:13px;padding:10px;">読み込みエラー: ' + e.message + '</div>';
+  } finally {
+    _taskLoading = false;
   }
 }
+
+// タスクキャッシュを強制クリアする（保存・申請後など状態変化時に呼ぶ）
+function clearTaskCache() { _taskCache = null; }
 
 
 // マスタをDBから読み込んで更新
@@ -2415,7 +2416,8 @@ async function refreshApprovalStatuses() {
       }
     });
     // ホームのタスク・申請状況・承認待ちも更新（静かに）
-    loadMyTasks();
+    // ポーリング時はキャッシュを破棄して最新状態を取得
+    clearTaskCache(); loadMyTasks();
     loadNotifications();
     loadPending();
   } catch(e) {}
@@ -3875,7 +3877,7 @@ async function importChildrenCsvFile(file) {
 
   let text = await readFile('UTF-8');
   if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
-  if (text.includes('�')) text = await readFile('Shift-JIS');
+  if (text.includes(' ')) text = await readFile('Shift-JIS');
 
   function parseCsvLine(line) {
     const result = []; let cur = '', inQ = false;
@@ -4589,7 +4591,7 @@ async function applyApproval(type,prefix,label){
     var furiNotice = furiList.length > 0 ? '（振り返り'+furiList.length+'件も同時申請）' : '';
     showToast('📤 申請しました'+furiNotice+'。'+firstLabel+'に通知を送りました。');
     setTimeout(loadNotifications,1000);
-    setTimeout(loadMyTasks,1500);
+    clearTaskCache(); setTimeout(loadMyTasks,1500);
     setTimeout(loadMyApplications,2000);
     setTimeout(async function(){ await loadDbList(prefix); },800);
   }
@@ -5079,7 +5081,7 @@ async function doApprove(flowId,title){
   showLoading('承認処理中…');
   const res=await gasPost({action:'approve',flowId});
   hideLoading();
-  if(res&&res.ok){showToast('✅ '+res.message);loadPending();loadNotifications();setTimeout(loadMyTasks,1000);closeApproveBar();setTimeout(loadAllDbLists,1500);}
+  if(res&&res.ok){showToast('✅ '+res.message);loadPending();loadNotifications();clearTaskCache();setTimeout(loadMyTasks,1000);closeApproveBar();setTimeout(loadAllDbLists,1500);}
   else if(res)showToast('❌ '+(res.error||'エラー'),'error');
 }
 
@@ -5096,7 +5098,7 @@ async function submitReject(){
   showLoading('差し戻し処理中…');
   const res=await gasPost({action:'reject',flowId:_rejectFlowId,comment});
   hideLoading();
-  if(res&&res.ok){showToast('⚠️ 差し戻しました');closeRejectModal();closeApproveBar();loadPending();loadNotifications();setTimeout(loadMyTasks,1000);setTimeout(loadAllDbLists,1500);}
+  if(res&&res.ok){showToast('⚠️ 差し戻しました');closeRejectModal();closeApproveBar();loadPending();loadNotifications();clearTaskCache();setTimeout(loadMyTasks,1000);setTimeout(loadAllDbLists,1500);}
   else if(res)showToast('❌ '+(res.error||'エラー'),'error');
 }
 
@@ -5838,6 +5840,7 @@ async function saveForm(type,prefix){
       } else {
         showToast('💾 保存しました');
       }
+      clearTaskCache(); // 保存後はホームタスクを次回再取得
       await loadDbList(prefix);
     }
     else if(res)showToast('❌ 保存失敗: '+(res.error||'不明'),'error');
