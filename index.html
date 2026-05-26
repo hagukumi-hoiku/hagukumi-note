@@ -2478,13 +2478,17 @@ async function loadMasterFromDB(){
     nendoSelectIds.forEach(function(id){
       const el = document.getElementById(id);
       if(!el || el.tagName!=='SELECT') return;
+      const prevNendo = el.value;  // ① 現在の選択値を保存
       el.innerHTML = '';
       availableNendos.forEach(function(y){
         const opt = document.createElement('option');
         opt.value = y; opt.textContent = y+'年度';
-        if(y === parseInt(curNendo)) opt.selected = true;
         el.appendChild(opt);
       });
+      // ② 以前の選択値を復元。なければ curNendo を選択
+      const restoreVal = prevNendo && availableNendos.map(String).includes(String(prevNendo))
+        ? prevNendo : curNendo;
+      el.value = restoreVal;
     });
 
 
@@ -2604,6 +2608,7 @@ function applyMasterToUI(){
     ids.forEach(id=>{
       const el=document.getElementById(id);
       if(!el)return;
+      const prev=el.value;          // ① 現在の選択値を保存
       const first=el.options[0];
       el.innerHTML='';
       el.appendChild(first);
@@ -2612,6 +2617,7 @@ function applyMasterToUI(){
         o.value=c.name;o.textContent=c.displayName||c.name;
         el.appendChild(o);
       });
+      if(prev) el.value=prev;        // ② 選択値を復元（存在しない値はブラウザが無視）
     });
   };
   fillCls(allClsSels,   ()=>true);
@@ -2673,6 +2679,7 @@ function applyMasterToUI(){
   ['ko_child','ka_child'].forEach(id=>{
     const el=document.getElementById(id);
     if(!el)return;
+    const prevChild=el.value;  // ① 現在の選択値を保存
     const clsId = id==='ko_child'?'ko_class':'ka_class';
     const nendoId = id==='ko_child'?'ko_nendo':'ka_nendo';
     const monthId = id==='ko_child'?'ko_month':'ka_month';
@@ -2696,6 +2703,7 @@ function applyMasterToUI(){
       o.value=c.name;o.textContent=c.displayName||c.name;
       el.appendChild(o);
     });
+    if(prevChild) el.value=prevChild;  // ② 選択値を復元
   });
 
   // 承認者欄ラベルを様式設定に応じて更新
