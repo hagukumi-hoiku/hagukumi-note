@@ -1859,7 +1859,7 @@ async function loadMyTasks() {
   if (!area) return;
 
   // ③ キャッシュ判定（60秒以内 かつ 同じユーザー・月なら再フェッチしない）
-  const _cacheKey = (SESSION.username||'') + '|' + dispYear + '-' + dispMonth;
+  const _cacheKey = (SESSION.gardenId||'') + '|' + (SESSION.username||'') + '|' + dispYear + '-' + dispMonth;
   const _CACHE_TTL = 60 * 1000; // 60秒
   if (_taskCache && _taskCache.cacheKey === _cacheKey
       && (Date.now() - _taskCache.timestamp) < _CACHE_TTL) {
@@ -3384,7 +3384,7 @@ document.addEventListener('DOMContentLoaded',()=>{
   if(SESSION&&SESSION.token){
     // expiry確認（期限切れなら再ログイン）
     if(SESSION.expiry && new Date(SESSION.expiry) < new Date()){
-      SESSION=null; localStorage.removeItem(SESSION_KEY);
+      SESSION=null; localStorage.removeItem(SESSION_KEY); clearTaskCache();
       showLoginOverlay(); return;
     }
     applySession();
@@ -3466,6 +3466,7 @@ async function doLogout(){
   if(SESSION&&GAS_URL)try{await fetch(GAS_URL,{method:'POST',body:JSON.stringify({action:'logout',token:SESSION.token})});}catch(e){}
   stopMasterPolling();stopApprovalPolling();
   SESSION=null;localStorage.removeItem(SESSION_KEY);
+  clearTaskCache(); // 別の園でログインした際にキャッシュが混在しないようにクリア
   // MASTER初期化（別の園でログインした際の残像防止）
   MASTER.classes=[];MASTER.children={};MASTER.prevChildren={};MASTER.prevNendo=null;MASTER.nextChildren={};MASTER.nextNendo=null;MASTER.staffList=[];
   MASTER.kihon={name:'',encho:'',syunin:''};
@@ -5321,7 +5322,8 @@ async function checkExistingData(prefix){
       const st=res.data['承認状態']||'未申請';
       const saved=res.data['保存日時']?String(res.data['保存日時']).slice(0,16):'';
       const stI=APPROVAL_STATUS[st]||{cls:'ab-draft',label:st};
-      setTimeout(function(){updateApprovalBadge(prefix,st);},50);
+      // step1: 書類DBの暫定ステータスはバナー表示のみに使用。
+      // フォームロックはstep2（フローDB確認後）に委ねる（不整合データによる誤ロック防止）
       window._existKey=key; window._existPrefix=prefix;
       // 承認フローDBから最新ステータスを取得してバッジを補正
       (function(_p,_k){
@@ -5619,7 +5621,7 @@ async function loadRecord(prefix,key){
           if(el&&data[dk]!==undefined)el.value=data[dk];
         });
       });
-      setTimeout(function(){ var _st=data['承認状態']||'未申請'; updateApprovalBadge(prefix,_st); },150);
+      // step1: フォームロックはstep2(フローDB確認後)に委ねる（不整合データによる誤ロック防止）
       // 承認フローDBと照合して最新状態に補正
       (function(_p,_k){const _tm={ns:'nensyuu',gu:'getsuan',su:'shuuan',ni:'nisshi',ko:'kobetsu',ka:'kansatsu'};const _fk=buildFuriKeys(_p,_k);gasPost({action:'getApprovalBatch',keys:[{type:_tm[_p]||_p,key:_k,furiKeys:_fk}]}).then(function(br){if(!br||!br.ok||!br.statuses)return;if(br.rejectComments)Object.assign(apBatchComments,br.rejectComments);if(br.prevRejectComments)Object.assign(apBatchPrevComments,br.prevRejectComments);const st=br.statuses[_k];if(st)updateApprovalBadge(_p,st);_fk.forEach(function(fk){const fst=br.statuses[fk];if(fst){let ki=null;if(fk.endsWith('_furi_nendo'))ki='nendo';else if(fk.includes('_furi_ki')){const m=fk.match(/_furi_ki(\d)/);if(m)ki=Number(m[1]);}updateFuriStatusBadge(_p,ki,fst);}});}).catch(function(){});})(prefix,key);
       setTimeout(function(){ updateAllCounts(prefix); }, 150);
@@ -5690,7 +5692,7 @@ async function loadRecord(prefix,key){
         }else{ koGeturei.value=''; }
       }
       if(typeof updateKoMonthRange==='function') updateKoMonthRange();
-      setTimeout(function(){ var _st=data['承認状態']||'未申請'; updateApprovalBadge(prefix,_st); },150);
+      // step1: フォームロックはstep2(フローDB確認後)に委ねる（不整合データによる誤ロック防止）
       (function(_p,_k){const _tm={ns:'nensyuu',gu:'getsuan',su:'shuuan',ni:'nisshi',ko:'kobetsu',ka:'kansatsu'};gasPost({action:'getApprovalBatch',keys:[{type:_tm[_p]||_p,key:_k,furiKeys:buildFuriKeys(_p,_k)}]}).then(function(br){if(!br||!br.ok||!br.statuses)return;if(br.rejectComments)Object.assign(apBatchComments,br.rejectComments);const st=br.statuses[_k];if(st)updateApprovalBadge(_p,st);}).catch(function(){});})(prefix,key);
       setTimeout(function(){ updateAllCounts(prefix); }, 150);
       showToast('📂 データを読み込みました');
@@ -5736,7 +5738,7 @@ async function loadRecord(prefix,key){
         }
         kaChildSel.value=kaChildName;
       }
-      setTimeout(function(){ var _st=data['承認状態']||'未申請'; updateApprovalBadge(prefix,_st); },150);
+      // step1: フォームロックはstep2(フローDB確認後)に委ねる（不整合データによる誤ロック防止）
       (function(_p,_k){const _tm={ns:'nensyuu',gu:'getsuan',su:'shuuan',ni:'nisshi',ko:'kobetsu',ka:'kansatsu'};gasPost({action:'getApprovalBatch',keys:[{type:_tm[_p]||_p,key:_k,furiKeys:buildFuriKeys(_p,_k)}]}).then(function(br){if(!br||!br.ok||!br.statuses)return;if(br.rejectComments)Object.assign(apBatchComments,br.rejectComments);const st=br.statuses[_k];if(st)updateApprovalBadge(_p,st);}).catch(function(){});})(prefix,key);
       setTimeout(function(){ updateAllCounts(prefix); }, 150);
       showToast('📂 データを読み込みました');
@@ -5752,7 +5754,7 @@ async function loadRecord(prefix,key){
       const el=document.getElementById(e[1]);
       if(el&&data[e[0]]!==undefined) el.value=data[e[0]];
     });
-    setTimeout(function(){ var _st=data['承認状態']||'未申請'; updateApprovalBadge(prefix,_st); },150);
+    // step1: フォームロックはstep2(フローDB確認後)に委ねる（不整合データによる誤ロック防止）
     // 承認フローDBと照合して最新状態に補正（書類DBが古くても正しく表示）
     const _typeMap2={ns:'nensyuu',gu:'getsuan',su:'shuuan',ni:'nisshi',ko:'kobetsu',ka:'kansatsu'};
     const _batchKey=key;
