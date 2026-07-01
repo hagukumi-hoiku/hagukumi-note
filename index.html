@@ -6469,7 +6469,13 @@ function buildStyleHtml(type, d, nendo){
       const V2=function(k){return md&&md[k]!==undefined&&md[k]!==null&&md[k]!==''?String(md[k]):'';};
       return '<tr><th style="'+TH+'background:#e8f5e9;" colspan="6">'+mon2+'月 （'+age+'）'+(noData?'：データ未登録':'')+'</th></tr>'        +(noData
           ?'<tr><td colspan="6" style="padding:8px;color:#aaa;font-size:12px;">未登録</td></tr>'
-          :'<tr><th style="'+TH+'">ねらい</th><td style="'+TD+'" colspan="2">'+E(V2('ねらい'))+'</td>'          +'<th style="'+TH+'">内容</th><td style="'+TD+'" colspan="2">'+E(V2('内容'))+'</td></tr>'          +'<tr><th style="'+TH+'">子どもの姿</th><td style="'+TD+'" colspan="2">'+E(V2('子どもの姿'))+'</td>'          +'<th style="'+TH+'">保育者の配慮</th><td style="'+TD+'" colspan="2">'+E(V2('保育者の配慮'))+'</td></tr>'          +'<tr><th style="'+TH+'">特記事項</th><td style="'+TD+'" colspan="2">'+E(V2('特記事項'))+'</td>'          +'<th style="'+TH+'">評価・反省</th><td style="'+TD+'" colspan="2">'+E(V2('評価反省'))+'</td></tr>'        );
+          :'<tr><th style="'+TH+'width:14%;">ねらい</th><td style="'+TD+'width:36%;">'+E(V2('ねらい'))+'</td>'
+          +'<th style="'+TH+'width:14%;">内容</th><td style="'+TD+'width:36%;">'+E(V2('内容'))+'</td></tr>'
+          +'<tr><th style="'+TH+'width:14%;">子どもの姿</th><td style="'+TD+'">'+E(V2('子どもの姿'))+'</td>'
+          +'<th style="'+TH+'width:14%;">保育者の配慮</th><td style="'+TD+'">'+E(V2('保育者の配慮'))+'</td></tr>'
+          +'<tr><th style="'+TH+'width:14%;">特記事項</th><td style="'+TD+'" colspan="3">'+E(V2('特記事項'))+'</td></tr>'
+          +'<tr><th style="'+TH+'width:14%;">評価・反省</th><td style="'+TD+'" colspan="3">'+E(V2('評価反省'))+'</td></tr>'
+        );
     };
     const head=HDR('個別記録　'+koClsName+'　'+koDispName, koNendo+'年度 '+koMonRange+'期');
     const body='<table style="width:100%;border-collapse:collapse;">'      +'<tr><th style="'+TH+'">クラス</th><td style="'+TD+'">'+E(koClsName)+'</td>'      +'<th style="'+TH+'">園児名</th><td style="'+TD+'font-weight:700;">'+E(koDispName)+'（'+E(koHira)+'）</td>'      +'<th style="'+TH+'">性別</th><td style="'+TD+'">'+E(V('性別'))+'</td></tr>'      +'<tr><th style="'+TH+'">年度</th><td style="'+TD+'">'+koNendo+'年度</td>'      +'<th style="'+TH+'">対象期間</th><td style="'+TD+'">'+koMonRange+'</td>'      +'<th style="'+TH+'">担任</th><td style="'+TD+'">'+E(V('担任'))+'</td></tr>'      +'<tr><th style="'+TH+'">生年月日</th><td style="'+TD+'">'+E(koBirth)+'</td>'      +'<th style="'+TH+'">'+_getApvLabel('kobetsu')+'承認</th><td style="'+TD+'">'+E(V('主任承認'))+'</td>'      +'<th style="'+TH+'">園長承認</th><td style="'+TD+'">'+E(V('園長承認'))+'</td></tr>'      +'</table>'      +'<table style="width:100%;border-collapse:collapse;margin-top:4px;">'      +koDisplayMonths.map(function(_,i){return koMonBlock(i);}).join('')      +'</table>';
