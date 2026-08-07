@@ -291,8 +291,8 @@ textarea.form-control.tall{min-height:120px;}
     <div class="nav-tab" onclick="showSection('getsuan')">📅 月案</div>
     <div class="nav-tab" onclick="showSection('shuuan')">📆 週案</div>
     <div class="nav-tab" onclick="showSection('nisshi')">📓 日誌</div>
-    <div class="nav-tab" onclick="showSection('kobetsu')">👶 個別記録（乳児）</div>
-    <div class="nav-tab" onclick="showSection('kansatsu')">🔍 観察記録（幼児）</div>
+    <div class="nav-tab" id="kobetsuNavTab" onclick="showSection('kobetsu')">👶 個別記録（乳児）</div>
+    <div class="nav-tab" id="kansatsuNavTab" onclick="showSection('kansatsu')">🔍 観察記録（幼児）</div>
     <div class="nav-tab" onclick="showSection('print')">🖨️ 様式出力</div>
     <div class="nav-tab" id="approvalNavTab" onclick="showSection('approval')">✅ 承認管理</div>
     <div class="nav-tab" id="masterNavTab" style="display:none;" onclick="showSection('master')">⚙️ マスタ管理</div>
@@ -315,8 +315,8 @@ textarea.form-control.tall{min-height:120px;}
     <div class="dash-card dc-getsuan" onclick="showSection('getsuan')"><div class="dc-icon">📅</div><div class="dc-title">月案</div><div class="dc-sub">月ごとの指導計画・行事</div></div>
     <div class="dash-card dc-shuuan" onclick="showSection('shuuan')"><div class="dc-icon">📆</div><div class="dc-title">週案</div><div class="dc-sub">週ごとの計画・曜日別内容</div></div>
     <div class="dash-card dc-nisshi" onclick="showSection('nisshi')"><div class="dc-icon">📓</div><div class="dc-title">日誌</div><div class="dc-sub">毎日の保育記録</div></div>
-    <div class="dash-card dc-kobetsu" onclick="showSection('kobetsu')"><div class="dc-icon">👶</div><div class="dc-title">個別記録（乳児）</div><div class="dc-sub">乳児の月別個別記録</div></div>
-    <div class="dash-card dc-kansatsu" onclick="showSection('kansatsu')"><div class="dc-icon">🔍</div><div class="dc-title">観察記録（幼児）</div><div class="dc-sub">幼児の月別観察記録</div></div>
+    <div class="dash-card dc-kobetsu" id="kobetsuDashCard" onclick="showSection('kobetsu')"><div class="dc-icon">👶</div><div class="dc-title">個別記録（乳児）</div><div class="dc-sub">乳児の月別個別記録</div></div>
+    <div class="dash-card dc-kansatsu" id="kansatsuDashCard" onclick="showSection('kansatsu')"><div class="dc-icon">🔍</div><div class="dc-title">観察記録（幼児）</div><div class="dc-sub">幼児の月別観察記録</div></div>
   </div>
   <div class="card" style="margin-top:16px;">
     <div class="card-header"><div class="icon" style="background:#e8f0fe;">📋</div>タスク状況
@@ -1480,6 +1480,10 @@ textarea.form-control.tall{min-height:120px;}
 <div class="loading-overlay" id="loadingOverlay" style="display:none;">
   <div class="spinner"></div>
   <span id="loadingMsg">Googleスプレッドシートと通信中…</span>
+  <button type="button" id="loadingCancelBtn" onclick="cancelPendingRequests()"
+    style="padding:8px 22px;font-size:13px;border:1px solid var(--sage-dark);border-radius:20px;background:#fff;color:var(--sage-dark);cursor:pointer;">
+    ✕ キャンセル
+  </button>
 </div>
 
 <script>
@@ -2604,6 +2608,7 @@ async function loadMasterFromDB(){
 
     // 画面に反映
     applyMasterToUI();
+    updateRecordTabVisibility(); // クラス年齢が確定したので個別記録/観察記録タブの表示をここで確定させる
   }catch(e){console.error('loadMaster error:',e);}
 }
 
@@ -3464,8 +3469,10 @@ async function doLogin(retryCount){
   GAS_URL = GAS_URLS[gardenId] || GAS_URLS['hagukumi1'];
   if(!GAS_URL){errEl.textContent='GAS URLが設定されていません（管理者に確認してください）';errEl.style.display='block';return;}
   showLoading(retryCount>0?'認証中…（再試行 '+retryCount+'/3）':'認証中…');
+  const controller=new AbortController();
+  _pendingAborts.add(controller);
   try{
-    const r=await fetch(GAS_URL,{method:'POST',body:JSON.stringify({action:'login',username,password,gardenId})});
+    const r=await fetch(GAS_URL,{method:'POST',body:JSON.stringify({action:'login',username,password,gardenId}),signal:controller.signal});
     const text=await r.text();
     const trimmed=text.replace(/^[\s\uFEFF\u200B]+/,'');
     if(!trimmed.startsWith('{')&&!trimmed.startsWith('[')){
@@ -3495,11 +3502,14 @@ async function doLogin(retryCount){
       errEl.style.display='block';
     }
   }catch(e){
+    if(e.name==='AbortError'){ return; } // キャンセルボタン／ESCによる意図的な中断。エラー扱いしない
     if(retryCount<3){
       await new Promise(res=>setTimeout(res,1000*Math.pow(2,retryCount)));
       return doLogin(retryCount+1);
     }
     hideLoading();errEl.textContent='接続エラー：'+e.message;errEl.style.display='block';console.error('Login error:',e);
+  }finally{
+    _pendingAborts.delete(controller);
   }
 }
 
@@ -3516,9 +3526,42 @@ function applySession(){
   const approvalTab = document.getElementById('approvalNavTab');
   if (approvalTab) {
     const isApprover = ['admin','encho','syunin','tokkatsu'].includes(SESSION.role);
-    approvalTab.textContent = isApprover ? '✅ 承認管理' : '🔔 通知・提出状況';
+    approvalTab.textContent = isApprover ? '✅ 承認管理' : '🔔 提出状況';
   }
+  // クラス情報が届く前は安全側で両方表示。MASTER取得後にupdateRecordTabVisibility()で確定させる。
+  updateRecordTabVisibility();
   updateConnUI(true);
+}
+
+// 個別記録（乳児）／観察記録（幼児）のナビタブ・ダッシュボードカードを、
+// 担任クラスの年齢に応じて表示・非表示にする。承認者は今まで通り常に両方表示。
+// タスク一覧側のデータ取得絞り込み（0〜2歳=個別のみ取得／3歳以上=観察のみ取得）とタブ表示を一致させるための処理。
+function updateRecordTabVisibility(){
+  const kobetsuTab = document.getElementById('kobetsuNavTab');
+  const kansatsuTab = document.getElementById('kansatsuNavTab');
+  const kobetsuCard = document.getElementById('kobetsuDashCard');
+  const kansatsuCard = document.getElementById('kansatsuDashCard');
+  if (!kobetsuTab || !kansatsuTab) return;
+  const showBoth = function(){
+    kobetsuTab.style.display='flex'; kansatsuTab.style.display='flex';
+    if (kobetsuCard) kobetsuCard.style.display='';
+    if (kansatsuCard) kansatsuCard.style.display='';
+  };
+  if (!SESSION) { showBoth(); return; }
+  const isApprover = ['admin','encho','syunin','tokkatsu'].includes(SESSION.role);
+  if (isApprover) { showBoth(); return; } // 承認者は両方の申請を確認する必要があるため常に表示
+  const myClassNames = typeof _getMyClasses==='function' ? _getMyClasses() : [];
+  // クラス未設定・マスタ未取得時は絞り込めないので安全側で両方表示
+  if (!myClassNames.length || !MASTER.classes || !MASTER.classes.length) { showBoth(); return; }
+  const myClassObjs = MASTER.classes.filter(function(c){ return myClassNames.includes(c.name); });
+  if (!myClassObjs.length) { showBoth(); return; }
+  const ages = myClassObjs.map(function(c){ return c.age!==undefined && c.age!=='' ? Number(c.age) : 0; });
+  const hasNyuji = ages.some(function(a){ return a<=2; });
+  const hasYouji = ages.some(function(a){ return a>2; });
+  kobetsuTab.style.display = hasNyuji ? 'flex' : 'none';
+  kansatsuTab.style.display = hasYouji ? 'flex' : 'none';
+  if (kobetsuCard) kobetsuCard.style.display = hasNyuji ? '' : 'none';
+  if (kansatsuCard) kansatsuCard.style.display = hasYouji ? '' : 'none';
 }
 
 async function doLogout(){
@@ -4187,15 +4230,20 @@ async function downloadChildrenCsv(){
   a.download='園児名簿.csv'; a.click();
 }
 
-// ESCキーで通信中断できるようにする：発生中のfetchのAbortControllerを保持
+// 通信中断（ESCキー／キャンセルボタン共通）：発生中のfetchのAbortControllerを保持
+// スマホ・タブレットにはESCキーが無いため、ローディング画面のタップ可能な✕ボタンからも
+// 同じ経路で中断できるようにする（ログイン処理もこの仕組みに含める）。
 const _pendingAborts = new Set();
-document.addEventListener('keydown', function(ev){
-  if (ev.key !== 'Escape') return;
+function cancelPendingRequests(){
   if (_pendingAborts.size === 0) return;
   _pendingAborts.forEach(function(c){ try{ c.abort(); }catch(e){} });
   _pendingAborts.clear();
   hideLoading();
   showToast('⏹ 通信を中断しました','error');
+}
+document.addEventListener('keydown', function(ev){
+  if (ev.key !== 'Escape') return;
+  cancelPendingRequests();
 });
 
 async function gasGet(params,retryCount){
