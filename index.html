@@ -6552,7 +6552,14 @@ function buildStyleHtml(type, d, nendo){
   if(type==='nisshi'){
     const head=HDR('日誌　'+V('クラス名')+'　'+V('対象日付'), '');
     const _niApvLabel=(function(){const s=(MASTER.kihon&&MASTER.kihon['様式承認設定'])||'';const m={};s.split(',').forEach(function(x){const p=x.trim().split(':');if(p[0]&&p[1])m[p[0].trim()]=p[1].trim();});return(m['nisshi']||'syunin')==='tokkatsu'?'統括確認':'主任確認';})();
-    const body='<table style="width:100%;border-collapse:collapse;">'      +'<tr><th style="'+TH+'width:30%;">日付</th><td style="'+TD+'">'+E(V('対象日付'))+'</td></tr>'      +'<tr><th style="'+TH+'">クラス</th><td style="'+TD+'">'+E(V('クラス名'))+'</td></tr>'      +'<tr><th style="'+TH+'">記入者</th><td style="'+TD+'">'+E(V('記入者'))+'</td></tr>'      +'<tr><th style="'+TH+'">出席</th><td style="'+TD+'">'+E(V('出席数'))+'名</td></tr>'      +'<tr><th style="'+TH+'">欠席</th><td style="'+TD+'">'+E(V('欠席数'))+'名　'+E(V('欠席理由'))+'</td></tr>'      +'<tr><th style="'+TH+'">'+_niApvLabel+'</th><td style="'+TD+'">'+E(V('主任確認'))+'</td></tr>'      +'</table>'      +'<table style="width:100%;border-collapse:collapse;margin-top:1px;">'      +ROW2W('保育内容',V('保育内容'))      +ROW2W('健康管理',V('健康管理'))      +ROW2W('特記事項',V('特記事項'))      +ROW2W('評価・反省',V('評価反省'))      +'</table>';
+    // 記入者をusernameから職員マスタの漢字名に変換
+    const authorName=(function(){
+      const val=V('記入者');
+      if(!val) return '';
+      const staff=(MASTER.staff||[]).find(s => (s.username===val || s.name===val) && s.garden_id===SESSION.gardenId);
+      return (staff && staff.name) || val;
+    })();
+    const body='<table style="width:100%;border-collapse:collapse;">'      +'<tr><th style="'+TH+'width:30%;">日付</th><td style="'+TD+'">'+E(V('対象日付'))+'</td></tr>'      +'<tr><th style="'+TH+'">クラス</th><td style="'+TD+'">'+E(V('クラス名'))+'</td></tr>'      +'<tr><th style="'+TH+'">記入者</th><td style="'+TD+'">'+E(authorName)+'</td></tr>'      +'<tr><th style="'+TH+'">出席</th><td style="'+TD+'">'+E(V('出席数'))+'名</td></tr>'      +'<tr><th style="'+TH+'">欠席</th><td style="'+TD+'">'+E(V('欠席数'))+'名　'+E(V('欠席理由'))+'</td></tr>'      +'<tr><th style="'+TH+'">'+_niApvLabel+'</th><td style="'+TD+'">'+E(V('主任確認'))+'</td></tr>'      +'</table>'      +'<table style="width:100%;border-collapse:collapse;margin-top:1px;">'      +ROW2W('保育内容',V('保育内容'))      +ROW2W('健康管理',V('健康管理'))      +ROW2W('特記事項',V('特記事項'))      +ROW2W('評価・反省',V('評価反省'))      +'</table>';
     return WRAP(head,body);
   }
 
