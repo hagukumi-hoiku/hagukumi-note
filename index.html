@@ -3122,21 +3122,24 @@ async function deleteExcelTmpFiles(){
     if(el)el.textContent='❌ 失敗';
   }
 }
-// スプレッドシートエクスポート用：年度セレクトの初期化
-function initializeExportNendoSelect(){
+// スプレッドシートエクスポート用：年度セレクトの初期化（D1から全年度を取得）
+async function initializeExportNendoSelect(){
   const sel=document.getElementById('exportNendoSelect');
-  if(!sel||!MASTER||!MASTER.children)return;
-  sel.innerHTML='<option value="">-- 年度選択 --</option>';
-  const nendoSet=new Set();
-  (MASTER.children||[]).forEach(c => {
-    if(c.nendo)nendoSet.add(c.nendo);
-  });
-  Array.from(nendoSet).sort().reverse().forEach(y => {
-    const opt=document.createElement('option');
-    opt.value=y;
-    opt.textContent=y+'年度';
-    sel.appendChild(opt);
-  });
+  if(!sel)return;
+  try {
+    const res=await gasPost({action:'getDocumentNendos'});
+    if(res&&res.ok&&res.nendos&&res.nendos.length>0){
+      sel.innerHTML='<option value="">-- 年度選択 --</option>';
+      res.nendos.forEach(y => {
+        const opt=document.createElement('option');
+        opt.value=y;
+        opt.textContent=y+'年度';
+        sel.appendChild(opt);
+      });
+    }
+  } catch(e){
+    console.log('年度セレクト初期化エラー:',e);
+  }
 }
 // スプレッドシートエクスポート：最新データ
 async function exportLatestToSheets(){
