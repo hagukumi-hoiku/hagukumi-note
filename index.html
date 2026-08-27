@@ -1315,6 +1315,23 @@ textarea.form-control.tall{min-height:120px;}
         <span id="backupResult" style="margin-left:12px;font-size:12px;color:var(--text-mid);"></span>
       </div>
 
+      <!-- スプレッドシートエクスポート -->
+      <div style="background:#e3f2fd;border:1px solid #90caf9;border-radius:8px;padding:12px 14px;margin-bottom:16px;">
+        <div style="font-weight:700;font-size:13px;color:#1565c0;margin-bottom:6px;">📊 スプレッドシートへのエクスポート</div>
+        <div style="font-size:12px;color:#1976d2;margin-bottom:10px;">
+          D1のデータをGoogleスプレッドシートに反映します。毎日午前3時に自動実行（最新データを既存シートに上書き）。年度指定でエクスポートする場合は、新規ファイルを作成します。
+        </div>
+        <button class="btn btn-primary" onclick="exportLatestToSheets()" style="background:#1565c0;border-color:#1565c0;margin-right:8px;">📤 最新データをエクスポート</button>
+        <span id="exportLatestResult" style="font-size:12px;color:var(--text-mid);"></span>
+        <div style="margin-top:10px;display:flex;align-items:center;gap:8px;">
+          <select id="exportNendoSelect" class="form-control" style="max-width:120px;padding:6px 8px;font-size:12px;">
+            <option value="">-- 年度選択 --</option>
+          </select>
+          <button class="btn btn-primary" onclick="exportNendoToSheets()" style="background:#1565c0;border-color:#1565c0;padding:6px 12px;font-size:12px;">📤 この年度をエクスポート</button>
+          <span id="exportNendoResult" style="font-size:12px;color:var(--text-mid);"></span>
+        </div>
+      </div>
+
       
       <button class="btn btn-secondary" onclick="normalizeChildNames()">✏️ 園児名スペースを一括正規化する</button>
       <span id="normalizeResult" style="margin-left:12px;font-size:12px;color:var(--text-mid);"></span>
@@ -2525,6 +2542,7 @@ async function loadMasterFromDB(){
     };
 
     checkNendoUpdateReminder();
+    initializeExportNendoSelect();  // スプレッドシートエクスポート用年度セレクト初期化
 
     // 年度セレクトを初期化（誤選択防止：当該年度のみ、3月は次年度も追加。7年分は選ばせない）
     const curNendo = MASTER.kihon.nendo || new Date().getFullYear();
@@ -3104,6 +3122,57 @@ async function deleteExcelTmpFiles(){
     if(el)el.textContent='❌ 失敗';
   }
 }
+// スプレッドシートエクスポート用：年度セレクトの初期化
+function initializeExportNendoSelect(){
+  const sel=document.getElementById('exportNendoSelect');
+  if(!sel||!MASTER||!MASTER.children)return;
+  sel.innerHTML='<option value="">-- 年度選択 --</option>';
+  const nendoSet=new Set();
+  (MASTER.children||[]).forEach(c => {
+    if(c.nendo)nendoSet.add(c.nendo);
+  });
+  Array.from(nendoSet).sort().reverse().forEach(y => {
+    const opt=document.createElement('option');
+    opt.value=y;
+    opt.textContent=y+'年度';
+    sel.appendChild(opt);
+  });
+}
+// スプレッドシートエクスポート：最新データ
+async function exportLatestToSheets(){
+  if(!SESSION||!GAS_URL)return;
+  if(!confirm('D1の最新データをスプレッドシートにエクスポートします。\n※新規ファイル「D1_エクスポート_'+SESSION.gardenId+'_最新」を作成します。\nよろしいですか？'))return;
+  showLoading('エクスポート中…');
+  const res=await gasPost({action:'exportToSheets',mode:'latest'});
+  hideLoading();
+  const el=document.getElementById('exportLatestResult');
+  if(res&&res.ok){
+    showToast('✅ スプレッドシートにエクスポートしました');
+    if(el)el.textContent='✅ エクスポート完了';
+  } else {
+    showToast('❌ '+(res?res.error:'失敗'),'error');
+    if(el)el.textContent='❌ 失敗';
+  }
+}
+// スプレッドシートエクスポート：年度指定
+async function exportNendoToSheets(){
+  if(!SESSION||!GAS_URL)return;
+  const nendo=document.getElementById('exportNendoSelect').value;
+  if(!nendo){alert('年度を選択してください');return;}
+  if(!confirm(nendo+'年度のデータをスプレッドシートにエクスポートします。\n※新規ファイル「D1_エクスポート_'+SESSION.gardenId+'_'+nendo+'年度」を作成します。\nよろしいですか？'))return;
+  showLoading('エクスポート中…');
+  const res=await gasPost({action:'exportToSheets',mode:'nendo',nendo:Number(nendo)});
+  hideLoading();
+  const el=document.getElementById('exportNendoResult');
+  if(res&&res.ok){
+    showToast('✅ '+nendo+'年度をエクスポートしました');
+    if(el)el.textContent='✅ エクスポート完了';
+  } else {
+    showToast('❌ '+(res?res.error:'失敗'),'error');
+    if(el)el.textContent='❌ 失敗';
+  }
+}
+// 後ろのloadMasterFromDB完了後に呼ばれます
 // 未提出アラートON/OFFボタン状態更新
 function _updateOverdueAlertToggleBtn(){
   const btn = document.getElementById('overdueAlertToggleBtn');
