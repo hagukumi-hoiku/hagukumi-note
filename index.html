@@ -1324,7 +1324,7 @@ textarea.form-control.tall{min-height:120px;}
         <button class="btn btn-primary" onclick="exportLatestToSheets()" style="background:#1565c0;border-color:#1565c0;margin-right:8px;">📤 最新データをエクスポート</button>
         <span id="exportLatestResult" style="font-size:12px;color:var(--text-mid);"></span>
         <div style="margin-top:10px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
-          <div style="display:flex;gap:12px;align-items:center;">
+          <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
             <label style="display:flex;align-items:center;gap:6px;margin:0;font-weight:600;color:#555;">
               <input type="radio" name="exportGarden" value="hagukumi1" checked>
               <span>はぐくみ保育園</span>
@@ -1332,6 +1332,10 @@ textarea.form-control.tall{min-height:120px;}
             <label style="display:flex;align-items:center;gap:6px;margin:0;font-weight:600;color:#555;">
               <input type="radio" name="exportGarden" value="hagukumi2">
               <span>第2はぐくみ保育園</span>
+            </label>
+            <label style="display:flex;align-items:center;gap:6px;margin:0;font-weight:600;color:#555;">
+              <input type="radio" name="exportGarden" value="both">
+              <span>両園</span>
             </label>
           </div>
           <select id="exportNendoSelect" class="form-control" style="max-width:120px;padding:6px 8px;font-size:12px;">
@@ -3155,9 +3159,11 @@ async function initializeExportNendoSelect(){
 async function exportLatestToSheets(){
   if(!SESSION||!GAS_URL)return;
   const selectedGarden = document.querySelector('input[name="exportGarden"]:checked')?.value || SESSION.gardenId;
-  if(!confirm('「'+selectedGarden+'」の最新データをスプレッドシートにエクスポートします。\n※新規ファイルを作成します。\nよろしいですか？'))return;
+  const gardenIds = selectedGarden === 'both' ? ['hagukumi1', 'hagukumi2'] : [selectedGarden];
+  const gardenNames = gardenIds.map(g => g === 'hagukumi1' ? 'はぐくみ保育園' : g === 'hagukumi2' ? '第2はぐくみ保育園' : '両園').join('・');
+  if(!confirm(gardenNames + 'の最新データをスプレッドシートにエクスポートします。\n新規ファイルを作成します。\nよろしいですか？'))return;
   showLoading('エクスポート中…');
-  const res=await gasPost({action:'exportToSheets',mode:'latest',gardenIds:[selectedGarden]});
+  const res=await gasPost({action:'exportToSheets',mode:'latest',gardenIds:gardenIds});
   hideLoading();
   const el=document.getElementById('exportLatestResult');
   if(res&&res.ok){
@@ -3174,9 +3180,11 @@ async function exportNendoToSheets(){
   const nendo=document.getElementById('exportNendoSelect').value;
   if(!nendo){alert('年度を選択してください');return;}
   const selectedGarden = document.querySelector('input[name="exportGarden"]:checked')?.value || SESSION.gardenId;
-  if(!confirm('「'+selectedGarden+'」の'+nendo+'年度をスプレッドシートにエクスポートします。\n※新規ファイルを作成します。\nよろしいですか？'))return;
+  const gardenIds = selectedGarden === 'both' ? ['hagukumi1', 'hagukumi2'] : [selectedGarden];
+  const gardenNames = gardenIds.map(g => g === 'hagukumi1' ? 'はぐくみ保育園' : g === 'hagukumi2' ? '第2はぐくみ保育園' : '両園').join('・');
+  if(!confirm(gardenNames + 'の' + nendo + '年度をスプレッドシートにエクスポートします。\n新規ファイルを作成します。\nよろしいですか？'))return;
   showLoading('エクスポート中…');
-  const res=await gasPost({action:'exportToSheets',mode:'nendo',nendo:Number(nendo),gardenIds:[selectedGarden]});
+  const res=await gasPost({action:'exportToSheets',mode:'nendo',nendo:Number(nendo),gardenIds:gardenIds});
   hideLoading();
   const el=document.getElementById('exportNendoResult');
   if(res&&res.ok){
