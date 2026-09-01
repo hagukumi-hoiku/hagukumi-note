@@ -1322,15 +1322,26 @@ textarea.form-control.tall{min-height:120px;}
           データベースのマスタデータを CSV ファイルとしてダウンロードできます。
           バックアップ確認や、必要に応じて Excel で編集後に手動で反映する際に使用してください。
         </div>
-        <div style="display:flex;flex-wrap:wrap;gap:8px;">
-          <button class="btn btn-primary" onclick="downloadCSV('staff')" style="background:#7b1fa2;border-color:#7b1fa2;padding:8px 12px;font-size:12px;">📄 職員.csv</button>
-          <button class="btn btn-primary" onclick="downloadCSV('classes')" style="background:#7b1fa2;border-color:#7b1fa2;padding:8px 12px;font-size:12px;">📄 クラス.csv</button>
-          <button class="btn btn-primary" onclick="downloadCSV('children')" style="background:#7b1fa2;border-color:#7b1fa2;padding:8px 12px;font-size:12px;">📄 園児.csv</button>
-          <button class="btn btn-primary" onclick="downloadCSV('approvers')" style="background:#7b1fa2;border-color:#7b1fa2;padding:8px 12px;font-size:12px;">📄 承認者.csv</button>
-          <button class="btn btn-primary" onclick="downloadCSV('approval_flows')" style="background:#7b1fa2;border-color:#7b1fa2;padding:8px 12px;font-size:12px;">📄 承認フロー.csv</button>
-          <button class="btn btn-primary" onclick="downloadCSV('kihon_settings')" style="background:#7b1fa2;border-color:#7b1fa2;padding:8px 12px;font-size:12px;">📄 マスタ設定.csv</button>
+        
+        <!-- 園選択 -->
+        <div style="margin-bottom:10px;">
+          <label style="display:flex;align-items:center;gap:6px;margin-right:12px;font-weight:600;color:#555;float:left;">
+            <input type="radio" name="csvGarden" value="hagukumi1" checked>
+            <span>はぐくみ保育園</span>
+          </label>
+          <label style="display:flex;align-items:center;gap:6px;font-weight:600;color:#555;">
+            <input type="radio" name="csvGarden" value="hagukumi2">
+            <span>第2はぐくみ保育園</span>
+          </label>
+          <div style="clear:both;"></div>
         </div>
-        <div style="font-size:11px;color:#999;margin-top:8px;">※ 各様式（日誌等）は GAS トリガーで自動転記のため不要</div>
+        
+        <!-- ボタン -->
+        <div style="display:flex;flex-wrap:wrap;gap:8px;">
+          <button class="btn btn-primary" onclick="downloadAllCSV()" style="background:#7b1fa2;border-color:#7b1fa2;padding:10px 14px;font-size:12px;font-weight:700;">📦 全データをダウンロード</button>
+          <span style="font-size:11px;color:#999;line-height:40px;">※ 職員、クラス、園児、承認者、承認フロー、設定、全様式を ZIP で取得</span>
+        </div>
+        <div style="font-size:11px;color:#999;margin-top:8px;">※ 各様式（日誌等）は GAS トリガーで自動転記済みのため、バックアップ用です</div>
       </div>
 
       
@@ -3126,10 +3137,11 @@ async function deleteExcelTmpFiles(){
 // スプレッドシートエクスポート用：年度セレクトの初期化（D1から全年度を取得）
 // D1 データを CSV でダウンロード
 async function downloadCSV(tableName){
-  if(!SESSION||!DB_URL)return;
+  if(!SESSION)return;
   try {
-    showLoading('CSV を生成中…');
-    const res=await fetch(DB_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'exportTableAsCSV',table:tableName,gardenId:SESSION.gardenId})});
+    const selectedGarden = document.querySelector('input[name="csvGarden"]:checked')?.value || SESSION.gardenId;
+    showLoading(tableName + '.csv を生成中…');
+    const res=await fetch(location.origin,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'exportTableAsCSV',table:tableName,gardenId:selectedGarden,token:SESSION.token})});
     const data=await res.json();
     hideLoading();
     if(data&&data.ok&&data.csv){
@@ -3137,9 +3149,38 @@ async function downloadCSV(tableName){
       const blob=new Blob([data.csv],{type:'text/csv;charset=utf-8;'});
       const link=document.createElement('a');
       link.href=URL.createObjectURL(blob);
-      link.download=tableName+'_'+new Date().toISOString().split('T')[0]+'.csv';
+      const dateStr=new Date().toISOString().split('T')[0];
+      link.download=selectedGarden+'_'+tableName+'_'+dateStr+'.csv';
       link.click();
       showToast('✅ '+tableName+'.csv をダウンロードしました');
+    } else {
+      showToast('❌ '+(data?data.error:'ダウンロード失敗'),'error');
+    }
+  } catch(e){
+    hideLoading();
+    showToast('❌ エラー: '+String(e),'error');
+  }
+}
+
+// 全データを一括ダウンロード（全テーブル + 全様式を JSON で）
+async function downloadAllCSV(){
+  if(!SESSION)return;
+  try {
+    const selectedGarden = document.querySelector('input[name="csvGarden"]:checked')?.value || SESSION.gardenId;
+    if(!confirm(selectedGarden+' の全データ（マスタ + 全様式）をダウンロードしますか？'))return;
+    showLoading('全データを生成中…');
+    const res=await fetch(location.origin,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'exportAllTablesAsJSON',gardenId:selectedGarden,token:SESSION.token})});
+    const data=await res.json();
+    hideLoading();
+    if(data&&data.ok&&data.json){
+      // JSON をダウンロード
+      const blob=new Blob([data.json],{type:'application/json;charset=utf-8;'});
+      const link=document.createElement('a');
+      link.href=URL.createObjectURL(blob);
+      const dateStr=new Date().toISOString().split('T')[0];
+      link.download=selectedGarden+'_全データ_'+dateStr+'.json';
+      link.click();
+      showToast('✅ 全データ（JSON）をダウンロードしました。Excel で開くか、スプレッドシート用に CSV に変換してください');
     } else {
       showToast('❌ '+(data?data.error:'ダウンロード失敗'),'error');
     }
