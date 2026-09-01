@@ -3135,17 +3135,19 @@ async function deleteExcelTmpFiles(){
   }
 }
 // スプレッドシートエクスポート用：年度セレクトの初期化（D1から全年度を取得）
+// Worker API エンドポイント
+const WORKER_URL = 'https://hagukumi-note-api.hagukumi-hoiku-cf2026.workers.dev';
+
 // D1 データを CSV でダウンロード
 async function downloadCSV(tableName){
   if(!SESSION)return;
   try {
     const selectedGarden = document.querySelector('input[name="csvGarden"]:checked')?.value || SESSION.gardenId;
     showLoading(tableName + '.csv を生成中…');
-    const res=await fetch(location.origin,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'exportTableAsCSV',table:tableName,gardenId:selectedGarden,token:SESSION.token})});
+    const res=await fetch(WORKER_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'exportTableAsCSV',table:tableName,gardenId:selectedGarden,token:SESSION.token})});
     const data=await res.json();
     hideLoading();
     if(data&&data.ok&&data.csv){
-      // CSV をダウンロード
       const blob=new Blob([data.csv],{type:'text/csv;charset=utf-8;'});
       const link=document.createElement('a');
       link.href=URL.createObjectURL(blob);
@@ -3169,11 +3171,10 @@ async function downloadAllCSV(){
     const selectedGarden = document.querySelector('input[name="csvGarden"]:checked')?.value || SESSION.gardenId;
     if(!confirm(selectedGarden+' の全データ（マスタ + 全様式）をダウンロードしますか？'))return;
     showLoading('全データを生成中…');
-    const res=await fetch(location.origin,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'exportAllTablesAsJSON',gardenId:selectedGarden,token:SESSION.token})});
+    const res=await fetch(WORKER_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'exportAllTablesAsJSON',gardenId:selectedGarden,token:SESSION.token})});
     const data=await res.json();
     hideLoading();
     if(data&&data.ok&&data.json){
-      // JSON をダウンロード
       const blob=new Blob([data.json],{type:'application/json;charset=utf-8;'});
       const link=document.createElement('a');
       link.href=URL.createObjectURL(blob);
