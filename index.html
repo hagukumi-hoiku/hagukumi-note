@@ -1336,10 +1336,22 @@ textarea.form-control.tall{min-height:120px;}
           <div style="clear:both;"></div>
         </div>
         
+        <!-- 年度フィルター -->
+        <div style="margin-bottom:10px;">
+          <label style="font-weight:600;color:#555;margin-right:8px;">年度：</label>
+          <select id="csvNendoSelect" style="padding:6px 8px;font-size:12px;border:1px solid #ccc;border-radius:4px;">
+            <option value="">全年度</option>
+            <option value="2026">2026年度</option>
+            <option value="2025">2025年度</option>
+            <option value="2024">2024年度</option>
+            <option value="2023">2023年度</option>
+          </select>
+        </div>
+        
         <!-- ボタン -->
         <div style="display:flex;flex-wrap:wrap;gap:8px;">
           <button class="btn btn-primary" onclick="downloadAllCSV()" style="background:#7b1fa2;border-color:#7b1fa2;padding:10px 14px;font-size:12px;font-weight:700;">📦 全データをダウンロード</button>
-          <span style="font-size:11px;color:#999;line-height:40px;">※ 職員、クラス、園児、承認者、承認フロー、設定、全様式を ZIP で取得</span>
+          <span style="font-size:11px;color:#999;line-height:40px;">※ マスタ + 全様式を CSV で取得</span>
         </div>
         <div style="font-size:11px;color:#999;margin-top:8px;">※ 各様式（日誌等）は GAS トリガーで自動転記済みのため、バックアップ用です</div>
       </div>
@@ -3164,14 +3176,17 @@ async function downloadCSV(tableName){
   }
 }
 
-// 全データを一括ダウンロード（Worker で既に CSV に変換済み）
+// 全データを一括ダウンロード（年度フィルター対応）
 async function downloadAllCSV(){
   if(!SESSION)return;
   try {
     const selectedGarden = document.querySelector('input[name="csvGarden"]:checked')?.value || SESSION.gardenId;
-    if(!confirm(selectedGarden+' の全データ（マスタ + 全様式）を CSV でダウンロードしますか？'))return;
+    const selectedNendo = document.getElementById('csvNendoSelect').value || '';
+    const nendoText = selectedNendo ? selectedNendo + '年度' : '全年度';
+    
+    if(!confirm(selectedGarden+' の全データ（' + nendoText + '）を CSV でダウンロードしますか？'))return;
     showLoading('全データを生成中…');
-    const res=await fetch(WORKER_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'exportAllTablesAsCSV',gardenId:selectedGarden,token:SESSION.token})});
+    const res=await fetch(WORKER_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'exportAllTablesAsCSV',gardenId:selectedGarden,nendo:selectedNendo ? Number(selectedNendo) : null,token:SESSION.token})});
     const data=await res.json();
     hideLoading();
     
