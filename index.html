@@ -3164,7 +3164,7 @@ async function downloadCSV(tableName){
   }
 }
 
-// JSON から CSV に変換
+// JSON から CSV に変換（UTF-8 BOM 付き）
 function jsonToCSV(data) {
   if (!Array.isArray(data) || data.length === 0) return 'データがありません\n';
   
@@ -3180,7 +3180,11 @@ function jsonToCSV(data) {
     }).join(',');
   }).join('\n');
   
-  return csvHeader + csvRows;
+  const csv = csvHeader + csvRows;
+  
+  // UTF-8 BOM を追加（Excel が日本語を正しく認識）
+  const bom = '\uFEFF';
+  return bom + csv;
 }
 
 // 全データを一括ダウンロード（全テーブルを CSV で）
