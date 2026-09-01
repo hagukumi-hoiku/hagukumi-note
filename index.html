@@ -3164,65 +3164,36 @@ async function downloadCSV(tableName){
   }
 }
 
-// JSON から CSV に変換（UTF-8 BOM 付き）
-function jsonToCSV(data) {
-  if (!Array.isArray(data) || data.length === 0) return 'データがありません\n';
-  
-  const headers = Object.keys(data[0]);
-  const csvHeader = headers.map(h => `"${h}"`).join(',') + '\n';
-  
-  const csvRows = data.map(row => {
-    return headers.map(h => {
-      const val = row[h];
-      if (val === null || val === undefined) return '';
-      if (typeof val === 'string') return `"${val.replace(/"/g, '""')}"`;
-      return String(val);
-    }).join(',');
-  }).join('\n');
-  
-  const csv = csvHeader + csvRows;
-  
-  // UTF-8 BOM を追加（Excel が日本語を正しく認識）
-  const bom = '\uFEFF';
-  return bom + csv;
-}
-
-// 全データを一括ダウンロード（全テーブルを CSV で）
+// 全データを一括ダウンロード（Worker で既に CSV に変換済み）
 async function downloadAllCSV(){
   if(!SESSION)return;
   try {
     const selectedGarden = document.querySelector('input[name="csvGarden"]:checked')?.value || SESSION.gardenId;
     if(!confirm(selectedGarden+' の全データ（マスタ + 全様式）を CSV でダウンロードしますか？'))return;
     showLoading('全データを生成中…');
-    const res=await fetch(WORKER_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'exportAllTablesAsJSON',gardenId:selectedGarden,token:SESSION.token})});
+    const res=await fetch(WORKER_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'exportAllTablesAsCSV',gardenId:selectedGarden,token:SESSION.token})});
     const data=await res.json();
     hideLoading();
     
-    if(data&&data.ok&&data.json){
-      try {
-        const allData = JSON.parse(data.json);
-        const dateStr = new Date().toISOString().split('T')[0];
-        let downloadCount = 0;
-        
-        // 各テーブルを CSV に変換してダウンロード
-        for (const [tableName, rows] of Object.entries(allData)) {
-          if (Array.isArray(rows) && rows.length > 0) {
-            const csv = jsonToCSV(rows);
-            const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = selectedGarden + '_' + tableName + '_' + dateStr + '.csv';
-            
-            // 少し遅延させてダウンロード（ブラウザの同時ダウンロード制限対応）
-            setTimeout(() => link.click(), downloadCount * 200);
-            downloadCount++;
-          }
+    if(data&&data.ok&&data.csvs){
+      const dateStr = new Date().toISOString().split('T')[0];
+      let downloadCount = 0;
+      
+      // 各テーブルの CSV を直接ダウンロード
+      for (const [tableName, csvData] of Object.entries(data.csvs)) {
+        if (csvData && csvData !== 'データがありません\n') {
+          const blob = new Blob([csvData], {type:'text/csv;charset=utf-8'});
+          const link = document.createElement('a');
+          link.href = URL.createObjectURL(blob);
+          link.download = selectedGarden + '_' + tableName + '_' + dateStr + '.csv';
+          
+          // 少し遅延させてダウンロード（ブラウザの同時ダウンロード制限対応）
+          setTimeout(() => link.click(), downloadCount * 200);
+          downloadCount++;
         }
-        
-        showToast('✅ ' + downloadCount + ' 個の CSV ファイルをダウンロード開始しました');
-      } catch(parseErr) {
-        showToast('❌ JSON パースエラー: ' + String(parseErr), 'error');
       }
+      
+      showToast('✅ ' + downloadCount + ' 個の CSV ファイルをダウンロード開始しました');
     } else {
       showToast('❌ ' + (data ? data.error : 'ダウンロード失敗'), 'error');
     }
