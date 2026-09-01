@@ -3164,30 +3164,67 @@ async function downloadCSV(tableName){
   }
 }
 
-// 全データを一括ダウンロード（全テーブル + 全様式を JSON で）
+// JSON から CSV に変換
+function jsonToCSV(data) {
+  if (!Array.isArray(data) || data.length === 0) return 'データがありません\n';
+  
+  const headers = Object.keys(data[0]);
+  const csvHeader = headers.map(h => `"${h}"`).join(',') + '\n';
+  
+  const csvRows = data.map(row => {
+    return headers.map(h => {
+      const val = row[h];
+      if (val === null || val === undefined) return '';
+      if (typeof val === 'string') return `"${val.replace(/"/g, '""')}"`;
+      return String(val);
+    }).join(',');
+  }).join('\n');
+  
+  return csvHeader + csvRows;
+}
+
+// 全データを一括ダウンロード（全テーブルを CSV で）
 async function downloadAllCSV(){
   if(!SESSION)return;
   try {
     const selectedGarden = document.querySelector('input[name="csvGarden"]:checked')?.value || SESSION.gardenId;
-    if(!confirm(selectedGarden+' の全データ（マスタ + 全様式）をダウンロードしますか？'))return;
+    if(!confirm(selectedGarden+' の全データ（マスタ + 全様式）を CSV でダウンロードしますか？'))return;
     showLoading('全データを生成中…');
     const res=await fetch(WORKER_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'exportAllTablesAsJSON',gardenId:selectedGarden,token:SESSION.token})});
     const data=await res.json();
     hideLoading();
+    
     if(data&&data.ok&&data.json){
-      const blob=new Blob([data.json],{type:'application/json;charset=utf-8;'});
-      const link=document.createElement('a');
-      link.href=URL.createObjectURL(blob);
-      const dateStr=new Date().toISOString().split('T')[0];
-      link.download=selectedGarden+'_全データ_'+dateStr+'.json';
-      link.click();
-      showToast('✅ 全データ（JSON）をダウンロードしました。Excel で開くか、スプレッドシート用に CSV に変換してください');
+      try {
+        const allData = JSON.parse(data.json);
+        const dateStr = new Date().toISOString().split('T')[0];
+        let downloadCount = 0;
+        
+        // 各テーブルを CSV に変換してダウンロード
+        for (const [tableName, rows] of Object.entries(allData)) {
+          if (Array.isArray(rows) && rows.length > 0) {
+            const csv = jsonToCSV(rows);
+            const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = selectedGarden + '_' + tableName + '_' + dateStr + '.csv';
+            
+            // 少し遅延させてダウンロード（ブラウザの同時ダウンロード制限対応）
+            setTimeout(() => link.click(), downloadCount * 200);
+            downloadCount++;
+          }
+        }
+        
+        showToast('✅ ' + downloadCount + ' 個の CSV ファイルをダウンロード開始しました');
+      } catch(parseErr) {
+        showToast('❌ JSON パースエラー: ' + String(parseErr), 'error');
+      }
     } else {
-      showToast('❌ '+(data?data.error:'ダウンロード失敗'),'error');
+      showToast('❌ ' + (data ? data.error : 'ダウンロード失敗'), 'error');
     }
   } catch(e){
     hideLoading();
-    showToast('❌ エラー: '+String(e),'error');
+    showToast('❌ エラー: ' + String(e), 'error');
   }
 }
 // 後ろのloadMasterFromDB完了後に呼ばれます
