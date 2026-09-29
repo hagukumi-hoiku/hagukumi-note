@@ -5003,6 +5003,42 @@ function updateApprovalBadge(prefix,status){
   });
 }
 
+// ========== 年間計画書（nensyuu）の期別ロック制御（修正版） ==========
+function updateNensyuuApprovalState(prefix,bodyStatus,periodStatusMap){
+  if(prefix!=='ns'||!bodyStatus||!periodStatusMap)return;
+  const SKIP_LOCK=['_class','_cls','_month','_week','_nendo','_child','_jidou','_tanin','_dbList','_approvalStatus','_check','_refPanel','_start_date','_youbi','_getsurei','_seibetsu','_hira','_date'];
+  const ALWAYS_READONLY=['ns_tanin'];
+  const APPROVED=['承認完了','主任承認済','振り返り申請中','振り返り主任承認済','振り返り承認完了'];
+  const isBodyApproved=APPROVED.includes(bodyStatus);
+  document.querySelectorAll('[id^="ns_"]').forEach(function(inp){
+    if(!inp.id||!['INPUT','TEXTAREA','SELECT'].includes(inp.tagName))return;
+    const isSkip=SKIP_LOCK.some(function(p){return inp.id.endsWith(p);});
+    if(isSkip)return;
+    if(ALWAYS_READONLY.includes(inp.id)){inp.setAttribute('readonly','');inp.style.background='#f5f5f5';return;}
+    const furikaeriMatch=inp.id.match(/^ns_(\d|nendo)_furikaeri$/);
+    if(furikaeriMatch){
+      const period=furikaeriMatch[1];
+      const furiStatus=periodStatusMap[period];
+      const isFuriApproved=furiStatus&&APPROVED.includes(furiStatus);
+      if(isFuriApproved){inp.setAttribute('readonly','');inp.style.background='#f5f5f5';inp.style.color='#888';inp.title='第'+(period==='nendo'?'':''+period+'期')+'の振り返りは承認済みのため編集できません';}else{inp.removeAttribute('readonly');inp.style.background='';inp.style.color='';inp.title='';}
+    }else{
+      if(isBodyApproved){inp.setAttribute('readonly','');inp.style.background='#f5f5f5';inp.style.color='#888';inp.title='本体は承認済みのため編集できません';}else{inp.removeAttribute('readonly');inp.style.background='';inp.style.color='';inp.title='';}
+    }
+  });
+}
+function getAndApplyNensyuuPeriodStatus(bodyKey){
+  return new Promise(function(resolve,reject){
+    const furiKeys=[1,2,3,4,'nendo'].map(function(n){return bodyKey+'_furi_ki'+n;});
+    gasPost({action:'getApprovalBatch',keys:[{type:'nensyuu',key:bodyKey,furiKeys:furiKeys}]}).then(function(br){
+      if(!br||!br.ok||!br.statuses){reject('承認情報取得失敗');return;}
+      const periodStatusMap={};
+      furiKeys.forEach(function(fk){let period=null;if(fk.endsWith('_furi_nendo'))period='nendo';else{const m=fk.match(/_furi_ki(\d)/);if(m)period=Number(m[1]);}if(period!==null)periodStatusMap[period]=br.statuses[fk]||'未申請';});
+      const bodyStatus=br.statuses[bodyKey];
+      resolve({bodyStatus:bodyStatus,periodMap:periodStatusMap});
+    }).catch(reject);
+  });
+}
+
 async function loadMyApplications(){
   if(!SESSION||!GAS_URL)return;
   const list=document.getElementById('myApplicationList');
@@ -5862,7 +5898,7 @@ async function loadRecord(prefix,key){
       });
       // step1: フォームロックはstep2(フローDB確認後)に委ねる（不整合データによる誤ロック防止）
       // 承認フローDBと照合して最新状態に補正
-      (function(_p,_k){const _tm={ns:'nensyuu',gu:'getsuan',su:'shuuan',ni:'nisshi',ko:'kobetsu',ka:'kansatsu'};const _fk=buildFuriKeys(_p,_k);gasPost({action:'getApprovalBatch',keys:[{type:_tm[_p]||_p,key:_k,furiKeys:_fk}]}).then(function(br){if(!br||!br.ok||!br.statuses)return;if(br.rejectComments)Object.assign(apBatchComments,br.rejectComments);if(br.prevRejectComments)Object.assign(apBatchPrevComments,br.prevRejectComments);const st=br.statuses[_k];if(st)updateApprovalBadge(_p,st);_fk.forEach(function(fk){const fst=br.statuses[fk];if(fst){let ki=null;if(fk.endsWith('_furi_nendo'))ki='nendo';else if(fk.includes('_furi_ki')){const m=fk.match(/_furi_ki(\d)/);if(m)ki=Number(m[1]);}updateFuriStatusBadge(_p,ki,fst);}});}).catch(function(){});})(prefix,key);
+      (function(_p,_k){const _tm={ns:'nensyuu',gu:'getsuan',su:'shuuan',ni:'nisshi',ko:'kobetsu',ka:'kansatsu'};const _fk=buildFuriKeys(_p,_k);gasPost({action:'getApprovalBatch',keys:[{type:_tm[_p]||_p,key:_k,furiKeys:_fk}]}).then(function(br){if(!br||!br.ok||!br.statuses)return;if(br.rejectComments)Object.assign(apBatchComments,br.rejectComments);if(br.prevRejectComments)Object.assign(apBatchPrevComments,br.prevRejectComments);const st=br.statuses[_k];if(st)updateApprovalBadge(_p,st);_fk.forEach(function(fk){const fst=br.statuses[fk];if(fst){let ki=null;if(fk.endsWith('_furi_nendo'))ki='nendo';else if(fk.includes('_furi_ki')){const m=fk.match(/_furi_ki(\d)/);if(m)ki=Number(m[1]);}updateFuriStatusBadge(_p,ki,fst);}});if(_p==='ns'){getAndApplyNensyuuPeriodStatus(_k).then(function(result){updateNensyuuApprovalState(_p,result.bodyStatus,result.periodMap);}).catch(function(){});}}).catch(function(){});})(prefix,key);
       setTimeout(function(){ updateAllCounts(prefix); }, 150);
       showToast('📂 データを読み込みました');
       return;
