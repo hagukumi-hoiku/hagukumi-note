@@ -4857,6 +4857,8 @@ function formatRejectComment(raw) {
 function updateApprovalBadge(prefix,status){
   const el=document.getElementById(prefix+'_approvalStatus');
   if(!el)return;
+  // 常にreadonlyを保つべきフィールドID（承認状態に関わらず編集不可）※差し戻し処理より前に宣言必須（TDZ回避）
+  const ALWAYS_READONLY=['su_start_date','ni_youbi','ko_getsurei','ko_seibetsu','ko_tanin','ka_seibetsu','ka_hira','ka_tanin','ns_tanin','gu_tanin','su_tanin'];
   const s=APPROVAL_STATUS[status]||{cls:'ab-draft',label:status};
   el.className='approval-badge '+s.cls;el.textContent=s.label;
 
@@ -4965,6 +4967,8 @@ function updateApprovalBadge(prefix,status){
       }
     });
   }
+  // ── 年間指導計画は期別ロック制御に委ねる（本体ステータスだけで全体をロック/解除し直さない）──
+  if(prefix==='ns'){ updateNensyuuApprovalState('ns',status); return; }
   // 承認完了時：振り返りフィールド以外をreadonly化（基本選択フィールドは除外）
   const furiIds=(FURI_FIELD_IDS[prefix]||[]);
   // 振り返り系ステータスも含めて本体フィールドをロックすべきか判定
@@ -4973,8 +4977,7 @@ function updateApprovalBadge(prefix,status){
   const isFuriDone = status === '振り返り承認完了';
   // ロック除外IDパターン（クラス・月・週・年度・園児選択など）
   const SKIP_LOCK_PATTERNS=['_class','_cls','_month','_week','_nendo','_child','_jidou','_tanin','_dbList','_approvalStatus','_check','_refPanel','_start_date','_youbi','_getsurei','_seibetsu','_hira','_date'];
-  // 常にreadonlyを保つべきフィールドID（承認状態に関わらず編集不可）
-  const ALWAYS_READONLY=['su_start_date','ni_youbi','ko_getsurei','ko_seibetsu','ko_tanin','ka_seibetsu','ka_hira','ka_tanin','ns_tanin','gu_tanin','su_tanin'];
+  // ALWAYS_READONLY は関数冒頭で宣言済み
   sec.querySelectorAll('input,textarea,select').forEach(function(inp){
     if(!inp.id) return;
     // 基本選択フィールドはロック対象外
@@ -5003,26 +5006,66 @@ function updateApprovalBadge(prefix,status){
   });
 }
 
-// ========== 年間計画書（nensyuu）の期別ロック制御（修正版） ==========
+// ========== 年間計画書（nensyuu）の期別ロック制御 ==========
+// 期別ステータスのキャッシュ（キー＝年度＋クラス）。updateApprovalBadge / updateFuriStatusBadge のどちらが
+// 後から呼ばれても、同じ期別情報でロックを再計算できるようにする。
+var _nsPeriodCache={key:'',map:{}};
+function _nsBodyKey(){
+  var n=(document.getElementById('ns_nendo')||{}).value||'';
+  var c=(document.getElementById('ns_class')||{}).value||'';
+  return n+c;
+}
+function _nsCachePeriod(ki,status){
+  var k=_nsBodyKey();
+  if(_nsPeriodCache.key!==k)_nsPeriodCache={key:k,map:{}};
+  _nsPeriodCache.map[String(ki)]=status||'未申請';
+}
 function updateNensyuuApprovalState(prefix,bodyStatus,periodStatusMap){
-  if(prefix!=='ns'||!bodyStatus||!periodStatusMap)return;
-  const SKIP_LOCK=['_class','_cls','_month','_week','_nendo','_child','_jidou','_tanin','_dbList','_approvalStatus','_check','_refPanel','_start_date','_youbi','_getsurei','_seibetsu','_hira','_date'];
-  const ALWAYS_READONLY=['ns_tanin'];
-  const APPROVED=['承認完了','主任承認済','振り返り申請中','振り返り主任承認済','振り返り承認完了'];
-  const isBodyApproved=APPROVED.includes(bodyStatus);
-  document.querySelectorAll('[id^="ns_"]').forEach(function(inp){
-    if(!inp.id||!['INPUT','TEXTAREA','SELECT'].includes(inp.tagName))return;
-    const isSkip=SKIP_LOCK.some(function(p){return inp.id.endsWith(p);});
-    if(isSkip)return;
-    if(ALWAYS_READONLY.includes(inp.id)){inp.setAttribute('readonly','');inp.style.background='#f5f5f5';return;}
-    const furikaeriMatch=inp.id.match(/^ns_(\d|nendo)_furikaeri$/);
-    if(furikaeriMatch){
-      const period=furikaeriMatch[1];
-      const furiStatus=periodStatusMap[period];
-      const isFuriApproved=furiStatus&&APPROVED.includes(furiStatus);
-      if(isFuriApproved){inp.setAttribute('readonly','');inp.style.background='#f5f5f5';inp.style.color='#888';inp.title='第'+(period==='nendo'?'':''+period+'期')+'の振り返りは承認済みのため編集できません';}else{inp.removeAttribute('readonly');inp.style.background='';inp.style.color='';inp.title='';}
+  if(prefix!=='ns')return;
+  if(!bodyStatus){var be=document.getElementById('ns_approvalStatus');bodyStatus=be?(be.textContent||'').trim():'未申請';}
+  var key=_nsBodyKey();
+  if(periodStatusMap){
+    var m0={};Object.keys(periodStatusMap).forEach(function(k){m0[String(k)]=periodStatusMap[k]||'未申請';});
+    _nsPeriodCache={key:key,map:m0};
+  }
+  var pmap=(_nsPeriodCache.key===key)?_nsPeriodCache.map:{};
+  var badge=document.getElementById('ns_approvalStatus');
+  var sec=badge?badge.closest('section'):null;
+  if(!sec)return;
+  var SKIP_LOCK=['_class','_cls','_month','_week','_nendo','_child','_jidou','_tanin','_dbList','_approvalStatus','_check','_refPanel','_start_date','_youbi','_getsurei','_seibetsu','_hira','_date','_currentKey'];
+  var ALWAYS_READONLY=['ns_tanin'];
+  var BODY_LOCK=['承認完了','主任承認済','振り返り申請中','振り返り主任承認済','振り返り承認完了'];
+  var PERIOD_LOCK=['承認完了','主任承認済','振り返り申請中','振り返り主任承認済','振り返り承認完了'];
+  var bodyLocked=BODY_LOCK.indexOf(bodyStatus)>=0;
+  function lock(inp,msg){inp.setAttribute('readonly','');inp.style.background='#f5f5f5';inp.style.color='#888';inp.title=msg;}
+  function unlock(inp){inp.removeAttribute('readonly');inp.style.background='';inp.style.color='';inp.title='';}
+  sec.querySelectorAll('input,textarea,select').forEach(function(inp){
+    if(!inp.id||inp.id.indexOf('ns_')!==0||inp.type==='hidden')return;
+    if(/filter|search/i.test(inp.id))return;
+    if(SKIP_LOCK.some(function(s){return inp.id.endsWith(s);}))return;
+    if(ALWAYS_READONLY.indexOf(inp.id)>=0){inp.setAttribute('readonly','');inp.style.background='#f5f5f5';return;}
+    // 振り返り欄：第1〜4期 = ns_{n}_ki_furikaeri ／ 年度末 = ns_furikaeri
+    var m=inp.id.match(/^ns_([1-4])_ki_furikaeri$/);
+    var period=m?m[1]:(inp.id==='ns_furikaeri'?'nendo':null);
+    if(period!==null){
+      var fs=pmap[period]||'未申請';
+      if(PERIOD_LOCK.indexOf(fs)>=0){lock(inp,(period==='nendo'?'年度末':'第'+period+'期')+'の振り返りは申請済み・承認済みのため編集できません');}
+      else{unlock(inp);}
     }else{
-      if(isBodyApproved){inp.setAttribute('readonly','');inp.style.background='#f5f5f5';inp.style.color='#888';inp.title='本体は承認済みのため編集できません';}else{inp.removeAttribute('readonly');inp.style.background='';inp.style.color='';inp.title='';}
+      if(bodyLocked){lock(inp,'本体は承認済みのため編集できません');}
+      else{unlock(inp);}
+    }
+  });
+  // 期別の振り返り申請ボタン：期別ステータスだけで判定（本体ステータスに左右されない）
+  ['1','2','3','4','nendo'].forEach(function(p){
+    var btn=document.getElementById('ns_furi_'+p+'_btn');
+    if(!btn)return;
+    var fs=pmap[p]||'未申請';
+    if(PERIOD_LOCK.indexOf(fs)>=0){
+      btn.disabled=true;btn.style.opacity='0.4';btn.style.cursor='not-allowed';btn.title='振り返り申請済みです';
+    }else{
+      btn.title='';
+      if(typeof updateFuriApplyBtn==='function')updateFuriApplyBtn('ns',p==='nendo'?'nendo':Number(p));
     }
   });
 }
@@ -5033,7 +5076,7 @@ function getAndApplyNensyuuPeriodStatus(bodyKey){
       if(!br||!br.ok||!br.statuses){reject('承認情報取得失敗');return;}
       const periodStatusMap={};
       furiKeys.forEach(function(fk){let period=null;if(fk.endsWith('_furi_nendo'))period='nendo';else{const m=fk.match(/_furi_ki(\d)/);if(m)period=Number(m[1]);}if(period!==null)periodStatusMap[period]=br.statuses[fk]||'未申請';});
-      const bodyStatus=br.statuses[bodyKey];
+      const bodyStatus=br.statuses[bodyKey]||'';
       resolve({bodyStatus:bodyStatus,periodMap:periodStatusMap});
     }).catch(reject);
   });
@@ -6100,6 +6143,8 @@ async function saveFormSilent(type, prefix) {
       };
       const stText = stEl.textContent || '';
       if (stMap[stText]) data['承認状態'] = stMap[stText];
+      // 年間指導計画：バッジの「振り返り〜」は期別の表示用。書類の承認状態としては保存しない（他の期の振り返り申請が弾かれるため）
+      if (prefix === 'ns' && /^振り返り/.test(data['承認状態'] || '')) data['承認状態'] = '承認完了';
     }
     const key = DB_CFGS[prefix].key(data);
     const res = await gasPost({ action: 'save', type, key, data });
@@ -6145,6 +6190,7 @@ async function saveForm(type,prefix){
         '振り返り申請中':'振り返り申請中','振り返り主任承認済':'振り返り主任承認済','振り返り承認完了':'振り返り承認完了'};
       const stText=stEl.textContent||'';
       if(stMap[stText]) data['承認状態']=stMap[stText];
+      if(prefix==='ns' && /^振り返り/.test(data['承認状態']||'')) data['承認状態']='承認完了';
     }
     const key=DB_CFGS[prefix].key(data);
     const res=await gasPost({action:'save',type,key,data});
@@ -6999,6 +7045,12 @@ function updateFuriApplyBtn(prefix, ki) {
 
 // 振り返りバッジの表示を更新
 function updateFuriStatusBadge(prefix, ki, status) {
+  // 年間指導計画は期別ステータスをキャッシュし、更新後に期別ロックを再計算する
+  if (prefix === 'ns' && ki !== null && ki !== undefined) _nsCachePeriod(ki, status);
+  _updateFuriStatusBadgeCore(prefix, ki, status);
+  if (prefix === 'ns') updateNensyuuApprovalState('ns');
+}
+function _updateFuriStatusBadgeCore(prefix, ki, status) {
   var stId;
   if (prefix === 'gu')                        stId = 'gu_furi_status';
   else if (prefix === 'su')                   stId = 'su_furi_status';
@@ -7160,7 +7212,7 @@ function restoreFuriButtons(prefix, data) {
     if (['振り返り申請中','振り返り主任承認済','振り返り承認完了'].includes(st)) {
       // どの期かはstateから判断できないためバッジは個別にGASから取得が必要
       // ひとまず年度末バッジを更新
-      updateFuriStatusBadge('ns', 'nendo', st);
+      // （旧仕様の本体ステータスを年度末に誤適用しない。期別ステータスは承認フローDBから取得する）
     }
   }
 }
