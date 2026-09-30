@@ -3502,6 +3502,15 @@ function applyKiLabelsToNensyuu(){
     const el=document.getElementById(e[0]);
     if(el&&e[1])el.value=e[1];
   });
+  // フォームを作り直すと readonly・振り返りバッジ・申請ボタンの状態が消えるため、期別ロックを再適用する
+  // （↺更新ボタン→マスタ再読込→ここ、の経路で全項目のロックが外れていた）
+  try{
+    var _pc=(typeof _nsPeriodCache!=='undefined')?_nsPeriodCache:null;
+    if(_pc&&_pc.key===_nsBodyKey()){
+      Object.keys(_pc.map).forEach(function(k){_updateFuriStatusBadgeCore('ns',k==='nendo'?'nendo':Number(k),_pc.map[k]);});
+    }
+    updateNensyuuApprovalState('ns');
+  }catch(e){console.warn('[applyKiLabelsToNensyuu] ロック再適用失敗',e);}
 }
 
 const PERIODS=[{num:1,label:'第1期',months:'4月-5月',emoji:'🌸',bg:'#e8f5e9'},{num:2,label:'第2期',months:'6月-8月',emoji:'☀️',bg:'#fdeee6'},{num:3,label:'第3期',months:'9月-12月',emoji:'🍂',bg:'#dceefb'},{num:4,label:'第4期',months:'1月-3月',emoji:'❄️',bg:'#fff9e0'}];
