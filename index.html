@@ -5326,7 +5326,7 @@ async function viewPendingDoc(type, key, flowId, title) {
       const suCls=data['対象クラス']||'';
       const suStartDate=data['対象週開始日']?String(data['対象週開始日']).replace(/[T ].*/,'').trim():'';
       if(suStartDate&&suCls){
-        const niRes2=await gasGet({action:'get',type:'nisshi'});
+        const _suS=suStartDate.replace(/\//g,'-');const _suE=new Date(_suS);_suE.setDate(_suE.getDate()+5);const _suEStr=_suE.getFullYear()+'-'+String(_suE.getMonth()+1).padStart(2,'0')+'-'+String(_suE.getDate()).padStart(2,'0');const niRes2=await gasGet({action:'get',type:'nisshi',cls:suCls,dateFrom:_suS,dateTo:_suEStr});
         const niRows=niRes2&&niRes2.ok&&Array.isArray(niRes2.data)?niRes2.data:[];
         const weekMon2=new Date(suStartDate);
         const suDayRows2=[];
@@ -5346,7 +5346,7 @@ async function viewPendingDoc(type, key, flowId, title) {
       const allKey=type==='kobetsu'?'kobetsu':'kansatsu';
       // forPrint:true → 様式出力と同様、承認完了済みの過去月データも除外せず全て取得する
       // （これが無いと、承認完了済みの月だけサーバー側で除外され「該当月しか出ない」ように見えてしまう）
-      const allRes=await gasGet({action:'get',type:allKey,forPrint:true});
+      const allRes=await gasGet({action:'get',type:allKey,forPrint:true,nendo:data['対象年度'],cls:data['対象クラス']});
       const normN2=function(s){return String(s||'').replace(/[\s\u3000]+/g,'');};
       const childName=data['園児名']||'';
       const clsName=data['対象クラス']||'';
@@ -6393,7 +6393,7 @@ async function execChildPrintPreview(){
     let data=null;
     if(_childSelectType==='kobetsu'){
       // 4ヶ月分全件取得（forPrint:true→自分のクラス年齢や承認完了状態に関わらず取得する）
-      const all=await gasGet({action:'get',type:'kobetsu',forPrint:true});
+      const all=await gasGet({action:'get',type:'kobetsu',forPrint:true,nendo:nendo,cls:cls});
       hideLoading();
       const rows=all&&all.ok&&Array.isArray(all.data)?all.data:[];
       // 開始月レコードを探す
@@ -6408,7 +6408,7 @@ async function execChildPrintPreview(){
       _showStyleModal(label,'kobetsu',[data],key,nendo,child,cls,month);
     }else{
       // 観察記録は12ヶ月分全件取得（4月～3月の年度通し様式のため）（forPrint:true→クラス年齢・承認完了状態に関わらず取得）
-      const allKa=await gasGet({action:'get',type:'kansatsu',forPrint:true});
+      const allKa=await gasGet({action:'get',type:'kansatsu',forPrint:true,nendo:nendo,cls:cls});
       hideLoading();
       const kaRows=allKa&&allKa.ok&&Array.isArray(allKa.data)?allKa.data:[];
       // 4月分（または最初にデータがある月）を基準レコードとする
@@ -6480,7 +6480,7 @@ async function openPrintPreviewShuuanNisshi(mode){
     // 週案データ取得（なければ空データでプレビュー表示）
     const res=await gasGet({action:'get',type:'shuuan',key});
     // 日誌データも取得
-    const niRes=await gasGet({action:'get',type:'nisshi'});
+    const niRes=await gasGet({action:'get',type:'nisshi',cls:cls});
     hideLoading();
     // 週案データ（なくてもプレビューは開く）
     const suRow=res&&res.ok&&res.data?(Array.isArray(res.data)?res.data[0]:res.data):null;
@@ -6882,7 +6882,7 @@ async function downloadExcel(type){
     showLoading('データ取得中…');
     try{
       // DBからデータ取得
-      const res=await gasGet({action:'get',type:'getsuan'});
+      const res=await gasGet({action:'get',type:'getsuan',nendo:nendo,cls:cls});
       hideLoading();
       if(!res||!res.ok){showToast('❌ データ取得失敗','error');return;}
       let rows=res.data||[];
